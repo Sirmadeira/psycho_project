@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-
+// File referente a infos do player
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
