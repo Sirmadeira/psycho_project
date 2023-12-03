@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-
+// File referente a objetos do planeta
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
