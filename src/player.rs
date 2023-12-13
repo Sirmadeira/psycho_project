@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-// File referente a infos do player
+use bevy_third_person_camera::*;
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -23,6 +23,7 @@ fn spawn_player(
         },
         Player,
         Speed(2.5),
+        ThirdPersonCameraTarget,
     );
     commands.spawn(player);
 }
