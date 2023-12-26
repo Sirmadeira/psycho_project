@@ -9,21 +9,17 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn spawn_player(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
     let player = (
-        PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube::new(1.0))),
-            material: materials.add(Color::BLUE.into()),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
+        SceneBundle {
+            scene: assets.load("beta.glb#Scene0"),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..default()
         },
         Player,
         Speed(2.5),
         ThirdPersonCameraTarget,
+        Name::new("Player"),
     );
     commands.spawn(player);
 }
@@ -38,7 +34,6 @@ fn player_movement(
     keys: Res<Input<KeyCode>>,
     time: Res<Time>,
     mut player_q: Query<(&mut Transform, &Speed), With<Player>>,
-    // Filtro que captura so o player object
     cam_q: Query<&Transform, (With<Camera3d>, Without<Player>)>,
 ) {
     for (mut player_transform, player_speed) in player_q.iter_mut() {
@@ -46,9 +41,7 @@ fn player_movement(
             Ok(c) => c,
             Err(e) => Err(format!("Erro pegando o objeto de camera: {}", e)).unwrap(),
         };
-        // Pequeno error handler para ver se a key da match
         let mut direction: Vec3 = Vec3::ZERO;
-        // AQUI o vetor e igual a zero pq se nao apertar nada bom nao existe nada a ser apertar
         if keys.pressed(KeyCode::W) {
             direction += cam.forward();
         }
@@ -64,5 +57,8 @@ fn player_movement(
         direction.y = 0.0;
         let movement: Vec3 = direction.normalize_or_zero() * player_speed.0 * time.delta_seconds();
         player_transform.translation += movement;
+        if direction.length_squared() > 0.0 {
+            player_transform.look_to(direction, Vec3::Y)
+        }
     }
 }

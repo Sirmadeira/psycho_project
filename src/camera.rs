@@ -16,8 +16,6 @@ fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         ThirdPersonCamera {
-            aim_enabled: true,
-            aim_zoom: 0.1,
             zoom_enabled: true,
             zoom: Zoom::new(1.5, 5.0),
             ..default()
