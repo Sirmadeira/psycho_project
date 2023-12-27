@@ -44,17 +44,23 @@ fn player_movement(
         let mut direction: Vec3 = Vec3::ZERO;
         if keys.pressed(KeyCode::W) {
             direction += cam.forward();
+            direction.y = 0.0;
         }
         if keys.pressed(KeyCode::S) {
             direction += cam.back();
+            direction.y = 0.0;
         }
         if keys.pressed(KeyCode::A) {
             direction += cam.left();
+            direction.y = 0.0;
         }
         if keys.pressed(KeyCode::D) {
             direction += cam.right();
+            direction.y = 0.0;
         }
-        direction.y = 0.0;
+        if keys.pressed(KeyCode::Space) {
+            direction += cam.up();
+        }
         let movement: Vec3 = direction.normalize_or_zero() * player_speed.0 * time.delta_seconds();
         player_transform.translation += movement;
         if direction.length_squared() > 0.0 {

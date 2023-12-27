@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
+
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
@@ -30,6 +32,7 @@ fn spawn_floor(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    // O chao de tudo
     let floor = (
         PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Plane::from_size(20.0))),
@@ -38,7 +41,14 @@ fn spawn_floor(
         },
         Name::new("Floor"),
     );
-    commands.spawn(floor);
+    commands
+        .spawn(Collider::cuboid(5.0, 0.1, 5.0))
+        .insert(floor);
+    commands
+        .spawn(RigidBody::Dynamic)
+        .insert(Collider::ball(0.5))
+        .insert(Restitution::coefficient(0.7))
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 4.0, 0.0)));
 }
 
 fn spawn_objects(
