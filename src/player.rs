@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 use bevy_third_person_camera::*;
 pub struct PlayerPlugin;
 
@@ -17,18 +18,37 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
             ..default()
         },
         Player,
-        Speed(2.5),
+        Speed {
+            walk: 3.0,
+            jump: 50.0,
+        },
         ThirdPersonCameraTarget,
         Name::new("Player"),
     );
-    commands.spawn(player);
+
+    commands
+        .spawn(player)
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::cuboid(1.0, 1.0, 1.0))
+        .insert(ColliderMassProperties::Density(2.0))
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 5.0, 0.0)))
+        .insert(Sleeping::disabled())
+        .insert(Velocity {
+            linvel: Vec3::new(1.0, 0.0, 0.0),
+            angvel: Vec3::new(0.0, 0.0, 0.0),
+        })
+        .insert(Ccd::enabled())
+        .insert(GravityScale(0.5));
 }
 
 #[derive(Component)]
 struct Player;
 
 #[derive(Component)]
-struct Speed(f32);
+struct Speed {
+    walk: f32,
+    jump: f32,
+}
 
 fn player_movement(
     keys: Res<Input<KeyCode>>,
@@ -61,8 +81,20 @@ fn player_movement(
         if keys.pressed(KeyCode::Space) {
             direction += cam.up();
         }
-        let movement: Vec3 = direction.normalize_or_zero() * player_speed.0 * time.delta_seconds();
-        player_transform.translation += movement;
+        if keys.pressed(KeyCode::A)
+            || keys.pressed(KeyCode::S)
+            || keys.pressed(KeyCode::D)
+            || keys.pressed(KeyCode::W)
+        {
+            let movement: Vec3 =
+                direction.normalize_or_zero() * player_speed.walk * time.delta_seconds();
+            player_transform.translation += movement;
+        } else {
+            let movement: Vec3 =
+                direction.normalize_or_zero() * player_speed.jump * time.delta_seconds();
+            player_transform.translation += movement;
+        }
+
         if direction.length_squared() > 0.0 {
             player_transform.look_to(direction, Vec3::Y)
         }

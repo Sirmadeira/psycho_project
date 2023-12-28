@@ -44,11 +44,6 @@ fn spawn_floor(
     commands
         .spawn(Collider::cuboid(5.0, 0.1, 5.0))
         .insert(floor);
-    commands
-        .spawn(RigidBody::Dynamic)
-        .insert(Collider::ball(0.5))
-        .insert(Restitution::coefficient(0.7))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 4.0, 0.0)));
 }
 
 fn spawn_objects(
