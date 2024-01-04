@@ -10,7 +10,18 @@ impl Plugin for PlayerPlugin {
     }
 }
 
+// Os dois compoenntes abaixo foram criados para possibiltiar filtro
+#[derive(Component)]
+struct Player;
+
+#[derive(Component)]
+struct Speed {
+    walk: f32,
+    jump: f32,
+}
+
 fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
+    // Objeto de renderizacao
     let player = (
         SceneBundle {
             scene: assets.load("beta.glb#Scene0"),
@@ -20,7 +31,7 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
         Player,
         Speed {
             walk: 3.0,
-            jump: 50.0,
+            jump: 100.0,
         },
         ThirdPersonCameraTarget,
         Name::new("Player"),
@@ -28,26 +39,20 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
 
     commands
         .spawn(player)
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(1.0, 1.0, 1.0))
+        .insert(RigidBody::KinematicPositionBased)
+        .insert(Collider::cuboid(0.2, 1.0, 0.2))
+        .insert(KinematicCharacterController {
+            offset: CharacterLength::Absolute(0.01),
+            ..default()
+        })
         .insert(ColliderMassProperties::Density(2.0))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 5.0, 0.0)))
         .insert(Sleeping::disabled())
         .insert(Velocity {
-            linvel: Vec3::new(1.0, 0.0, 0.0),
+            linvel: Vec3::new(0.0, 0.0, 0.0),
             angvel: Vec3::new(0.0, 0.0, 0.0),
         })
         .insert(Ccd::enabled())
         .insert(GravityScale(0.5));
-}
-
-#[derive(Component)]
-struct Player;
-
-#[derive(Component)]
-struct Speed {
-    walk: f32,
-    jump: f32,
 }
 
 fn player_movement(
