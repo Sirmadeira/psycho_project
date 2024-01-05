@@ -6,7 +6,8 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player)
-            .add_systems(Update, player_movement);
+            .add_systems(Update, player_movement)
+            .add_systems(Update, player_jump_dash);
     }
 }
 
@@ -17,7 +18,6 @@ struct Player;
 #[derive(Component)]
 struct Speed {
     walk: f32,
-    jump: f32,
 }
 
 fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
@@ -25,34 +25,31 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
     let player = (
         SceneBundle {
             scene: assets.load("beta.glb#Scene0"),
-            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            transform: Transform::from_xyz(2.0, 0.0, 0.0),
             ..default()
         },
         Player,
-        Speed {
-            walk: 3.0,
-            jump: 100.0,
-        },
+        Speed { walk: 5.0 },
         ThirdPersonCameraTarget,
         Name::new("Player"),
     );
 
     commands
-        .spawn(player)
-        .insert(RigidBody::KinematicPositionBased)
-        .insert(Collider::cuboid(0.2, 1.0, 0.2))
-        .insert(KinematicCharacterController {
-            offset: CharacterLength::Absolute(0.01),
-            ..default()
+        .spawn(RigidBody::Dynamic)
+        .with_children(|children| {
+            children
+                .spawn(Collider::cuboid(0.2, 0.5, 0.2))
+                .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.5, 0.0)))
+                .insert(ColliderMassProperties::Density(2.0))
+                .insert(Sleeping::disabled())
+                .insert(Ccd::enabled())
+                .insert(GravityScale(1.0));
         })
-        .insert(ColliderMassProperties::Density(2.0))
-        .insert(Sleeping::disabled())
+        .insert(player)
         .insert(Velocity {
             linvel: Vec3::new(0.0, 0.0, 0.0),
             angvel: Vec3::new(0.0, 0.0, 0.0),
-        })
-        .insert(Ccd::enabled())
-        .insert(GravityScale(0.5));
+        });
 }
 
 fn player_movement(
@@ -83,25 +80,22 @@ fn player_movement(
             direction += cam.right();
             direction.y = 0.0;
         }
-        if keys.pressed(KeyCode::Space) {
-            direction += cam.up();
-        }
-        if keys.pressed(KeyCode::A)
-            || keys.pressed(KeyCode::S)
-            || keys.pressed(KeyCode::D)
-            || keys.pressed(KeyCode::W)
-        {
-            let movement: Vec3 =
-                direction.normalize_or_zero() * player_speed.walk * time.delta_seconds();
-            player_transform.translation += movement;
-        } else {
-            let movement: Vec3 =
-                direction.normalize_or_zero() * player_speed.jump * time.delta_seconds();
-            player_transform.translation += movement;
-        }
-
+        let movement: Vec3 =
+            direction.normalize_or_zero() * player_speed.walk * time.delta_seconds();
+        player_transform.translation += movement;
         if direction.length_squared() > 0.0 {
             player_transform.look_to(direction, Vec3::Y)
+        }
+    }
+}
+
+fn player_jump_dash(
+    keys: Res<Input<KeyCode>>,
+    mut player_velocity: Query<&mut Velocity, With<Player>>,
+) {
+    for mut vel in player_velocity.iter_mut() {
+        if keys.pressed(KeyCode::Space) {
+            vel.linvel = Vec3::new(0.0, 10.0, 0.0)
         }
     }
 }
