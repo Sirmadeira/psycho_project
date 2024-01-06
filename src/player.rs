@@ -66,37 +66,33 @@ fn player_movement(
         let mut direction: Vec3 = Vec3::ZERO;
         if keys.pressed(KeyCode::W) {
             direction = cam.forward();
-            direction.y = 0.0
         }
         if keys.pressed(KeyCode::S) {
             direction = cam.back();
-            direction.y = 0.0
         }
         if keys.pressed(KeyCode::A) {
             direction = cam.left();
-            direction.y = 0.0
         }
         if keys.pressed(KeyCode::D) {
             direction = cam.right();
-            direction.y = 0.0
         }
         if keys.pressed(KeyCode::W) & keys.pressed(KeyCode::A) {
             direction = (cam.forward() + cam.left()) / 2.0;
-            direction.y = 0.0
         }
         if keys.pressed(KeyCode::W) & keys.pressed(KeyCode::D) {
             direction = (cam.forward() + cam.right()) / 2.0;
-            direction.y = 0.0
         }
         if keys.pressed(KeyCode::S) & keys.pressed(KeyCode::A) {
             direction = (cam.back() + cam.left()) / 2.0;
-            direction.y = 0.0
         }
         if keys.pressed(KeyCode::S) & keys.pressed(KeyCode::D) {
             direction = (cam.back() + cam.right()) / 2.0;
-            direction.y = 0.0
         }
-        player_velocity.linvel += direction * player_speed.walk;
+
+        direction.y = 0.0;
+        player_velocity.linvel.x = direction.x * player_speed.walk;
+        player_velocity.linvel.z = direction.z * player_speed.walk;
+        player_velocity.linvel.y += direction.y;
         if direction.length_squared() > 0.0 {
             player_transform.look_to(direction, Vec3::Y)
         }
@@ -109,7 +105,7 @@ fn player_jump_dash(
 ) {
     for mut vel in player_velocity.iter_mut() {
         if keys.pressed(KeyCode::Space) {
-            vel.linvel += Vec3::new(0.0, 10.0, 0.0);
+            vel.linvel = Vec3::new(0.0, 10.0, 0.0);
             println!("{}", vel.linvel);
         }
     }
