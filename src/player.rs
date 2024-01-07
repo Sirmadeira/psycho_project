@@ -11,7 +11,6 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-// Os dois compoenntes abaixo foram criados para possibiltiar filtro
 #[derive(Component)]
 struct Player;
 
@@ -35,7 +34,7 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
     );
 
     commands
-        .spawn(RigidBody::Dynamic)
+        .spawn(RigidBody::KinematicPositionBased)
         .with_children(|children| {
             children
                 .spawn(Collider::cuboid(0.2, 0.5, 0.2))
@@ -55,10 +54,11 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
 
 fn player_movement(
     keys: Res<Input<KeyCode>>,
-    mut player_q: Query<(&mut Transform, &mut Velocity, &Speed), With<Player>>,
+    time: Res<Time>,
+    mut player_q: Query<(&mut Transform, &Speed), With<Player>>,
     cam_q: Query<&Transform, (With<Camera3d>, Without<Player>)>,
 ) {
-    for (mut player_transform, mut player_velocity, player_speed) in player_q.iter_mut() {
+    for (mut player_transform, player_speed) in player_q.iter_mut() {
         let cam = match cam_q.get_single() {
             Ok(c) => c,
             Err(e) => Err(format!("Erro pegando o objeto de camera: {}", e)).unwrap(),
@@ -90,11 +90,11 @@ fn player_movement(
         }
 
         direction.y = 0.0;
-        player_velocity.linvel.x = direction.x * player_speed.walk;
-        player_velocity.linvel.z = direction.z * player_speed.walk;
-        player_velocity.linvel.y += direction.y;
+
+        player_transform.translation += direction * player_speed.walk * time.delta_seconds();
+
         if direction.length_squared() > 0.0 {
-            player_transform.look_to(direction, Vec3::Y)
+            player_transform.look_to(cam.forward(), Vec3::Y)
         }
     }
 }
@@ -106,7 +106,6 @@ fn player_jump_dash(
     for mut vel in player_velocity.iter_mut() {
         if keys.pressed(KeyCode::Space) {
             vel.linvel = Vec3::new(0.0, 10.0, 0.0);
-            println!("{}", vel.linvel);
         }
     }
 }
