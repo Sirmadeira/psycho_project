@@ -1,6 +1,7 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, time::Stopwatch};
 use bevy_rapier3d::prelude::*;
 use bevy_third_person_camera::*;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -19,6 +20,11 @@ struct Speed {
     walk: f32,
 }
 
+#[derive(Component)]
+struct JumpDuration {
+    time: Stopwatch,
+}
+
 fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
     // Objeto de renderizacao
     let player = (
@@ -32,9 +38,13 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
         ThirdPersonCameraTarget,
         Name::new("Player"),
     );
+
     commands
         .spawn(RigidBody::Dynamic)
         .insert(player)
+        .insert(JumpDuration {
+            time: Stopwatch::new(),
+        })
         .with_children(|children| {
             children
                 .spawn(Collider::cuboid(0.2, 0.5, 0.2))
@@ -63,9 +73,6 @@ fn player_movement(
         };
         let mut direction: Vec3 = Vec3::ZERO;
 
-        if keys.pressed(KeyCode::W) {
-            direction = cam.forward();
-        }
         if keys.pressed(KeyCode::S) {
             direction = cam.back();
         }
@@ -87,10 +94,13 @@ fn player_movement(
         if keys.pressed(KeyCode::S) & keys.pressed(KeyCode::D) {
             direction = (cam.back() + cam.right()) / 2.0;
         }
-        direction.y = 0.0;
-        player_velocity.linvel.x = direction.x * player_speed.walk;
-        player_velocity.linvel.z = direction.z * player_speed.walk;
-        player_velocity.linvel.y += direction.y;
+
+        if direction != Vec3::ZERO {
+            direction.y = 0.0;
+            player_velocity.linvel.x = direction.x * player_speed.walk;
+            player_velocity.linvel.z = direction.z * player_speed.walk;
+        }
+
         if direction.length_squared() > 0.0 {
             player_transform.look_to(cam.forward(), Vec3::Y)
         }
@@ -98,23 +108,26 @@ fn player_movement(
 }
 
 fn player_jump_dash(
+    time: Res<Time>,
     keys: Res<Input<KeyCode>>,
-    mut player_velocity: Query<&mut Velocity, With<Player>>,
+    mut player_q: Query<(&mut Velocity, &mut JumpDuration), With<Player>>,
     cam_q: Query<&Transform, (With<Camera3d>, Without<Player>)>,
 ) {
-    for mut vel in player_velocity.iter_mut() {
+    for (mut vel, mut jump) in player_q.iter_mut() {
         let cam = match cam_q.get_single() {
             Ok(c) => c,
             Err(e) => Err(format!("Erro pegando o objeto de camera: {}", e)).unwrap(),
         };
-        let mut direction = Vec3::new(0.0, 0.0, 0.0);
 
-        if keys.pressed(KeyCode::Space) {
-            vel.linvel = Vec3::new(0.0, 10.0, 0.0);
+        jump.time.tick(time.delta());
+        if keys.just_pressed(KeyCode::W) && jump.time.elapsed_secs() <= 1.0 {
+            vel.linvel = Vec3::new(1000.0, 0.0, 1000.0);
+            println!("Voce pressionou w dua vezes rapido");
+            println!("{}", jump.time.elapsed_secs());
         }
-        if keys.just_pressed(KeyCode::W) & keys.pressed(KeyCode::W) {
-            direction = cam.forward() * 10.0
+
+        if keys.just_pressed(KeyCode::W) {
+            jump.time.reset();
         }
-        vel.linvel = direction
     }
 }
