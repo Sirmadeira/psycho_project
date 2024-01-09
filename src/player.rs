@@ -22,7 +22,8 @@ struct Speed {
 
 #[derive(Component)]
 struct JumpDuration {
-    time: Stopwatch,
+    check_dash: Stopwatch,
+    cd_dash: Stopwatch,
 }
 
 fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
@@ -43,7 +44,8 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
         .spawn(RigidBody::Dynamic)
         .insert(player)
         .insert(JumpDuration {
-            time: Stopwatch::new(),
+            check_dash: Stopwatch::new(),
+            cd_dash: Stopwatch::new(),
         })
         .with_children(|children| {
             children
@@ -63,36 +65,43 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
 
 fn player_movement(
     keys: Res<Input<KeyCode>>,
-    mut player_q: Query<(&mut Velocity, &mut Transform, &Speed), With<Player>>,
+    mut player_q: Query<(&mut Velocity, &mut Transform, &Speed, &JumpDuration), With<Player>>,
     cam_q: Query<&Transform, (With<Camera3d>, Without<Player>)>,
 ) {
-    for (mut player_velocity, mut player_transform, player_speed) in player_q.iter_mut() {
+    for (mut player_velocity, mut player_transform, player_speed, player_cd) in player_q.iter_mut()
+    {
         let cam = match cam_q.get_single() {
             Ok(c) => c,
             Err(e) => Err(format!("Erro pegando o objeto de camera: {}", e)).unwrap(),
         };
+
         let mut direction: Vec3 = Vec3::ZERO;
 
-        if keys.pressed(KeyCode::S) {
-            direction = cam.back();
-        }
-        if keys.pressed(KeyCode::A) {
-            direction = cam.left();
-        }
-        if keys.pressed(KeyCode::D) {
-            direction = cam.right();
-        }
-        if keys.pressed(KeyCode::W) & keys.pressed(KeyCode::A) {
-            direction = (cam.forward() + cam.left()) / 2.0;
-        }
-        if keys.pressed(KeyCode::W) & keys.pressed(KeyCode::D) {
-            direction = (cam.forward() + cam.right()) / 2.0;
-        }
-        if keys.pressed(KeyCode::S) & keys.pressed(KeyCode::A) {
-            direction = (cam.back() + cam.left()) / 2.0;
-        }
-        if keys.pressed(KeyCode::S) & keys.pressed(KeyCode::D) {
-            direction = (cam.back() + cam.right()) / 2.0;
+        if player_cd.cd_dash.elapsed_secs() > 0.5 {
+            if keys.pressed(KeyCode::W) {
+                direction = cam.forward();
+            }
+            if keys.pressed(KeyCode::S) {
+                direction = cam.back();
+            }
+            if keys.pressed(KeyCode::A) {
+                direction = cam.left();
+            }
+            if keys.pressed(KeyCode::D) {
+                direction = cam.right();
+            }
+            if keys.pressed(KeyCode::W) & keys.pressed(KeyCode::A) {
+                direction = (cam.forward() + cam.left()) / 2.0;
+            }
+            if keys.pressed(KeyCode::W) & keys.pressed(KeyCode::D) {
+                direction = (cam.forward() + cam.right()) / 2.0;
+            }
+            if keys.pressed(KeyCode::S) & keys.pressed(KeyCode::A) {
+                direction = (cam.back() + cam.left()) / 2.0;
+            }
+            if keys.pressed(KeyCode::S) & keys.pressed(KeyCode::D) {
+                direction = (cam.back() + cam.right()) / 2.0;
+            }
         }
 
         if direction != Vec3::ZERO {
@@ -119,15 +128,18 @@ fn player_jump_dash(
             Err(e) => Err(format!("Erro pegando o objeto de camera: {}", e)).unwrap(),
         };
 
-        jump.time.tick(time.delta());
-        if keys.just_pressed(KeyCode::W) && jump.time.elapsed_secs() <= 1.0 {
-            vel.linvel = Vec3::new(1000.0, 0.0, 1000.0);
+        jump.check_dash.tick(time.delta());
+        jump.cd_dash.tick(time.delta());
+
+        if keys.just_pressed(KeyCode::W) && jump.check_dash.elapsed_secs() <= 1.0 {
+            vel.linvel = cam.forward() * 10.0;
             println!("Voce pressionou w dua vezes rapido");
-            println!("{}", jump.time.elapsed_secs());
+            println!("{}", jump.cd_dash.elapsed_secs());
+            jump.cd_dash.reset();
         }
 
         if keys.just_pressed(KeyCode::W) {
-            jump.time.reset();
+            jump.check_dash.reset();
         }
     }
 }
