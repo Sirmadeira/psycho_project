@@ -12,22 +12,36 @@ impl Plugin for PlayerPlugin {
     }
 }
 
+// Easy way to find player, I am lazy dont want to use ids
 #[derive(Component)]
 struct Player;
 
+// walk = Walking speed, dash = dash speed,
 #[derive(Component)]
-struct Speed {
+struct Speeds {
     walk: f32,
+    dash: f32,
 }
 
+// Check_dash_ = Multiple timer that measure the time a player has pressed a certain keys
+// Cd_dash = Cooldown timer that occurs to ensure animation happens and avoid player from dashing mid
+// term
 #[derive(Component)]
-struct JumpDuration {
-    check_dash: Stopwatch,
+struct Timers {
+    check_dash_forward: Stopwatch,
+    check_dash_backward: Stopwatch,
+    check_dash_left: Stopwatch,
+    check_dash_right: Stopwatch,
     cd_dash: Stopwatch,
 }
 
+// cd_dash_limit = Time to wait until you can walk after you dash
+#[derive(Component)]
+struct Limits {
+    cd_dash_limits: f32,
+}
+
 fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
-    // Objeto de renderizacao
     let player = (
         SceneBundle {
             scene: assets.load("beta.glb#Scene0"),
@@ -35,7 +49,10 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
             ..default()
         },
         Player,
-        Speed { walk: 3.0 },
+        Speeds {
+            walk: 3.0,
+            dash: 5.0,
+        },
         ThirdPersonCameraTarget,
         Name::new("Player"),
     );
@@ -43,9 +60,15 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
     commands
         .spawn(RigidBody::Dynamic)
         .insert(player)
-        .insert(JumpDuration {
-            check_dash: Stopwatch::new(),
+        .insert(Timers {
+            check_dash_forward: Stopwatch::new(),
+            check_dash_backward: Stopwatch::new(),
+            check_dash_left: Stopwatch::new(),
+            check_dash_right: Stopwatch::new(),
             cd_dash: Stopwatch::new(),
+        })
+        .insert(Limits {
+            cd_dash_limits: 2.0,
         })
         .with_children(|children| {
             children
@@ -65,10 +88,11 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
 
 fn player_movement(
     keys: Res<Input<KeyCode>>,
-    mut player_q: Query<(&mut Velocity, &mut Transform, &Speed, &JumpDuration), With<Player>>,
+    mut player_q: Query<(&mut Velocity, &mut Transform, &Speeds, &Timers, &Limits), With<Player>>,
     cam_q: Query<&Transform, (With<Camera3d>, Without<Player>)>,
 ) {
-    for (mut player_velocity, mut player_transform, player_speed, player_cd) in player_q.iter_mut()
+    for (mut player_velocity, mut player_transform, player_speed, player_cd, player_limit) in
+        player_q.iter_mut()
     {
         let cam = match cam_q.get_single() {
             Ok(c) => c,
@@ -77,7 +101,7 @@ fn player_movement(
 
         let mut direction: Vec3 = Vec3::ZERO;
 
-        if player_cd.cd_dash.elapsed_secs() > 0.5 {
+        if player_cd.cd_dash.elapsed_secs() > player_limit.cd_dash_limits {
             if keys.pressed(KeyCode::W) {
                 direction = cam.forward();
             }
@@ -119,27 +143,47 @@ fn player_movement(
 fn player_jump_dash(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
-    mut player_q: Query<(&mut Velocity, &mut JumpDuration), With<Player>>,
+    mut player_q: Query<(&mut Velocity, &mut Timers, &Speeds), With<Player>>,
     cam_q: Query<&Transform, (With<Camera3d>, Without<Player>)>,
 ) {
-    for (mut vel, mut jump) in player_q.iter_mut() {
+    for (mut vel, mut timers, speeds) in player_q.iter_mut() {
         let cam = match cam_q.get_single() {
             Ok(c) => c,
             Err(e) => Err(format!("Erro pegando o objeto de camera: {}", e)).unwrap(),
         };
+        timers.check_dash_forward.tick(time.delta());
+        timers.check_dash_backward.tick(time.delta());
+        timers.check_dash_left.tick(time.delta());
+        timers.check_dash_right.tick(time.delta());
+        timers.cd_dash.tick(time.delta());
 
-        jump.check_dash.tick(time.delta());
-        jump.cd_dash.tick(time.delta());
-
-        if keys.just_pressed(KeyCode::W) && jump.check_dash.elapsed_secs() <= 1.0 {
-            vel.linvel = cam.forward() * 10.0;
-            println!("Voce pressionou w dua vezes rapido");
-            println!("{}", jump.cd_dash.elapsed_secs());
-            jump.cd_dash.reset();
+        if keys.just_pressed(KeyCode::W) && timers.check_dash_forward.elapsed_secs() <= 1.0 {
+            vel.linvel = cam.forward() * speeds.dash;
+            timers.cd_dash.reset();
         }
-
         if keys.just_pressed(KeyCode::W) {
-            jump.check_dash.reset();
+            timers.check_dash_forward.reset();
+        }
+        if keys.just_pressed(KeyCode::S) && timers.check_dash_backward.elapsed_secs() <= 1.0 {
+            vel.linvel = cam.back() * speeds.dash;
+            timers.cd_dash.reset();
+        }
+        if keys.just_pressed(KeyCode::S) {
+            timers.check_dash_backward.reset();
+        }
+        if keys.just_pressed(KeyCode::A) && timers.check_dash_left.elapsed_secs() <= 1.0 {
+            vel.linvel = cam.left() * speeds.dash;
+            timers.cd_dash.reset();
+        }
+        if keys.just_pressed(KeyCode::A) {
+            timers.check_dash_left.reset();
+        }
+        if keys.just_pressed(KeyCode::D) && timers.check_dash_right.elapsed_secs() <= 1.0 {
+            vel.linvel = cam.right() * speeds.dash;
+            timers.cd_dash.reset();
+        }
+        if keys.just_pressed(KeyCode::D) {
+            timers.check_dash_right.reset();
         }
     }
 }

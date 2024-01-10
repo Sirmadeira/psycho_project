@@ -42,7 +42,7 @@ fn spawn_floor(
         Name::new("Floor"),
     );
     commands
-        .spawn(Collider::cuboid(5.0, 0.1, 5.0))
+        .spawn(Collider::cuboid(15.0, 0.0, 15.0))
         .insert(floor);
 }
 
