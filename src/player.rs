@@ -140,10 +140,10 @@ fn player_movement(
 fn player_jump_dash(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
-    mut player_q: Query<(&mut Velocity, &mut Timers, &Speeds, &Limits), With<Player>>,
+    mut player_q: Query<(&mut Velocity, &mut Timers, &Transform, &Speeds, &Limits), With<Player>>,
     cam_q: Query<&Transform, (With<Camera3d>, Without<Player>)>,
 ) {
-    for (mut vel, mut timers, speeds, limits) in player_q.iter_mut() {
+    for (mut vel, mut timers, transform, speeds, limits) in player_q.iter_mut() {
         let cam = match cam_q.get_single() {
             Ok(c) => c,
             Err(e) => Err(format!("Erro pegando o objeto de camera: {}", e)).unwrap(),
@@ -186,7 +186,10 @@ fn player_jump_dash(
             }
             // Jump mechanics
             if keys.just_pressed(KeyCode::Space) {
-                vel.linvel = cam.up() * speeds.dash
+                vel.linvel = cam.up() * speeds.dash;
+                if transform.translation.y > 0.2 && keys.just_pressed(KeyCode::Space) {
+                    println!("Voce deu dois pulos!");
+                }
             }
         }
     }
