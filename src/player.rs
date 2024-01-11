@@ -38,6 +38,7 @@ struct Timers {
 #[derive(Component)]
 struct Limits {
     cd_dash_limit: f32,
+    jump_limit: bool,
 }
 
 fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
@@ -49,8 +50,8 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
         },
         Player,
         Speeds {
-            walk: 3.0,
-            dash: 10.0,
+            walk: 5.0,
+            dash: 8.0,
         },
         ThirdPersonCameraTarget,
         Name::new("Player"),
@@ -66,7 +67,10 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
             check_dash_right: Stopwatch::new(),
             cd_dash: Stopwatch::new(),
         })
-        .insert(Limits { cd_dash_limit: 0.8 })
+        .insert(Limits {
+            cd_dash_limit: 0.75,
+            jump_limit: false,
+        })
         .with_children(|children| {
             children
                 .spawn(Collider::cuboid(0.2, 0.5, 0.2))
@@ -140,10 +144,19 @@ fn player_movement(
 fn player_jump_dash(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
-    mut player_q: Query<(&mut Velocity, &mut Timers, &Transform, &Speeds, &Limits), With<Player>>,
+    mut player_q: Query<
+        (
+            &mut Velocity,
+            &mut Timers,
+            &mut Transform,
+            &Speeds,
+            &mut Limits,
+        ),
+        With<Player>,
+    >,
     cam_q: Query<&Transform, (With<Camera3d>, Without<Player>)>,
 ) {
-    for (mut vel, mut timers, transform, speeds, limits) in player_q.iter_mut() {
+    for (mut vel, mut timers, mut transform, speeds, mut limits) in player_q.iter_mut() {
         let cam = match cam_q.get_single() {
             Ok(c) => c,
             Err(e) => Err(format!("Erro pegando o objeto de camera: {}", e)).unwrap(),
@@ -156,41 +169,62 @@ fn player_jump_dash(
 
         if timers.cd_dash.elapsed_secs() > limits.cd_dash_limit {
             // Dash mechanics
-            if keys.just_pressed(KeyCode::W) && timers.check_dash_forward.elapsed_secs() <= 1.0 {
-                vel.linvel = cam.forward() * speeds.dash;
+            if keys.just_pressed(KeyCode::W)
+                && timers.check_dash_forward.elapsed_secs() <= limits.cd_dash_limit
+            {
+                // Limiting because if the player looks at the same transform and dashes forward he
+                // bassically flies eternally
+                vel.linvel.y += 0.0;
+                vel.linvel.x = cam.forward().x * speeds.dash;
+                vel.linvel.z = cam.forward().z * speeds.dash;
                 timers.cd_dash.reset();
             }
             if keys.just_pressed(KeyCode::W) {
                 timers.check_dash_forward.reset();
             }
-            if keys.just_pressed(KeyCode::S) && timers.check_dash_backward.elapsed_secs() <= 1.0 {
-                vel.linvel = cam.back() * speeds.dash;
+            if keys.just_pressed(KeyCode::S)
+                && timers.check_dash_backward.elapsed_secs() <= limits.cd_dash_limit
+            {
+                vel.linvel.y += 0.0;
+                vel.linvel.x = cam.back().x * speeds.dash;
+                vel.linvel.z = cam.back().z * speeds.dash;
                 timers.cd_dash.reset();
             }
             if keys.just_pressed(KeyCode::S) {
                 timers.check_dash_backward.reset();
             }
-            if keys.just_pressed(KeyCode::A) && timers.check_dash_left.elapsed_secs() <= 1.0 {
+            if keys.just_pressed(KeyCode::A)
+                && timers.check_dash_left.elapsed_secs() <= limits.cd_dash_limit
+            {
                 vel.linvel = cam.left() * speeds.dash;
                 timers.cd_dash.reset();
             }
             if keys.just_pressed(KeyCode::A) {
                 timers.check_dash_left.reset();
             }
-            if keys.just_pressed(KeyCode::D) && timers.check_dash_right.elapsed_secs() <= 1.0 {
+            if keys.just_pressed(KeyCode::D)
+                && timers.check_dash_right.elapsed_secs() <= limits.cd_dash_limit
+            {
                 vel.linvel = cam.right() * speeds.dash;
                 timers.cd_dash.reset();
             }
             if keys.just_pressed(KeyCode::D) {
                 timers.check_dash_right.reset();
             }
-            // Jump mechanics
-            if keys.just_pressed(KeyCode::Space) {
+        }
+        // JUmp mechanics
+        if transform.translation.y <= 0.2 && limits.jump_limit == true {
+            limits.jump_limit = false
+        }
+        if keys.just_pressed(KeyCode::Space) && limits.jump_limit == false {
+            vel.linvel = cam.up() * speeds.dash;
+            if transform.translation.y > 0.2 && keys.just_pressed(KeyCode::Space) {
                 vel.linvel = cam.up() * speeds.dash;
-                if transform.translation.y > 0.2 && keys.just_pressed(KeyCode::Space) {
-                    println!("Voce deu dois pulos!");
-                }
+                limits.jump_limit = true;
             }
+        }
+        if vel.linvel.length_squared() > 0.0 {
+            transform.look_to(cam.forward(), Vec3::Y)
         }
     }
 }
