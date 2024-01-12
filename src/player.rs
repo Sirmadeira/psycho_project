@@ -6,14 +6,14 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player)
+        app.add_systems(Startup, (spawn_player, spawn_gun))
             .add_systems(Update, (player_movement, player_jump_dash));
     }
 }
 
 // Easy way to find player, I am lazy dont want to use ids
 #[derive(Component)]
-struct Player;
+pub struct Player;
 
 // walk = Walking speed, dash = dash speed,
 #[derive(Component)]
@@ -41,6 +41,27 @@ struct Limits {
     jump_limit: bool,
 }
 
+// The swors is essential to player movement
+#[derive(Component)]
+struct Sword;
+
+fn spawn_gun(mut commands: Commands, assets: Res<AssetServer>) {
+    let sword = (
+        SceneBundle {
+            scene: assets.load("sword.glb#Scene0"),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.5, 0.0),
+                rotation: Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 0.0), 1.55),
+                ..default()
+            },
+            ..default()
+        },
+        Sword,
+        Name::new("Sword"),
+    );
+    commands.spawn(sword);
+}
+
 fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
     let player = (
         SceneBundle {
@@ -50,7 +71,7 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
         },
         Player,
         Speeds {
-            walk: 5.0,
+            walk: 4.0,
             dash: 8.0,
         },
         ThirdPersonCameraTarget,
@@ -77,8 +98,7 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
                 .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.5, 0.0)))
                 .insert(ColliderMassProperties::Density(2.0))
                 .insert(Sleeping::disabled())
-                .insert(Ccd::enabled())
-                .insert(GravityScale(0.7));
+                .insert(Ccd::enabled());
         })
         .insert(Velocity {
             linvel: Vec3::new(0.0, 0.0, 0.0),
