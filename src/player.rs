@@ -94,11 +94,23 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
         })
         .with_children(|children| {
             children
+                // Body - Collider
                 .spawn(Collider::cuboid(0.2, 0.5, 0.2))
                 .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.5, 0.0)))
                 .insert(ColliderMassProperties::Density(2.0))
                 .insert(Sleeping::disabled())
                 .insert(Ccd::enabled());
+            //Sword - Collider
+            children
+                .spawn(Collider::cuboid(0.1, 0.2, 0.1))
+                .insert(Transform {
+                    translation: Vec3::new(0.7, 0.5, 0.7),
+                    rotation: Quat::from_axis_angle(
+                        Vec3::new(1.0, 0.0, 0.0),
+                        std::f32::consts::FRAC_PI_2,
+                    ),
+                    ..default()
+                });
         })
         .insert(Velocity {
             linvel: Vec3::new(0.0, 0.0, 0.0),
