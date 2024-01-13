@@ -112,10 +112,7 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
                     ..default()
                 });
         })
-        .insert(Velocity {
-            linvel: Vec3::new(0.0, 0.0, 0.0),
-            angvel: Vec3::new(0.0, 0.0, 0.0),
-        })
+        .insert(Velocity::zero())
         .insert(LockedAxes::ROTATION_LOCKED);
 }
 
@@ -255,6 +252,7 @@ fn player_jump_dash(
                 limits.jump_limit = true;
             }
         }
+
         if vel.linvel.length_squared() > 0.0 {
             transform.look_to(cam.forward(), Vec3::Y)
         }

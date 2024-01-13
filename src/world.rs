@@ -100,4 +100,6 @@ fn spawn_objects(
         Quat::from_axis_angle(Vec3::new(0.0, -1.0, 0.0), 1.55),
         Vec3::new(6.67, 0.66, 0.2),
     ));
+
+    commands.spawn(Collider::cuboid(5.0, 0.5, 0.0));
 }
