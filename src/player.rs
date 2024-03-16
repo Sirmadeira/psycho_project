@@ -1,4 +1,4 @@
-use bevy::{prelude::*, time::Stopwatch};
+use bevy::{prelude::*,time::Stopwatch};
 use bevy_rapier3d::prelude::*;
 use bevy_third_person_camera::*;
 
@@ -11,7 +11,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-// Easy way to find player, I am lazy dont want to use ids
+// Easy way to find player
 #[derive(Component)]
 pub struct Player;
 
@@ -41,31 +41,21 @@ struct Limits {
     jump_limit: bool,
 }
 
-// The swors is essential to player movement
+// Startin weapon
 #[derive(Component)]
 struct Sword;
 
-fn spawn_gun(mut commands: Commands, assets: Res<AssetServer>) {
-    let sword = (
-        SceneBundle {
-            scene: assets.load("sword.glb#Scene0"),
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.5, 0.0),
-                rotation: Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 0.0), 1.55),
-                ..default()
-            },
-            ..default()
-        },
-        Sword,
-        Name::new("Sword"),
-    );
-    commands.spawn(sword);
-}
 
+// #[derive(Resource)]
+// struct Animations(Vec<Handle<AnimationClip>>);
+
+
+// Function that occur first
 fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
+
     let player = (
         SceneBundle {
-            scene: assets.load("beta.glb#Scene0"),
+            scene: assets.load("start_katana.glb#Scene0"),
             transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..default()
         },
@@ -77,6 +67,17 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
         ThirdPersonCameraTarget,
         Name::new("Player"),
     );
+    let character = (
+        SceneBundle {
+            scene: assets.load("start_character.glb#Scene0"),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            ..default()
+        },
+    );
+
+    // Loading the animation data of the players
+    // commands.insert_resource(Animations(vec![assets.load("start_character.glb#Animation0")]));
+    commands.spawn(character);
 
     commands
         .spawn(RigidBody::Dynamic)
@@ -95,26 +96,46 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
         .with_children(|children| {
             children
                 // Body - Collider
-                .spawn(Collider::cuboid(0.2, 0.5, 0.2))
+                .spawn(Collider::cuboid(0.2,0.5, 0.2))
                 .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.5, 0.0)))
                 .insert(ColliderMassProperties::Density(2.0))
                 .insert(Sleeping::disabled())
                 .insert(Ccd::enabled());
-            //Sword - Collider
-            children
-                .spawn(Collider::cuboid(0.1, 0.2, 0.1))
-                .insert(Transform {
-                    translation: Vec3::new(0.7, 0.5, 0.7),
-                    rotation: Quat::from_axis_angle(
-                        Vec3::new(1.0, 0.0, 0.0),
-                        std::f32::consts::FRAC_PI_2,
-                    ),
-                    ..default()
-                });
         })
         .insert(Velocity::zero())
         .insert(LockedAxes::ROTATION_LOCKED);
 }
+
+
+// Function that occur second
+fn spawn_gun(mut commands: Commands, assets: Res<AssetServer>) {
+    let sword = (
+        SceneBundle {
+            scene: assets.load("start_katana.glb#Scene0"),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.5, 0.0),
+                ..default()
+            },
+            ..default()
+        },
+        Sword,
+        Name::new("Sword"),
+    );
+    commands.spawn(sword);
+}
+
+// Continous functions
+
+// fn setup_scene_once_loaded(
+//     animations: Res<Animations>,
+//     mut players: Query<&mut AnimationPlayer, Added<AnimationPlayer>>,
+// ) {
+//     for mut player in &mut players {
+//         player.play(animations.0[0].clone_weak()).repeat();
+//     }
+// }
+
+
 
 fn player_movement(
     keys: Res<Input<KeyCode>>,
