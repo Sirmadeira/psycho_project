@@ -17,9 +17,8 @@ fn spawn_camera(mut commands: Commands) {
         },
         ThirdPersonCamera {
             zoom_enabled: true,
-            zoom: Zoom::new(1.0, 12.0),
             cursor_lock_toggle_enabled: true,
-            cursor_lock_key: KeyCode::E,
+            cursor_lock_key: KeyCode::KeyE,
             ..default()
         },
     );
