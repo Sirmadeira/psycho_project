@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_third_person_camera::{camera::*,*};
+use iyes_perf_ui::prelude::*;
 
 pub struct CameraPlugin;
 
@@ -29,4 +30,5 @@ fn spawn_camera(mut commands: Commands) {
     );
 
     commands.spawn(camera);
+    commands.spawn(PerfUiCompleteBundle::default());
 }

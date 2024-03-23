@@ -2237,6 +2237,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af150ab688ff2122fcef229be89cb50dd66af9e01a4ff320cc137eecc9bacc38"
 
 [[package]]
+name = "iyes_perf_ui"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a49f5aa5866dadfdd274c45eddc0a94c84ad1ce0c02c27bcb33c34a20b961f9e"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "jni"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3041,6 +3050,7 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_third_person_camera",
+ "iyes_perf_ui",
 ]
 
 [[package]]
