@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_third_person_camera::ThirdPersonCameraPlugin;
+use bevy_rapier3d::prelude::*;
 use iyes_perf_ui::prelude::*;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 mod camera;
 mod player;
@@ -10,6 +10,7 @@ mod world;
 use camera::CameraPlugin;
 use player::PlayerPlugin;
 use world::WorldPlugin;
+
 
 // Main running function
 fn main() {
@@ -21,13 +22,16 @@ fn main() {
         .add_plugins(bevy::diagnostic::SystemInformationDiagnosticsPlugin)
         // Bevy fps counter
         .add_plugins(PerfUiPlugin)
+        // Physics plugin
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(RapierDebugRenderPlugin::default())
         // Bevy debugger
         .add_plugins(WorldInspectorPlugin::new())
+        // Cameraa Plugin
         .add_plugins(CameraPlugin)
         // Starting the scene and lighting
         .add_plugins(WorldPlugin)
         // Player related confids
-        .add_plugins(ThirdPersonCameraPlugin)
         .add_plugins(PlayerPlugin)
         .run();
 }

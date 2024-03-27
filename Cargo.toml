@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.13"
-bevy_third_person_camera = "0.1.9"
+bevy_rapier3d = "*"
 bevy-inspector-egui = "0.23"
 iyes_perf_ui = "0.2"

@@ -3,6 +3,7 @@ use bevy::{
     pbr:: CascadeShadowConfigBuilder,
     prelude::*,
 };
+use bevy_rapier3d::prelude::*;
 
 pub struct WorldPlugin;
 
@@ -50,7 +51,11 @@ fn spawn_floor(
         },
         Name::new("Floor"),
     );
+    let collider = Collider::cuboid(10.0, 0.0, 10.0);
+
     commands.spawn(floor);
+    commands.spawn(collider);
+    
     }
 
 fn animate_light_direction(

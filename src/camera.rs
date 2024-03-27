@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_third_person_camera::{camera::*,*};
 use iyes_perf_ui::prelude::*;
 
 pub struct CameraPlugin;
@@ -18,13 +17,6 @@ fn spawn_camera(mut commands: Commands) {
                 fov:45.0_f32.to_radians(),
                 ..default()
             }.into(),
-            ..default()
-        },
-        ThirdPersonCamera {
-            zoom_enabled: true,
-            zoom:Zoom::new(5.0,15.0),
-            cursor_lock_toggle_enabled: true,
-            cursor_lock_key: KeyCode::KeyE,
             ..default()
         },
     );
