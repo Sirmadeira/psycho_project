@@ -14,6 +14,10 @@ impl Plugin for WorldPlugin {
     }
 }
 
+
+#[derive(Component)]
+pub struct Ground;
+
 fn spawn_light(mut commands: Commands) {
     let sun_light = DirectionalLightBundle {
         directional_light: DirectionalLight {
@@ -51,10 +55,10 @@ fn spawn_floor(
         },
         Name::new("Floor"),
     );
-    let collider = Collider::cuboid(10.0, 0.0, 10.0);
+    let collider = (Collider::cuboid(10.0, 0.0, 10.0),Ground);
 
-    commands.spawn(floor);
-    commands.spawn(collider);
+    commands.spawn(floor)
+    .insert(collider);
     
     }
 
