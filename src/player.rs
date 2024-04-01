@@ -8,8 +8,10 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MovementAction>();
-        app.add_systems(Startup, (spawn_hitbox,spawn_time).chain());
-        app.add_systems(Update,(display_events,update_grounded,keyboard_walk,keyboard_dash,keyboard_jump,move_character,apply_movement_damping).chain());
+        app.add_systems(Startup, (spawn_hitbox,spawn_others).chain());
+        app.add_systems(Update,(display_events,update_grounded,
+            keyboard_walk,keyboard_dash,keyboard_jump,
+            move_character,apply_movement_damping).chain());
     }
 }
 
@@ -40,6 +42,19 @@ struct Timers{
     right: Stopwatch
 }
 
+#[derive(Component)]
+struct Limit{
+    jump_limit: u8
+}
+
+impl Default for Limit {
+    fn default() -> Self {
+        Self {
+            jump_limit: 2
+        }
+    }
+}
+
 fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
     
     let player_render = SceneBundle {
@@ -68,7 +83,7 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
 
 }
 
-fn spawn_time(mut commands: Commands){
+fn spawn_others(mut commands: Commands){
 
     let timers = (Timers {
         up: Stopwatch::new(),
@@ -78,7 +93,12 @@ fn spawn_time(mut commands: Commands){
         },
         Name::new("DashTimers"));
     
+    let limit = Limit {
+        ..Default::default()
+    };
+    
     commands.spawn(timers);
+    commands.spawn(limit);
     
 }
 
@@ -197,14 +217,24 @@ fn keyboard_dash(time: Res<Time>,keys: Res<ButtonInput<KeyCode>>,
 
 fn keyboard_jump(keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
-    q_1: Query<Has<Grounded>,With<PlayerHitbox>>){
+    q_1: Query<Has<Grounded>,With<PlayerHitbox>>,
+    mut q_2:Query<&mut Limit>,){
     let is_grounded = q_1.get_single().unwrap();
-    if is_grounded{
-        if keys.just_pressed(KeyCode::Space){
+
+    
+    for mut jumps in q_2.iter_mut(){
+        if is_grounded{
+            jumps.jump_limit = Limit {
+                ..Default::default()
+            }.jump_limit
+        }
+        if keys.just_pressed(KeyCode::Space) && jumps.jump_limit != 0{
+            jumps.jump_limit -= 1;
             movement_event_writer.send(MovementAction::Jump);
         }
-    }
-}    
+    } 
+}
+
 
 
 fn move_character(mut movement_event_reader: EventReader<MovementAction>,
@@ -222,7 +252,7 @@ fn move_character(mut movement_event_reader: EventReader<MovementAction>,
                     vel.linvel.z += direction.y * 300.0 * time.delta_seconds();
                 }
                 MovementAction::Jump =>{
-                    vel.linvel.y = 10.0  
+                    vel.linvel.y = 15.0  
                 }
             }
         }
