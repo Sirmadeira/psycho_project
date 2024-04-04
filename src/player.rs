@@ -162,7 +162,7 @@ fn keyboard_walk(keys: Res<ButtonInput<KeyCode>>,mut movement_event_writer: Even
         vel =  Vec2::new(-1.0,0.0);
     }
     if vel != Vec2::ZERO{
-        movement_event_writer.send(MovementAction::Move(vel));
+        movement_event_writer.send(MovementAction::Move(vel.normalize_or_zero()));
     }
 }
 
@@ -209,7 +209,7 @@ fn keyboard_dash(time: Res<Time>,keys: Res<ButtonInput<KeyCode>>,
     }
 
     if dash == true{
-        movement_event_writer.send(MovementAction::Dash(vel));
+        movement_event_writer.send(MovementAction::Dash(vel.normalize_or_zero()));
     }
 
     }
@@ -244,8 +244,8 @@ fn move_character(mut movement_event_reader: EventReader<MovementAction>,
         for mut vel in &mut q_1 {
             match event {
                 MovementAction::Move(direction) => {
-                    vel.linvel.x += direction.x * 30.0 * time.delta_seconds();
-                    vel.linvel.z += direction.y * 30.0 * time.delta_seconds();
+                    vel.linvel.x += direction.x * 20.0 * time.delta_seconds();
+                    vel.linvel.z += direction.y * 20.0 * time.delta_seconds();
                 }
                 MovementAction::Dash(direction)=> {
                     vel.linvel.x += direction.x *300.0 * time.delta_seconds();
