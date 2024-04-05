@@ -37,12 +37,12 @@ fn main() {
         .add_plugins(RapierDebugRenderPlugin::default())
         // Bevy debugger
         .add_plugins(WorldInspectorPlugin::new())
-        // Cameraa Plugin
-        .add_plugins(CameraPlugin)
         // Starting the scene and lighting
         .add_plugins(WorldPlugin)
         // Player related confids
         .add_plugins(PlayerPlugin)
+        // Cameraa Plugin
+        .add_plugins(CameraPlugin)
         .run();
 }
 
