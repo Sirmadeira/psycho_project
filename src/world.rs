@@ -55,7 +55,7 @@ fn spawn_floor(
         },
         Name::new("Floor"),
     );
-    let collider = (Collider::cuboid(10.0, 0.0, 10.0),Ground);
+    let collider = (Collider::cuboid(100.0, 0.0, 100.0),Ground);
 
     commands.spawn(floor)
     .insert(collider);

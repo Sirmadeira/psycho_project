@@ -210,6 +210,7 @@ fn keyboard_dash(time: Res<Time>,keys: Res<ButtonInput<KeyCode>>,
 
     if dash == true{
         movement_event_writer.send(MovementAction::Dash(vel.normalize_or_zero()));
+        println!("Just dashed")
     }
 
     }
@@ -259,7 +260,7 @@ fn move_character(mut movement_event_reader: EventReader<MovementAction>,
     }
 }
 
-fn apply_movement_damping(mut query: Query<&mut Damping,With<Player>>) {
+pub fn apply_movement_damping(mut query: Query<&mut Damping,With<Player>>) {
     for mut damping_factor in &mut query {
         // Todo create state slowing down
         damping_factor.linear_damping = 0.9;
