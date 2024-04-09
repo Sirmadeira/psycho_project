@@ -7,6 +7,11 @@ Since waiting for a sequel became tiresome, I've taken it upon myself to create 
 
 I aspire for this game to become both competitive and immensely enjoyable.
 
+## About the structure
+* todo
+
+
+
 Notes about game: Dimension modeling is a bitch!
 
 Cheerios,
