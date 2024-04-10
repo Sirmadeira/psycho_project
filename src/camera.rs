@@ -173,13 +173,10 @@ fn sync_player_camera(
     let rotation_matrix = Mat3::from_quat(cam_transform.rotation);
 
 
-    let desired_translation =
-        rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius)); 
+    let desired_translation = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius)); 
     // Update the camera translation
     cam_transform.translation = desired_translation + player.translation;
 }
-
-
 
 
 // Conditions

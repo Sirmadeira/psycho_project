@@ -1,7 +1,7 @@
 use std::time::Duration;
-use bevy::{ prelude::*, time::Stopwatch};
+use bevy::{ prelude::*, time::{Timer,Stopwatch}};
 use bevy_rapier3d::prelude::*;
-use crate::world::Ground;
+use crate::{camera::CamInfo, world::Ground};
 
 pub struct PlayerPlugin;
 
@@ -23,16 +23,16 @@ pub enum MovementAction {
     Dash(Vec2),
     Jump,
 }
-
+// Marker component
+#[derive(Component)]
+pub struct Player;
+// Market component
+#[derive(Component)]
+pub struct PlayerHitbox;
+// Check if is on ground
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct Grounded;
-
-#[derive(Component)]
-pub struct Player;
-
-#[derive(Component)]
-pub struct PlayerHitbox;
 
 #[derive(Component)]
 struct Timers{
@@ -41,6 +41,12 @@ struct Timers{
     left: Stopwatch,
     right: Stopwatch
 }
+
+#[derive(Component)]
+struct StatusEffects{
+    dash: Timer
+}
+
 
 #[derive(Component)]
 struct Limit{
@@ -64,9 +70,9 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
 
 
     commands.spawn(player_render)
+    .insert(Player)
     .insert(RigidBody::Dynamic)
     .insert(AdditionalMassProperties::Mass(1.0))
-    .insert(Player)
     .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)))
     .insert(Velocity::zero())
     .insert(Damping {linear_damping:0.0, angular_damping: 0.0})
@@ -141,34 +147,47 @@ pub fn update_grounded(rapier_context: Res<RapierContext>,
 }
 
 
-fn keyboard_walk(keys: Res<ButtonInput<KeyCode>>,mut movement_event_writer: EventWriter<MovementAction>,){
+fn keyboard_walk(keys: Res<ButtonInput<KeyCode>>,
+    mut movement_event_writer: EventWriter<MovementAction>,
+    q_1: Query<&Transform, With<CamInfo>>){
 
-    let mut vel = Vec2::ZERO;
+
+    let Ok(cam) = q_1.get_single() else{
+        return
+    }; 
+
+    let mut direction = Vec2::ZERO;
 
     //forward
     if keys.pressed(KeyCode::KeyW) {
-        vel =  Vec2::new(0.0,1.0);
+
+        direction.x =  cam.forward().x;
+        direction.y =  cam.forward().z;
     }
     // back
     if keys.pressed(KeyCode::KeyS) {
-        vel =  Vec2::new(0.0,-1.0);
+        direction.x =  cam.back().x;
+        direction.y =  cam.back().z;
     }
     // left
     if keys.pressed(KeyCode::KeyA) {
-        vel =  Vec2::new(1.0,0.0);
+        direction.x =  cam.left().x;
+        direction.y =  cam.left().z;
     }
     // right
     if keys.pressed(KeyCode::KeyD) {
-        vel =  Vec2::new(-1.0,0.0);
+        direction.x =  cam.right().x;
+        direction.y =  cam.right().z;
     }
-    if vel != Vec2::ZERO{
-        movement_event_writer.send(MovementAction::Move(vel.normalize_or_zero()));
+    if direction != Vec2::ZERO{
+        movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
     }
 }
 
 
 fn keyboard_dash(time: Res<Time>,keys: Res<ButtonInput<KeyCode>>,
-    mut q: Query<&mut Timers>,mut movement_event_writer: EventWriter<MovementAction>,){
+    mut q: Query<&mut Timers>,mut movement_event_writer: EventWriter<MovementAction>,
+    q_1: Query<&Transform, With<CamInfo>>){
 
     let mut p_t = q.get_single_mut().unwrap();
     p_t.up.tick(Duration::from_secs_f32(time.delta_seconds()));
@@ -176,40 +195,47 @@ fn keyboard_dash(time: Res<Time>,keys: Res<ButtonInput<KeyCode>>,
     p_t.left.tick(Duration::from_secs_f32(time.delta_seconds()));
     p_t.right.tick(Duration::from_secs_f32(time.delta_seconds()));
     
-    let mut vel = Vec2::ZERO;
+    let mut direction = Vec2::ZERO;
     let mut dash = false;
     
+    let Ok(cam) = q_1.get_single() else{
+        return
+    }; 
+
     if keys.just_released(KeyCode::KeyW){
         p_t.up.reset();
     }
     if p_t.up.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyW){
-        vel = Vec2::new(0.0,1.0);
-        dash = true;
+        direction.x =  cam.forward().x;
+        direction.y =  cam.forward().z;
     }
     if keys.just_released(KeyCode::KeyS){
         p_t.down.reset();
     }
     if p_t.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS){
-        vel = Vec2::new(0.0,-1.0);
+        direction.x =  cam.back().x;
+        direction.y =  cam.back().z;
         dash = true;
     }
     if keys.just_released(KeyCode::KeyA){
         p_t.left.reset();
     }
     if p_t.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA){
-        vel = Vec2::new(1.0,0.0);
+        direction.x =  cam.left().x;
+        direction.y =  cam.left().z;
         dash = true;
     }
     if keys.just_released(KeyCode::KeyD){
         p_t.right.reset();
     }
     if p_t.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD){
-        vel = Vec2::new(-1.0,0.0);
+        direction.x =  cam.right().x;
+        direction.y =  cam.right().z;
         dash = true;
     }
 
     if dash == true{
-        movement_event_writer.send(MovementAction::Dash(vel.normalize_or_zero()));
+        movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
         println!("Just dashed")
     }
 
