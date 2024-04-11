@@ -9,7 +9,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MovementAction>();
         app.add_systems(Startup, (spawn_hitbox,spawn_others).chain());
-        app.add_systems(Update,(display_events,update_grounded,
+        app.add_systems(Update,(display_events,update_grounded,check_status_effect,
             keyboard_walk,keyboard_dash,keyboard_jump,
             move_character,apply_movement_damping).chain());
     }
@@ -19,8 +19,11 @@ impl Plugin for PlayerPlugin {
 
 #[derive(Event)]
 pub enum MovementAction {
+    // Movement direction
     Move(Vec2),
+    // Dash direction
     Dash(Vec2),
+    // Jump status
     Jump,
 }
 // Marker component
@@ -35,6 +38,13 @@ pub struct PlayerHitbox;
 pub struct Grounded;
 
 #[derive(Component)]
+#[component(storage = "SparseSet")]
+struct StatusEffectDash{
+    dash_duration: Timer,
+}
+
+// Times the dash for each key
+#[derive(Component)]
 struct Timers{
     up: Stopwatch,
     down: Stopwatch,
@@ -42,12 +52,7 @@ struct Timers{
     right: Stopwatch
 }
 
-#[derive(Component)]
-struct StatusEffects{
-    dash: Timer
-}
-
-
+// Amount of jumps you can have
 #[derive(Component)]
 struct Limit{
     jump_limit: u8
@@ -78,6 +83,10 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
     .insert(Damping {linear_damping:0.0, angular_damping: 0.0})
     .insert(GravityScale(1.0))
     .insert(LockedAxes::ROTATION_LOCKED)
+    .insert(ExternalImpulse {
+        impulse: Vec3::ZERO,
+        torque_impulse: Vec3::ZERO,
+    })
     .with_children(|children| {
         children.spawn(Collider::cylinder(1.83,0.5))
             // Position the collider relative to the rigid-body.
@@ -104,10 +113,8 @@ fn spawn_others(mut commands: Commands){
     };
     
     commands.spawn(timers);
-    commands.spawn(limit);
-    
+    commands.spawn(limit);    
 }
-
 
 // Usefull info
 fn display_events(
@@ -146,6 +153,27 @@ pub fn update_grounded(rapier_context: Res<RapierContext>,
     }
 }
 
+fn check_status_effect(time: Res<Time>,
+    mut commands: Commands,
+    mut q_1: Query<(Entity,Option<&mut StatusEffectDash>),With<Player>>){
+
+    for (ent,status) in q_1.iter_mut(){
+
+        if let Some(mut status) = status{
+            status.dash_duration.tick(Duration::from_secs_f32(time.delta_seconds()));
+            println!("Player {} has dashed for {} .", ent.index(), status.dash_duration.elapsed_secs());
+            if status.dash_duration.finished(){
+                commands.entity(ent).remove::<StatusEffectDash>();
+            }
+        }
+        else {
+            println!("Player {} has NO STATUSs", ent.index());
+        }
+        
+    }
+}
+
+
 
 fn keyboard_walk(keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
@@ -160,7 +188,6 @@ fn keyboard_walk(keys: Res<ButtonInput<KeyCode>>,
 
     //forward
     if keys.pressed(KeyCode::KeyW) {
-
         direction.x =  cam.forward().x;
         direction.y =  cam.forward().z;
     }
@@ -185,22 +212,24 @@ fn keyboard_walk(keys: Res<ButtonInput<KeyCode>>,
 }
 
 
-fn keyboard_dash(time: Res<Time>,keys: Res<ButtonInput<KeyCode>>,
-    mut q: Query<&mut Timers>,mut movement_event_writer: EventWriter<MovementAction>,
-    q_1: Query<&Transform, With<CamInfo>>){
+fn keyboard_dash(time: Res<Time>,
+    keys: Res<ButtonInput<KeyCode>>,
+    mut commands: Commands,
+    mut movement_event_writer: EventWriter<MovementAction>,
+    mut q: Query<&mut Timers>,
+    q_1: Query<&Transform, With<CamInfo>>,
+    q_2:Query<(Entity,&Player)>,){
 
     let mut p_t = q.get_single_mut().unwrap();
+
+    let cam = q_1.get_single().unwrap();
+
+    let mut direction = Vec2::ZERO;
+    
     p_t.up.tick(Duration::from_secs_f32(time.delta_seconds()));
     p_t.down.tick(Duration::from_secs_f32(time.delta_seconds()));
     p_t.left.tick(Duration::from_secs_f32(time.delta_seconds()));
     p_t.right.tick(Duration::from_secs_f32(time.delta_seconds()));
-    
-    let mut direction = Vec2::ZERO;
-    let mut dash = false;
-    
-    let Ok(cam) = q_1.get_single() else{
-        return
-    }; 
 
     if keys.just_released(KeyCode::KeyW){
         p_t.up.reset();
@@ -215,7 +244,6 @@ fn keyboard_dash(time: Res<Time>,keys: Res<ButtonInput<KeyCode>>,
     if p_t.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS){
         direction.x =  cam.back().x;
         direction.y =  cam.back().z;
-        dash = true;
     }
     if keys.just_released(KeyCode::KeyA){
         p_t.left.reset();
@@ -223,7 +251,6 @@ fn keyboard_dash(time: Res<Time>,keys: Res<ButtonInput<KeyCode>>,
     if p_t.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA){
         direction.x =  cam.left().x;
         direction.y =  cam.left().z;
-        dash = true;
     }
     if keys.just_released(KeyCode::KeyD){
         p_t.right.reset();
@@ -231,24 +258,24 @@ fn keyboard_dash(time: Res<Time>,keys: Res<ButtonInput<KeyCode>>,
     if p_t.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD){
         direction.x =  cam.right().x;
         direction.y =  cam.right().z;
-        dash = true;
     }
 
-    if dash == true{
+    if direction != Vec2::ZERO{
+        let entity_1 = q_2.get_single().unwrap().0;
         movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
-        println!("Just dashed")
+        let status_dash = StatusEffectDash{dash_duration: Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once)};
+        commands.entity(entity_1).insert(status_dash);
     }
-
-    }
+}
 
 
 fn keyboard_jump(keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
     q_1: Query<Has<Grounded>,With<PlayerHitbox>>,
     mut q_2:Query<&mut Limit>,){
+
     let is_grounded = q_1.get_single().unwrap();
 
-    
     for mut jumps in q_2.iter_mut(){
         if is_grounded{
             jumps.jump_limit = Limit {
@@ -266,17 +293,17 @@ fn keyboard_jump(keys: Res<ButtonInput<KeyCode>>,
 
 fn move_character(mut movement_event_reader: EventReader<MovementAction>,
     time: Res<Time>,
-    mut q_1: Query<&mut Velocity,With<Player>>,){
+    mut q_1: Query<(&mut Velocity,&mut ExternalImpulse),With<Player>>,){
     for event in movement_event_reader.read() {
-        for mut vel in &mut q_1 {
+        for (mut vel,mut status) in &mut q_1 {
             match event {
                 MovementAction::Move(direction) => {
                     vel.linvel.x += direction.x * 20.0 * time.delta_seconds();
                     vel.linvel.z += direction.y * 20.0 * time.delta_seconds();
                 }
                 MovementAction::Dash(direction)=> {
-                    vel.linvel.x += direction.x *300.0 * time.delta_seconds();
-                    vel.linvel.z += direction.y * 300.0 * time.delta_seconds();
+                    status.impulse.x = direction.x * 100.0;
+                    status.impulse.z = direction.y * 100.0;
                 }
                 MovementAction::Jump =>{
                     vel.linvel.y = 15.0  
