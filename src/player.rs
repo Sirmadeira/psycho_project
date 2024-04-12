@@ -9,13 +9,16 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MovementAction>();
         app.add_systems(Startup, (spawn_hitbox,spawn_others).chain());
-        app.add_systems(Update,(display_events,update_grounded,check_status_effect,
+        app.add_systems(Update,(
+            // Check status effects on player
+            check_status_grounded,check_status_effect,
+            // Input handler
             keyboard_walk,keyboard_dash,keyboard_jump,
             move_character,apply_movement_damping).chain());
+
+        app.add_systems(Update, display_events);
     }
 }
-
-
 
 #[derive(Event)]
 pub enum MovementAction {
@@ -29,14 +32,16 @@ pub enum MovementAction {
 // Marker component
 #[derive(Component)]
 pub struct Player;
+
 // Market component
 #[derive(Component)]
 pub struct PlayerHitbox;
+
 // Check if is on ground
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct Grounded;
-
+// Check if has dashed
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 struct StatusEffectDash{
@@ -66,6 +71,7 @@ impl Default for Limit {
     }
 }
 
+// Spawn the hitbox and the player character
 fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
     
     let player_render = SceneBundle {
@@ -98,6 +104,7 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
 
 }
 
+// Spawn other components
 fn spawn_others(mut commands: Commands){
 
     let timers = (Timers {
@@ -129,51 +136,6 @@ fn display_events(
         println!("Received contact force event: {:?}", contact_force_event);
     }
 }
-
-
-pub fn update_grounded(rapier_context: Res<RapierContext>,
-    mut commands: Commands,
-    q_1:Query<(Entity,&PlayerHitbox)>,
-    q_2:Query<(Entity,&Ground)>,) {
-
-    let entity1 = q_1.get_single().unwrap().0;// A first entity with a collider attached.
-    let entity2 = q_2.get_single().unwrap().0; // A second entity with a collider attached.
-    
-    /* Find the contact pair, if it exists, between two colliders. */
-    if let Some(contact_pair) = rapier_context.contact_pair(entity1, entity2) {
-        // The contact pair exists meaning that the broad-phase identified a potential contact.
-        if contact_pair.has_any_active_contacts() {
-            // The contact pair has active contacts, meaning that it
-            // contains contacts for which contact forces were computed.
-            commands.entity(entity1).insert(Grounded);
-        }
-    }
-    else {
-        commands.entity(entity1).remove::<Grounded>();
-    }
-}
-
-fn check_status_effect(time: Res<Time>,
-    mut commands: Commands,
-    mut q_1: Query<(Entity,Option<&mut StatusEffectDash>),With<Player>>){
-
-    for (ent,status) in q_1.iter_mut(){
-
-        if let Some(mut status) = status{
-            status.dash_duration.tick(Duration::from_secs_f32(time.delta_seconds()));
-            println!("Player {} has dashed for {} .", ent.index(), status.dash_duration.elapsed_secs());
-            if status.dash_duration.finished(){
-                commands.entity(ent).remove::<StatusEffectDash>();
-            }
-        }
-        else {
-            println!("Player {} has NO STATUSs", ent.index());
-        }
-        
-    }
-}
-
-
 
 fn keyboard_walk(keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
@@ -218,11 +180,15 @@ fn keyboard_dash(time: Res<Time>,
     mut movement_event_writer: EventWriter<MovementAction>,
     mut q: Query<&mut Timers>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2:Query<(Entity,&Player)>,){
+    q_2:Query<(Entity,&Player)>,
+    q_3: Query<Has<StatusEffectDash>,With<Player>>,){
 
     let mut p_t = q.get_single_mut().unwrap();
 
     let cam = q_1.get_single().unwrap();
+
+    let has_dashed = q_3.get_single().unwrap();
+
 
     let mut direction = Vec2::ZERO;
     
@@ -260,14 +226,55 @@ fn keyboard_dash(time: Res<Time>,
         direction.y =  cam.right().z;
     }
 
-    if direction != Vec2::ZERO{
-        let entity_1 = q_2.get_single().unwrap().0;
+    if direction != Vec2::ZERO && has_dashed == false {
         movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
+        // Add dash status effect
+        let entity_1 = q_2.get_single().unwrap().0;
         let status_dash = StatusEffectDash{dash_duration: Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once)};
         commands.entity(entity_1).insert(status_dash);
     }
 }
 
+fn check_status_effect(time: Res<Time>,
+    mut commands: Commands,
+    mut q_1: Query<(Entity,Option<&mut StatusEffectDash>),With<Player>>){
+
+    for (ent,status) in q_1.iter_mut(){
+
+        if let Some(mut status) = status{
+            status.dash_duration.tick(Duration::from_secs_f32(time.delta_seconds()));
+            if status.dash_duration.finished(){
+                commands.entity(ent).remove::<StatusEffectDash>();
+            }
+        }
+        else {
+            return
+        }
+        
+    }
+}
+
+pub fn check_status_grounded(rapier_context: Res<RapierContext>,
+    mut commands: Commands,
+    q_1:Query<(Entity,&PlayerHitbox)>,
+    q_2:Query<(Entity,&Ground)>,) {
+
+    let entity1 = q_1.get_single().unwrap().0;// A first entity with a collider attached.
+    let entity2 = q_2.get_single().unwrap().0; // A second entity with a collider attached.
+    
+    /* Find the contact pair, if it exists, between two colliders. */
+    if let Some(contact_pair) = rapier_context.contact_pair(entity1, entity2) {
+        // The contact pair exists meaning that the broad-phase identified a potential contact.
+        if contact_pair.has_any_active_contacts() {
+            // The contact pair has active contacts, meaning that it
+            // contains contacts for which contact forces were computed.
+            commands.entity(entity1).insert(Grounded);
+        }
+    }
+    else {
+        commands.entity(entity1).remove::<Grounded>();
+    }
+}
 
 fn keyboard_jump(keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
@@ -288,8 +295,6 @@ fn keyboard_jump(keys: Res<ButtonInput<KeyCode>>,
         }
     } 
 }
-
-
 
 fn move_character(mut movement_event_reader: EventReader<MovementAction>,
     time: Res<Time>,
@@ -313,9 +318,22 @@ fn move_character(mut movement_event_reader: EventReader<MovementAction>,
     }
 }
 
-pub fn apply_movement_damping(mut query: Query<&mut Damping,With<Player>>) {
+fn apply_movement_damping(mut query: Query<&mut Damping,With<Player>>) {
     for mut damping_factor in &mut query {
         // Todo create state slowing down
         damping_factor.linear_damping = 0.9;
     }
 }
+
+
+// fn player_look_into(mut cam_q: Query<(&mut Transform), With<CamInfo>>,
+//     mut player_q: Query<&mut Velocity,With<Player>>){
+
+//     let mut cam_transform = cam_q.get_single_mut().unwrap();
+//     let mut player_angvel = player_q.get_single_mut().unwrap();
+    
+
+//     cam_transform.rotate_y(angle)
+    
+    
+// }

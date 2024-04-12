@@ -59,7 +59,7 @@ fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         CamInfo{
-            mouse_sens: 10.0,
+            mouse_sens: 1.0,
             zoom_enabled: true,
             zoom: Zoom::new(10.0,30.0),
             zoom_sens: 2.0,
@@ -101,13 +101,14 @@ fn toggle_cursor(
 fn orbit_mouse(
     window_q: Query<&Window, With<PrimaryWindow>>,
     mut cam_q: Query<(&CamInfo,&mut Transform), With<CamInfo>>,
-    mut mouse_evr: EventReader<MouseMotion>,)
+    mut mouse_evr: EventReader<MouseMotion>,
+    time: Res<Time>)
     {
 
     // Basing the rotation according to the mouve motion
     let mut rotation = Vec2::ZERO;
     for ev in mouse_evr.read() {
-            rotation = ev.delta;
+            rotation += ev.delta;
         }
     
     let (cam_info,mut cam_transform) = cam_q.get_single_mut().unwrap();
