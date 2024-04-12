@@ -2,6 +2,8 @@ use std::time::Duration;
 use bevy::{ prelude::*, time::{Timer,Stopwatch}};
 use bevy_rapier3d::prelude::*;
 use crate::{camera::CamInfo, world::Ground};
+use std::f32::consts::PI;
+
 
 pub struct PlayerPlugin;
 
@@ -14,7 +16,7 @@ impl Plugin for PlayerPlugin {
             check_status_grounded,check_status_effect,
             // Input handler
             keyboard_walk,keyboard_dash,keyboard_jump,
-            move_character,apply_movement_damping).chain());
+            move_character,apply_movement_damping,player_look_into).chain());
 
         app.add_systems(Update, display_events);
     }
@@ -334,14 +336,13 @@ fn apply_movement_damping(mut query: Query<&mut Damping,With<Player>>) {
 }
 
 
-// fn player_look_into(mut cam_q: Query<(&mut Transform), With<CamInfo>>,
-//     mut player_q: Query<&mut Velocity,With<Player>>){
+fn player_look_into(
+    mut player_q: Query<&mut Velocity,With<Player>>){
 
-//     let mut cam_transform = cam_q.get_single_mut().unwrap();
-//     let mut player_angvel = player_q.get_single_mut().unwrap();
-    
-
-//     cam_transform.rotate_y(angle)
+    let mut player_angvel = player_q.get_single_mut().unwrap();
     
     
-// }
+    player_angvel.angvel.y = PI/2.0;  
+    
+    
+}

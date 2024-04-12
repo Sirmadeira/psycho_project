@@ -5,7 +5,6 @@ use bevy_rapier3d::plugin::PhysicsSet;
 
 use crate::player:: Player;
 use std::f32::consts::PI;
-
 use iyes_perf_ui::prelude::*;
 
 pub struct CameraPlugin;
@@ -59,7 +58,7 @@ fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         CamInfo{
-            mouse_sens: 0.65,
+            mouse_sens: 1.0,
             zoom_enabled: true,
             zoom: Zoom::new(10.0,30.0),
             zoom_sens: 2.0,
@@ -121,16 +120,17 @@ fn orbit_mouse(
         };
 
         let delta_y = rotation.y / window.height() * PI * cam_info.mouse_sens;
-        let pitch = Quat::from_rotation_y(-delta_x);
-        let yaw = Quat::from_rotation_x(-delta_y);
-        cam_transform.rotation = pitch * cam_transform.rotation; // rotate around global y axis
+
+        let yaw = Quat::from_rotation_y(-delta_x);
+        let pitch = Quat::from_rotation_x(-delta_y);
+        
+        cam_transform.rotation = yaw * cam_transform.rotation; // rotate around global y axis
 
         // Calculate the new rotation without applying it to the camera yet
-        let new_rotation = cam_transform.rotation * yaw;
+        let new_rotation = cam_transform.rotation * pitch;
 
         // check if new rotation will cause camera to go beyond the 180 degree vertical bounds
         let up_vector = new_rotation * Vec3::Y;
-        
         if up_vector.y > 0.0 {
             cam_transform.rotation = new_rotation;
         }
