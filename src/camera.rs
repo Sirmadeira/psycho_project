@@ -59,7 +59,7 @@ fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         CamInfo{
-            mouse_sens: 1.0,
+            mouse_sens: 0.65,
             zoom_enabled: true,
             zoom: Zoom::new(10.0,30.0),
             zoom_sens: 2.0,
@@ -101,8 +101,7 @@ fn toggle_cursor(
 fn orbit_mouse(
     window_q: Query<&Window, With<PrimaryWindow>>,
     mut cam_q: Query<(&CamInfo,&mut Transform), With<CamInfo>>,
-    mut mouse_evr: EventReader<MouseMotion>,
-    time: Res<Time>)
+    mut mouse_evr: EventReader<MouseMotion>,)
     {
 
     // Basing the rotation according to the mouve motion
@@ -122,15 +121,16 @@ fn orbit_mouse(
         };
 
         let delta_y = rotation.y / window.height() * PI * cam_info.mouse_sens;
-        let yaw = Quat::from_rotation_y(-delta_x);
-        let pitch = Quat::from_rotation_x(-delta_y);
-        cam_transform.rotation = yaw * cam_transform.rotation; // rotate around global y axis
+        let pitch = Quat::from_rotation_y(-delta_x);
+        let yaw = Quat::from_rotation_x(-delta_y);
+        cam_transform.rotation = pitch * cam_transform.rotation; // rotate around global y axis
 
         // Calculate the new rotation without applying it to the camera yet
-        let new_rotation = cam_transform.rotation * pitch;
+        let new_rotation = cam_transform.rotation * yaw;
 
         // check if new rotation will cause camera to go beyond the 180 degree vertical bounds
         let up_vector = new_rotation * Vec3::Y;
+        
         if up_vector.y > 0.0 {
             cam_transform.rotation = new_rotation;
         }

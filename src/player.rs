@@ -33,6 +33,9 @@ pub enum MovementAction {
 #[derive(Component)]
 pub struct Player;
 
+#[derive(Component)]
+pub struct PlayerRender;
+
 // Market component
 #[derive(Component)]
 pub struct PlayerHitbox;
@@ -80,15 +83,16 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
     };
 
 
-    commands.spawn(player_render)
+    commands.spawn(RigidBody::Dynamic)
     .insert(Player)
-    .insert(RigidBody::Dynamic)
     .insert(AdditionalMassProperties::Mass(1.0))
-    .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)))
+    .insert(SpatialBundle{
+        ..Default::default()
+    })
     .insert(Velocity::zero())
     .insert(Damping {linear_damping:0.0, angular_damping: 0.0})
     .insert(GravityScale(1.0))
-    .insert(LockedAxes::ROTATION_LOCKED)
+    .insert(LockedAxes::ROTATION_LOCKED_X | LockedAxes:: ROTATION_LOCKED_Z)
     .insert(ExternalImpulse {
         impulse: Vec3::ZERO,
         torque_impulse: Vec3::ZERO,
@@ -100,8 +104,12 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
             .insert(TransformBundle::from(Transform::from_xyz(0.0, 1.83, 0.0)))
             .insert(ActiveEvents::COLLISION_EVENTS);
         }
+    )
+    .with_children(|children| {
+        children.spawn(player_render)
+        .insert(PlayerRender);
+        }
     );
-
 }
 
 // Spawn other components
@@ -298,7 +306,7 @@ fn keyboard_jump(keys: Res<ButtonInput<KeyCode>>,
 
 fn move_character(mut movement_event_reader: EventReader<MovementAction>,
     time: Res<Time>,
-    mut q_1: Query<(&mut Velocity,&mut ExternalImpulse),With<Player>>,){
+    mut q_1: Query<(&mut Velocity,&mut ExternalImpulse),(With<Player>,Without<PlayerRender>)>,){
     for event in movement_event_reader.read() {
         for (mut vel,mut status) in &mut q_1 {
             match event {
