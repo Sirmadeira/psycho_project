@@ -54,11 +54,11 @@ impl Zoom {
 fn spawn_camera(mut commands: Commands) {
     let camera = (
         Camera3dBundle {
-            transform: Transform::from_xyz(0.0, 10.0, -10.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(0.0, 10.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         },
         CamInfo{
-            mouse_sens: 1.0,
+            mouse_sens: 0.75,
             zoom_enabled: true,
             zoom: Zoom::new(10.0,30.0),
             zoom_sens: 2.0,
@@ -123,7 +123,7 @@ fn orbit_mouse(
 
         let yaw = Quat::from_rotation_y(-delta_x);
         let pitch = Quat::from_rotation_x(-delta_y);
-        
+
         cam_transform.rotation = yaw * cam_transform.rotation; // rotate around global y axis
 
         // Calculate the new rotation without applying it to the camera yet
@@ -196,3 +196,4 @@ fn zoom_condition(cam_q: Query<&CamInfo, With<CamInfo>>) -> bool {
     };
     return cam.zoom_enabled && cam.cursor_lock_active;
 }
+

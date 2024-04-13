@@ -2,7 +2,6 @@ use std::time::Duration;
 use bevy::{ prelude::*, time::{Timer,Stopwatch}};
 use bevy_rapier3d::prelude::*;
 use crate::{camera::CamInfo, world::Ground};
-use std::f32::consts::PI;
 
 
 pub struct PlayerPlugin;
@@ -16,7 +15,7 @@ impl Plugin for PlayerPlugin {
             check_status_grounded,check_status_effect,
             // Input handler
             keyboard_walk,keyboard_dash,keyboard_jump,
-            move_character,apply_movement_damping,player_look_into).chain());
+            move_character,apply_movement_damping,make_collider_look_at).chain());
 
         app.add_systems(Update, display_events);
     }
@@ -34,13 +33,27 @@ pub enum MovementAction {
 // Marker component
 #[derive(Component)]
 pub struct Player;
-
+// Marker component
 #[derive(Component)]
 pub struct PlayerRender;
 
-// Market component
+// Marker component
 #[derive(Component)]
-pub struct PlayerHitbox;
+pub struct UpperBody;
+
+// Marker component
+#[derive(Component)]
+pub struct LLeg;
+
+// Marker component
+#[derive(Component)]
+pub struct RLeg;
+
+// Marker component
+#[derive(Component)]
+pub struct Head;
+
+
 
 // Check if is on ground
 #[derive(Component)]
@@ -79,37 +92,76 @@ impl Default for Limit {
 // Spawn the hitbox and the player character
 fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
     
-    let player_render = SceneBundle {
-        scene: assets.load("start_character.glb#Scene0"),
+    
+    // Adds all the physics to the player - Since it is a dynamic movement controller well it is gonna be the parent entity
+    let player_rigidbody = (
+        RigidBody::Dynamic,
+        Player,
+        AdditionalMassProperties::Mass(1.0),
+    SpatialBundle{
+        transform:Transform::from_xyz(0.0, 0.0, 0.0),
         ..Default::default()
-    };
-
-
-    commands.spawn(RigidBody::Dynamic)
-    .insert(Player)
-    .insert(AdditionalMassProperties::Mass(1.0))
-    .insert(SpatialBundle{
-        ..Default::default()
-    })
-    .insert(Velocity::zero())
-    .insert(Damping {linear_damping:0.0, angular_damping: 0.0})
-    .insert(GravityScale(1.0))
-    .insert(LockedAxes::ROTATION_LOCKED_X | LockedAxes:: ROTATION_LOCKED_Z)
-    .insert(ExternalImpulse {
+    },
+    Velocity::zero(),
+    Damping {linear_damping:0.0, angular_damping: 0.0},
+    GravityScale(1.0),
+    ExternalImpulse {
         impulse: Vec3::ZERO,
         torque_impulse: Vec3::ZERO,
-    })
+    });
+
+    // Child scene   
+    let player_render = (SceneBundle {
+        scene: assets.load("start_character.glb#Scene0"),
+        ..Default::default()
+    },PlayerRender);
+
+    let l_leg = (
+    Collider::round_cylinder(0.9,0.09,0.08),
+    LLeg,
+    TransformBundle::from(Transform::from_xyz(0.2, 1.0, 0.0)),
+    ActiveEvents::COLLISION_EVENTS);
+
+    let r_leg = (
+        Collider::round_cylinder(0.9,0.09,0.08),
+    RLeg,
+    TransformBundle::from(Transform::from_xyz(-0.2, 1.0, 0.0)),);
+
+    let upper_body = (
+        Collider::round_cylinder(0.45,0.18,0.13),
+    TransformBundle::from(Transform::from_xyz(0.0, 2.60, 0.0)));
+
+    let head = (
+    Collider::round_cylinder(0.25,0.15,0.10),
+    TransformBundle::from(Transform::from_xyz(0.0, 3.5, 0.0)));
+
+
+
+    commands.spawn(player_rigidbody)
+    // Colliders that represent each portion of the character
     .with_children(|children| {
-        children.spawn(Collider::cylinder(1.83,0.5))
-            // Position the collider relative to the rigid-body.
-            .insert(PlayerHitbox)
-            .insert(TransformBundle::from(Transform::from_xyz(0.0, 1.83, 0.0)))
-            .insert(ActiveEvents::COLLISION_EVENTS);
+        // Lower body colliders
+        children.spawn(l_leg);
         }
     )
     .with_children(|children| {
-        children.spawn(player_render)
-        .insert(PlayerRender);
+        // Uppder body colliders
+        children.spawn(r_leg);
+        }
+    )
+    .with_children(|children| {
+        // Head
+        children.spawn(upper_body);
+        }
+    )
+    .with_children(|children| {
+        // Head
+        children.spawn(head);
+        }
+    )
+    // Rendering and animation
+    .with_children(|children| {
+        children.spawn(player_render);
         }
     );
 }
@@ -266,7 +318,7 @@ fn check_status_effect(time: Res<Time>,
 
 pub fn check_status_grounded(rapier_context: Res<RapierContext>,
     mut commands: Commands,
-    q_1:Query<(Entity,&PlayerHitbox)>,
+    q_1:Query<(Entity,&LLeg)>,
     q_2:Query<(Entity,&Ground)>,) {
 
     let entity1 = q_1.get_single().unwrap().0;// A first entity with a collider attached.
@@ -288,7 +340,7 @@ pub fn check_status_grounded(rapier_context: Res<RapierContext>,
 
 fn keyboard_jump(keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
-    q_1: Query<Has<Grounded>,With<PlayerHitbox>>,
+    q_1: Query<Has<Grounded>,With<LLeg>>,
     mut q_2:Query<&mut Limit>,){
 
     let is_grounded = q_1.get_single().unwrap();
@@ -335,14 +387,35 @@ fn apply_movement_damping(mut query: Query<&mut Damping,With<Player>>) {
     }
 }
 
+fn make_collider_look_at(player_q: Query<&Transform,(With<Player>,Without<PlayerRender>)>,
+    cam_q: Query<&Transform, With<CamInfo>>,
+    mut vel: Query<&mut Velocity>
+    ){
 
-fn player_look_into(
-    mut player_q: Query<&mut Velocity,With<Player>>){
+    let mut current_time = 0.0; // Current time, starting from 0
+    let total_s = 1.0; // Max s value of interpolation in seconds
+    let dt = 10.0/60.0; // Time step for interpolation, adjust as needed
 
-    let mut player_angvel = player_q.get_single_mut().unwrap();
+    let current_q = player_q.get_single().unwrap().rotation.normalize();
+    let target_q = cam_q.get_single().unwrap().rotation.normalize();
+    for mut v in vel.iter_mut(){
+        
+        while  current_time < total_s {
     
+            let s = current_time / total_s;
     
-    player_angvel.angvel.y = PI/2.0;  
+            let interpolated_q = current_q.slerp(target_q, s);
     
+            let q_difference = interpolated_q * current_q.inverse();
     
+            let (axis,angle) = q_difference.to_axis_angle();
+     
+            let angvel = (axis[0] * angle / dt, axis[1] * angle / dt, axis[2] * angle / dt);
+
+            v.angvel = angvel.into();
+    
+            current_time += dt;        
+        }
+
+    }
 }
