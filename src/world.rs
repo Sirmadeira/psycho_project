@@ -55,11 +55,12 @@ fn spawn_floor(
         },
         Name::new("Floor"),
     );
-    let collider = (Collider::cuboid(100.0, 0.0, 100.0),Ground);
+    let collider = (Collider::cuboid(100.0, 0.0, 100.0),
+        Ground,
+        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1));
 
     commands.spawn(floor)
     .insert(collider);
-    
     }
 
 fn animate_light_direction(

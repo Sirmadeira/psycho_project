@@ -111,29 +111,35 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
     });
 
     // Child scene   
-    let player_render = (SceneBundle {
+    let player_render = (
+        SceneBundle {
         scene: assets.load("start_character.glb#Scene0"),
         ..Default::default()
-    },PlayerRender);
+        },
+        PlayerRender);
 
     let l_leg = (
-    Collider::round_cylinder(0.9,0.09,0.08),
-    LLeg,
-    TransformBundle::from(Transform::from_xyz(0.2, 1.0, 0.0)),
-    ActiveEvents::COLLISION_EVENTS);
+        Collider::round_cylinder(0.9,0.09,0.08),
+        LLeg,
+        TransformBundle::from(Transform::from_xyz(0.2, 1.0, 0.0)),
+        ActiveEvents::COLLISION_EVENTS,
+        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1));
 
     let r_leg = (
         Collider::round_cylinder(0.9,0.09,0.08),
-    RLeg,
-    TransformBundle::from(Transform::from_xyz(-0.2, 1.0, 0.0)),);
+        RLeg,
+        TransformBundle::from(Transform::from_xyz(-0.2, 1.0, 0.0)),
+        CollisionGroups::new(Group::GROUP_2,Group::NONE));
 
     let upper_body = (
         Collider::round_cylinder(0.45,0.18,0.13),
-    TransformBundle::from(Transform::from_xyz(0.0, 2.60, 0.0)));
+        TransformBundle::from(Transform::from_xyz(0.0, 2.60, 0.0)),
+        CollisionGroups::new(Group::GROUP_2,Group::NONE));
 
     let head = (
-    Collider::round_cylinder(0.25,0.15,0.10),
-    TransformBundle::from(Transform::from_xyz(0.0, 3.5, 0.0)));
+        Collider::round_cylinder(0.25,0.15,0.10),
+        TransformBundle::from(Transform::from_xyz(0.0, 3.5, 0.0)),
+        CollisionGroups::new(Group::GROUP_2,Group::NONE));
 
 
 
@@ -394,7 +400,7 @@ fn make_collider_look_at(player_q: Query<&Transform,(With<Player>,Without<Player
 
     let mut current_time = 0.0; // Current time, starting from 0
     let total_s = 1.0; // Max s value of interpolation in seconds
-    let dt = 10.0/60.0; // Time step for interpolation, adjust as needed
+    let dt = 1.0/60.0; // Time step for interpolation, adjust as needed
 
     let current_q = player_q.get_single().unwrap().rotation.normalize();
     let target_q = cam_q.get_single().unwrap().rotation.normalize();
