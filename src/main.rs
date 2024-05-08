@@ -24,7 +24,15 @@ fn main() {
             medium: Vec2::new(800.0, 600.0),
             small: Vec2::new(640.0, 360.0),
         })
-        .add_plugins(DefaultPlugins)
+        .insert_resource(Time::<Fixed>::from_hz(64.0))
+        .add_plugins(DefaultPlugins.set(WindowPlugin{
+            primary_window: Some(Window{
+                present_mode: bevy::window::PresentMode::Fifo,
+                ..default()
+            }),
+            ..default()
+        }))
+
         .add_plugins(ResolutionPlugin)
         // Bevy specific diagnostics for fps counter
         .add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin)

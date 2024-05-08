@@ -95,20 +95,20 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
     
     // Adds all the physics to the player - Since it is a dynamic movement controller well it is gonna be the parent entity
     let player_rigidbody = (
-        RigidBody::Dynamic,
-        Player,
-        AdditionalMassProperties::Mass(1.0),
-    SpatialBundle{
-        transform:Transform::from_xyz(0.0, 0.0, 0.0),
-        ..Default::default()
-    },
-    Velocity::zero(),
-    Damping {linear_damping:0.0, angular_damping: 0.0},
-    GravityScale(1.0),
-    ExternalImpulse {
-        impulse: Vec3::ZERO,
-        torque_impulse: Vec3::ZERO,
-    });
+            RigidBody::Dynamic,
+            Player,
+            AdditionalMassProperties::Mass(1.0),
+        SpatialBundle{
+            transform:Transform::from_xyz(0.0, 0.0, 0.0),
+            ..Default::default()
+        },
+        Velocity::zero(),
+        Damping {linear_damping:0.0, angular_damping: 0.0},
+        GravityScale(1.0),
+        ExternalImpulse {
+            impulse: Vec3::ZERO,
+            torque_impulse: Vec3::ZERO,
+        });
 
     // Child scene   
     let player_render = (
@@ -131,6 +131,7 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
         TransformBundle::from(Transform::from_xyz(-0.2, 1.0, 0.0)),
         CollisionGroups::new(Group::GROUP_2,Group::NONE));
 
+
     let upper_body = (
         Collider::round_cylinder(0.45,0.18,0.13),
         TransformBundle::from(Transform::from_xyz(0.0, 2.60, 0.0)),
@@ -140,6 +141,7 @@ fn spawn_hitbox(mut commands: Commands,assets: Res<AssetServer>){
         Collider::round_cylinder(0.25,0.15,0.10),
         TransformBundle::from(Transform::from_xyz(0.0, 3.5, 0.0)),
         CollisionGroups::new(Group::GROUP_2,Group::NONE));
+
 
 
 

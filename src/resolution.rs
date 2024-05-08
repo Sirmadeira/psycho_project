@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::WindowResized};
+use bevy::prelude::*;
 use crate::ResolutionSettings;
 
 pub struct ResolutionPlugin;
@@ -6,7 +6,7 @@ pub struct ResolutionPlugin;
 impl Plugin for ResolutionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_ui);
-        app.add_systems(Update, (on_resize_system,toggle_resolution));
+        app.add_systems(Update, toggle_resolution);
     }
 }
 
@@ -65,15 +65,3 @@ fn toggle_resolution(
     }
 }
 
-/// This system shows how to respond to a window being resized.
-/// Whenever the window is resized, the text will update with the new resolution.
-fn on_resize_system(
-    mut q: Query<&mut Text, With<ResolutionText>>,
-    mut resize_reader: EventReader<WindowResized>,
-) {
-    let mut text = q.single_mut();
-    for e in resize_reader.read() {
-        // When resolution is being changed
-        text.sections[0].value = format!("{:.1} x {:.1}", e.width, e.height);
-    }
-}
