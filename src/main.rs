@@ -1,38 +1,35 @@
 use bevy::prelude::*;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use iyes_perf_ui::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 mod camera;
 mod player;
-mod world;
 mod resolution;
-
+mod world;
 
 use camera::CameraPlugin;
 use player::PlayerPlugin;
-use world::WorldPlugin;
 use resolution::ResolutionPlugin;
-
+use world::WorldPlugin;
 
 // Main running function
 fn main() {
     App::new()
         .insert_resource(ResolutionSettings {
-            r_large: Vec2::new(2490.0,1376.0),
+            r_large: Vec2::new(2490.0, 1376.0),
             large: Vec2::new(1920.0, 1080.0),
             medium: Vec2::new(800.0, 600.0),
             small: Vec2::new(640.0, 360.0),
         })
         .insert_resource(Time::<Fixed>::from_hz(64.0))
-        .add_plugins(DefaultPlugins.set(WindowPlugin{
-            primary_window: Some(Window{
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
                 present_mode: bevy::window::PresentMode::Fifo,
                 ..default()
             }),
             ..default()
         }))
-
         .add_plugins(ResolutionPlugin)
         // Bevy specific diagnostics for fps counter
         .add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin)

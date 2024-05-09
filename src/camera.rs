@@ -1,23 +1,32 @@
 use bevy::{
-    input::mouse::{MouseMotion,MouseWheel}, prelude::*, window::{CursorGrabMode, PrimaryWindow}
+    input::mouse::{MouseMotion, MouseWheel},
+    prelude::*,
+    window::{CursorGrabMode, PrimaryWindow},
 };
 use bevy_rapier3d::plugin::PhysicsSet;
 
-use crate::player:: Player;
-use std::f32::consts::PI;
+use crate::player::Player;
 use iyes_perf_ui::prelude::*;
+use std::f32::consts::PI;
 
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_camera);
-        app.add_systems(Update, 
-        (toggle_cursor,
-        orbit_mouse.run_if(orbit_condition),
-        zoom_mouse.run_if(zoom_condition))
-        .chain());
-        app.add_systems(PostUpdate, sync_player_camera.after(PhysicsSet::StepSimulation));
+        app.add_systems(
+            Update,
+            (
+                toggle_cursor,
+                orbit_mouse.run_if(orbit_condition),
+                zoom_mouse.run_if(zoom_condition),
+            )
+                .chain(),
+        );
+        app.add_systems(
+            PostUpdate,
+            sync_player_camera.after(PhysicsSet::StepSimulation),
+        );
     }
 }
 
@@ -28,9 +37,8 @@ pub struct CamInfo {
     zoom_enabled: bool,
     zoom: Zoom,
     zoom_sens: f32,
-    cursor_lock_activation_key:KeyCode,
+    cursor_lock_activation_key: KeyCode,
     cursor_lock_active: bool,
-
 }
 
 /// Sets the zoom bounds (min & max)
@@ -50,21 +58,20 @@ impl Zoom {
     }
 }
 
-
 fn spawn_camera(mut commands: Commands) {
     let camera = (
         Camera3dBundle {
             transform: Transform::from_xyz(0.0, 10.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         },
-        CamInfo{
+        CamInfo {
             mouse_sens: 0.75,
             zoom_enabled: true,
-            zoom: Zoom::new(10.0,30.0),
+            zoom: Zoom::new(10.0, 30.0),
             zoom_sens: 2.0,
             cursor_lock_activation_key: KeyCode::KeyE,
-            cursor_lock_active:false,
-        }
+            cursor_lock_active: false,
+        },
     );
 
     commands.spawn(camera);
@@ -95,22 +102,19 @@ fn toggle_cursor(
     }
 }
 
-
 // Adds the possibility to adjust camera angle and position
 fn orbit_mouse(
     window_q: Query<&Window, With<PrimaryWindow>>,
-    mut cam_q: Query<(&CamInfo,&mut Transform), With<CamInfo>>,
-    mut mouse_evr: EventReader<MouseMotion>,)
-    {
-
+    mut cam_q: Query<(&CamInfo, &mut Transform), With<CamInfo>>,
+    mut mouse_evr: EventReader<MouseMotion>,
+) {
     // Basing the rotation according to the mouve motion
     let mut rotation = Vec2::ZERO;
     for ev in mouse_evr.read() {
-            rotation += ev.delta;
-        }
-    
-    let (cam_info,mut cam_transform) = cam_q.get_single_mut().unwrap();
+        rotation += ev.delta;
+    }
 
+    let (cam_info, mut cam_transform) = cam_q.get_single_mut().unwrap();
 
     if rotation.length_squared() > 0.0 {
         let window = window_q.get_single().unwrap();
@@ -138,8 +142,6 @@ fn orbit_mouse(
 
     let rot_matrix = Mat3::from_quat(cam_transform.rotation);
     cam_transform.translation = rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam_info.zoom.radius));
-
-
 }
 
 // Zooms in the camera
@@ -151,18 +153,15 @@ fn zoom_mouse(mut scroll_evr: EventReader<MouseWheel>, mut cam_q: Query<&mut Cam
 
     if let Ok(mut cam) = cam_q.get_single_mut() {
         if scroll.abs() > 0.0 {
-            let new_radius =
-                cam.zoom.radius - scroll * cam.zoom.radius * 0.1 * cam.zoom_sens;
+            let new_radius = cam.zoom.radius - scroll * cam.zoom.radius * 0.1 * cam.zoom_sens;
             cam.zoom.radius = new_radius.clamp(cam.zoom.min, cam.zoom.max);
         }
     }
 }
 
-
-
 fn sync_player_camera(
     player_q: Query<&Transform, With<Player>>,
-    mut cam_q: Query<(&mut CamInfo, &mut Transform),Without<Player>>,
+    mut cam_q: Query<(&mut CamInfo, &mut Transform), Without<Player>>,
 ) {
     let Ok(player) = player_q.get_single() else {
         return;
@@ -173,12 +172,10 @@ fn sync_player_camera(
 
     let rotation_matrix = Mat3::from_quat(cam_transform.rotation);
 
-
-    let desired_translation = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius)); 
+    let desired_translation = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius));
     // Update the camera translation
     cam_transform.translation = desired_translation + player.translation;
 }
-
 
 // Conditions
 // only run the orbit system if the cursor lock is disabled
@@ -196,4 +193,3 @@ fn zoom_condition(cam_q: Query<&CamInfo, With<CamInfo>>) -> bool {
     };
     return cam.zoom_enabled && cam.cursor_lock_active;
 }
-

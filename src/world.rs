@@ -1,19 +1,15 @@
-use std::f32::consts::PI;
-use bevy::{
-    pbr:: CascadeShadowConfigBuilder,
-    prelude::*,
-};
+use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*};
 use bevy_rapier3d::prelude::*;
+use std::f32::consts::PI;
 
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (spawn_light, spawn_floor))
-        .add_systems(Update,animate_light_direction);
+            .add_systems(Update, animate_light_direction);
     }
 }
-
 
 #[derive(Component)]
 pub struct Ground;
@@ -37,7 +33,7 @@ fn spawn_light(mut commands: Commands) {
         }
         .into(),
         ..default()
-    };  
+    };
     commands.spawn(sun_light);
 }
 
@@ -55,20 +51,20 @@ fn spawn_floor(
         },
         Name::new("Floor"),
     );
-    let collider = (Collider::cuboid(100.0, 0.0, 100.0),
+    let collider = (
+        Collider::cuboid(100.0, 0.0, 100.0),
         Ground,
-        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1));
+        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
+    );
 
-    commands.spawn(floor)
-    .insert(collider);
-    }
+    commands.spawn(floor).insert(collider);
+}
 
 fn animate_light_direction(
-        time: Res<Time>,
-        mut query: Query<&mut Transform, With<DirectionalLight>>,
-    ) {
-        for mut transform in &mut query {
-            transform.rotate_y(time.delta_seconds() * 0.5);
-        }
+    time: Res<Time>,
+    mut query: Query<&mut Transform, With<DirectionalLight>>,
+) {
+    for mut transform in &mut query {
+        transform.rotate_y(time.delta_seconds() * 0.5);
     }
-    
+}

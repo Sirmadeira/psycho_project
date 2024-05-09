@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::ResolutionSettings;
+use bevy::prelude::*;
 
 pub struct ResolutionPlugin;
 
@@ -64,4 +64,3 @@ fn toggle_resolution(
         window.resolution.set(res.x, res.y);
     }
 }
-
