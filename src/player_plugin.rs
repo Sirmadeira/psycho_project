@@ -1,9 +1,9 @@
-use crate::{camera::CamInfo, world::Ground};
+use crate::{camera_plugin::CamInfo, world_plugin::Ground};
 use bevy::{
     prelude::*,
     time::{Stopwatch, Timer},
 };
-use bevy_rapier3d::{na::Rotation, prelude::*};
+use bevy_rapier3d:: prelude::*;
 use std::time::Duration;
 
 pub struct PlayerPlugin;
@@ -98,7 +98,7 @@ impl Default for Limit {
 }
 
 // Spawn the hitbox and the player character
-fn spawn_hitbox(mut commands: Commands, assets: Res<AssetServer>) {
+fn spawn_hitbox(mut commands: Commands) {
 
     // Adds all the physics to the player
     let main_rigidbody = (

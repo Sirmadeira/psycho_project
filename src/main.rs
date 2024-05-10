@@ -3,15 +3,15 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use iyes_perf_ui::prelude::*;
 
-mod camera;
-mod player;
-mod resolution;
-mod world;
+mod camera_plugin;
+mod player_plugin;
+mod resolution_plugin;
+mod world_plugin;
 
-use camera::CameraPlugin;
-use player::PlayerPlugin;
-use resolution::ResolutionPlugin;
-use world::WorldPlugin;
+use camera_plugin::CameraPlugin;
+use player_plugin::PlayerPlugin;
+use resolution_plugin::ResolutionPlugin;
+use world_plugin::WorldPlugin;
 
 // Main running function
 fn main() {

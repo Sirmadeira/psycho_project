@@ -5,7 +5,7 @@ use bevy::{
 };
 use bevy_rapier3d::plugin::PhysicsSet;
 
-use crate::player::Player;
+use crate::player_plugin::Player;
 use iyes_perf_ui::prelude::*;
 use std::f32::consts::PI;
 
