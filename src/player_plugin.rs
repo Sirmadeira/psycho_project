@@ -148,6 +148,7 @@ fn spawn_hitbox(mut commands: Commands) {
     let head = (
         RigidBody::Dynamic,
         Head,
+        LockedAxes::ROTATION_LOCKED,
         Collider::round_cylinder(0.25,0.15,0.10),
         CollisionGroups::new(Group::GROUP_2,Group::NONE));
 
