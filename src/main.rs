@@ -7,11 +7,16 @@ mod camera_plugin;
 mod player_plugin;
 mod resolution_plugin;
 mod world_plugin;
+mod asset_loader_plugin;
+mod modular_character_plugin;
 
 use camera_plugin::CameraPlugin;
 use player_plugin::PlayerPlugin;
 use resolution_plugin::ResolutionPlugin;
 use world_plugin::WorldPlugin;
+use modular_character_plugin::ModularCharacterPlugin;
+use asset_loader_plugin::AssetLoaderPlugin;
+
 
 // Main running function
 fn main() {
@@ -22,14 +27,9 @@ fn main() {
             medium: Vec2::new(800.0, 600.0),
             small: Vec2::new(640.0, 360.0),
         })
-        .insert_resource(Time::<Fixed>::from_hz(64.0))
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                present_mode: bevy::window::PresentMode::Fifo,
-                ..default()
-            }),
-            ..default()
-        }))
+        // Default Plugins
+        .add_plugins(DefaultPlugins)
+        // Plugin to adjust resolution size
         .add_plugins(ResolutionPlugin)
         // Bevy specific diagnostics for fps counter
         .add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin)
@@ -44,10 +44,12 @@ fn main() {
         .add_plugins(WorldInspectorPlugin::new())
         // Starting the scene and lighting
         .add_plugins(WorldPlugin)
-        // Player related confids
+        // Player related configs
         .add_plugins(PlayerPlugin)
-        // Cameraa Plugin
+        // Camera Plugin
         .add_plugins(CameraPlugin)
+        .add_plugins(AssetLoaderPlugin)
+        .add_plugins(ModularCharacterPlugin)
         .run();
 }
 

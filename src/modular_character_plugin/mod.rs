@@ -8,6 +8,7 @@ use self::{
 };
 use crate::asset_loader_plugin::AssetLoaderState;
 use bevy::prelude::*;
+
 mod assemble_parts;
 mod link_animations;
 mod paint_cubes_on_joints;
