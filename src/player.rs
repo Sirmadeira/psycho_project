@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     time::{Stopwatch, Timer},
 };
-use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::{na::Rotation, prelude::*};
 use std::time::Duration;
 
 pub struct PlayerPlugin;
@@ -99,7 +99,8 @@ impl Default for Limit {
 
 // Spawn the hitbox and the player character
 fn spawn_hitbox(mut commands: Commands, assets: Res<AssetServer>) {
-    // Adds all the physics to the player - Since it is a dynamic movement controller well it is gonna be the parent entity
+
+    // Adds all the physics to the player
     let main_rigidbody = (
         RigidBody::Dynamic,
         Player,
@@ -122,12 +123,21 @@ fn spawn_hitbox(mut commands: Commands, assets: Res<AssetServer>) {
 
     let l_leg = (
         RigidBody::Dynamic,
+        LockedAxes::ROTATION_LOCKED,
         Collider::round_cylinder(0.9, 0.09, 0.08),
         LLeg,
-        TransformBundle::from(Transform::from_xyz(0.2, 1.0, 0.0)),
         ActiveEvents::COLLISION_EVENTS,
         CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
     );
+
+    let r_leg = (
+        RigidBody::Dynamic,
+        LockedAxes::ROTATION_LOCKED,
+        Collider::round_cylinder(0.9, 0.09, 0.08),
+        RLeg,
+        CollisionGroups::new(Group::GROUP_2, Group::NONE),
+    );
+
     let torso = (
         RigidBody::Dynamic,
         Torso,
@@ -135,16 +145,38 @@ fn spawn_hitbox(mut commands: Commands, assets: Res<AssetServer>) {
         CollisionGroups::new(Group::GROUP_2, Group::NONE),
     );
 
+    let head = (
+        RigidBody::Dynamic,
+        Head,
+        Collider::round_cylinder(0.25,0.15,0.10),
+        CollisionGroups::new(Group::GROUP_2,Group::NONE));
+
+
     let par_entity = commands.spawn(main_rigidbody)
     .insert(torso)
     .id();
 
     let lleg_joint = SphericalJointBuilder::new()
-    .local_anchor1(Vec3::new(0.2,-0.45,0.0))
-    .local_anchor2(Vec3::new(0.0,1.0,0.0));
+    .local_anchor1(Vec3::new(0.2,-0.5,0.0))
+    .local_anchor2(Vec3::new(0.0,1.1,0.0));
+
+    let rleg_joint = SphericalJointBuilder::new()
+    .local_anchor1(Vec3::new(-0.2,-0.5,0.0))
+    .local_anchor2(Vec3::new(0.0, 1.1, 0.0));
+    
+    let head_joint = SphericalJointBuilder::new()
+    .local_anchor1(Vec3::new(0.0,0.7,0.0))
+    .local_anchor2(Vec3::new(0.0, -0.25, 0.0));
 
     commands.spawn(l_leg)
-    .insert(ImpulseJoint::new(par_entity,lleg_joint));
+        .insert(ImpulseJoint::new(par_entity,lleg_joint));
+
+    commands.spawn(r_leg)
+        .insert(ImpulseJoint::new(par_entity,rleg_joint));
+
+    commands.spawn(head)
+        .insert(ImpulseJoint::new(par_entity,head_joint));
+
 
 }
 
@@ -373,7 +405,7 @@ fn apply_movement_damping(mut query: Query<&mut Damping, With<Player>>) {
 }
 
 fn make_collider_look_at(
-    player_q: Query<&Transform, (With<Player>, Without<PlayerRender>)>,
+    player_q: Query<&Transform, With<Player>>,
     cam_q: Query<&Transform, With<CamInfo>>,
     mut vel: Query<&mut Velocity>,
 ) {
@@ -383,6 +415,7 @@ fn make_collider_look_at(
 
     let current_q = player_q.get_single().unwrap().rotation.normalize();
     let target_q = cam_q.get_single().unwrap().rotation.normalize();
+    
     for mut v in vel.iter_mut() {
         while current_time < total_s {
             let s = current_time / total_s;
