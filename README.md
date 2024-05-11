@@ -7,12 +7,11 @@ Since waiting for a sequel became tiresome, I've taken it upon myself to create 
 
 I aspire for this game to become both competitive and immensely enjoyable.
 
-## About the structure
-* todo
+## MAIN IDEAS
+  * Modular character customization - So I can later add multiple skins and utilze of ragdolls and so on.
+  * UI the idea of betting in your dueling skill
+  * Extremely dynamic movement - Dashes, parry gun play and sword play
 
-
-
-Notes about game: Dimension modeling is a bitch!
 
 Cheerios,
 Sirmadeira!
