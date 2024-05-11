@@ -7,13 +7,11 @@ mod camera_plugin;
 mod player_plugin;
 mod resolution_plugin;
 mod world_plugin;
-mod asset_loader_plugin;
 
 use camera_plugin::CameraPlugin;
 use player_plugin::PlayerPlugin;
 use resolution_plugin::ResolutionPlugin;
 use world_plugin::WorldPlugin;
-use asset_loader_plugin::AssetLoaderPlugin;
 
 // Main running function
 fn main() {
@@ -50,7 +48,6 @@ fn main() {
         .add_plugins(PlayerPlugin)
         // Camera Plugin
         .add_plugins(CameraPlugin)
-        .add_plugins(AssetLoaderPlugin)
         .run();
 }
 
