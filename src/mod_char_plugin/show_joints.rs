@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use bevy_mod_billboard::BillboardTextBundle;
 
 // WARNING THIS ONLY WORKS WITH SKELETON ASSET
+// TODO COLLIDER ON TOP OF THIS
 pub fn cubes_names_on_joints(
     mut commands: Commands,
     scene_query: Query<Entity, With<SceneName>>,
@@ -57,11 +58,11 @@ pub fn cubes_names_on_joints(
                     // This will make the text
                     let mut billboard_entity_commands = commands.spawn(BillboardTextBundle {
                         transform: Transform::from_xyz(0.0, 0.01, 0.0)
-                            .with_scale(Vec3::splat(10.0)),
+                            .with_scale(Vec3::splat(0.005)),
                         text: Text::from_sections([TextSection {
                             value: name,
                             style: TextStyle {
-                                font_size: 600.0,
+                                font_size: 20.0,
                                 font: font_handle.clone(),
                                 color: Color::WHITE,
                             },
