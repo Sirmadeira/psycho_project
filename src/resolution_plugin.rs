@@ -23,19 +23,6 @@ fn setup_ui(mut cmd: Commands) {
             ..default()
         },
         ..default()
-    })
-    .with_children(|root| {
-        // Text where we display current resolution
-        root.spawn((
-            TextBundle::from_section(
-                "Resolution",
-                TextStyle {
-                    font_size: 20.0,
-                    ..default()
-                },
-            ),
-            ResolutionText,
-        ));
     });
 }
 

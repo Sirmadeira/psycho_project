@@ -7,11 +7,15 @@ mod camera_plugin;
 mod player_plugin;
 mod resolution_plugin;
 mod world_plugin;
+mod asset_loader_plugin;
+mod mod_char_plugin;
 
 use camera_plugin::CameraPlugin;
 use player_plugin::PlayerPlugin;
 use resolution_plugin::ResolutionPlugin;
 use world_plugin::WorldPlugin;
+use asset_loader_plugin::AssetLoaderPlugin;
+use mod_char_plugin::ModCharPlugin;
 
 // Main running function
 fn main() {
@@ -48,6 +52,10 @@ fn main() {
         .add_plugins(PlayerPlugin)
         // Camera Plugin
         .add_plugins(CameraPlugin)
+        // Loads our assets with handles
+        .add_plugins(AssetLoaderPlugin)
+        // Loads our modular character
+        .add_plugins(ModCharPlugin)
         .run();
 }
 
