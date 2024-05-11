@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     time::{Stopwatch, Timer},
 };
-use bevy_rapier3d:: prelude::*;
+use bevy_rapier3d::prelude::*;
 use std::time::Duration;
 
 pub struct PlayerPlugin;
@@ -22,7 +22,9 @@ impl Plugin for PlayerPlugin {
                 keyboard_walk,
                 keyboard_dash,
                 keyboard_jump,
+                // Event manager
                 move_character,
+                //  WIP
                 apply_movement_damping,
                 make_collider_look_at,
             )
@@ -99,7 +101,6 @@ impl Default for Limit {
 
 // Spawn the hitbox and the player character
 fn spawn_hitbox(mut commands: Commands) {
-
     // Adds all the physics to the player
     let main_rigidbody = (
         RigidBody::Dynamic,
@@ -149,36 +150,35 @@ fn spawn_hitbox(mut commands: Commands) {
         RigidBody::Dynamic,
         Head,
         LockedAxes::ROTATION_LOCKED,
-        Collider::round_cylinder(0.25,0.15,0.10),
-        CollisionGroups::new(Group::GROUP_2,Group::NONE));
+        Collider::round_cylinder(0.25, 0.15, 0.10),
+        CollisionGroups::new(Group::GROUP_2, Group::NONE),
+    );
 
-
-    let par_entity = commands.spawn(main_rigidbody)
-    .insert(torso)
-    .id();
+    let par_entity = commands.spawn(main_rigidbody).insert(torso).id();
 
     let lleg_joint = SphericalJointBuilder::new()
-    .local_anchor1(Vec3::new(0.2,-0.5,0.0))
-    .local_anchor2(Vec3::new(0.0,1.1,0.0));
+        .local_anchor1(Vec3::new(0.2, -0.5, 0.0))
+        .local_anchor2(Vec3::new(0.0, 1.1, 0.0));
 
     let rleg_joint = SphericalJointBuilder::new()
-    .local_anchor1(Vec3::new(-0.2,-0.5,0.0))
-    .local_anchor2(Vec3::new(0.0, 1.1, 0.0));
-    
+        .local_anchor1(Vec3::new(-0.2, -0.5, 0.0))
+        .local_anchor2(Vec3::new(0.0, 1.1, 0.0));
+
     let head_joint = SphericalJointBuilder::new()
-    .local_anchor1(Vec3::new(0.0,0.7,0.0))
-    .local_anchor2(Vec3::new(0.0, -0.25, 0.0));
+        .local_anchor1(Vec3::new(0.0, 0.7, 0.0))
+        .local_anchor2(Vec3::new(0.0, -0.25, 0.0));
 
-    commands.spawn(l_leg)
-        .insert(ImpulseJoint::new(par_entity,lleg_joint));
+    commands
+        .spawn(l_leg)
+        .insert(ImpulseJoint::new(par_entity, lleg_joint));
 
-    commands.spawn(r_leg)
-        .insert(ImpulseJoint::new(par_entity,rleg_joint));
+    commands
+        .spawn(r_leg)
+        .insert(ImpulseJoint::new(par_entity, rleg_joint));
 
-    commands.spawn(head)
-        .insert(ImpulseJoint::new(par_entity,head_joint));
-
-
+    commands
+        .spawn(head)
+        .insert(ImpulseJoint::new(par_entity, head_joint));
 }
 
 // Spawn other components
@@ -416,7 +416,7 @@ fn make_collider_look_at(
 
     let current_q = player_q.get_single().unwrap().rotation.normalize();
     let target_q = cam_q.get_single().unwrap().rotation.normalize();
-    
+
     for mut v in vel.iter_mut() {
         while current_time < total_s {
             let s = current_time / total_s;
