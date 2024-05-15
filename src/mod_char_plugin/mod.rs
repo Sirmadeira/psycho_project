@@ -24,6 +24,6 @@ impl Plugin for ModCharPlugin {
         app.init_state::<StateSpawnScene>();
         app.add_systems(OnEnter(AssetLoaderState::Done), spawn_scenes);
         app.add_systems(OnEnter(StateSpawnScene::Spawned), (disable_culling_for_skinned_meshes,scene_tree,link_animations));
-        app.add_systems(OnEnter(StateSpawnScene::Done), (run_animations,assemble_parts));
+        app.add_systems(OnEnter(StateSpawnScene::Done), (run_animations,assemble_parts).chain());
     }
 }
