@@ -67,7 +67,7 @@ fn spawn_camera(mut commands: Commands) {
         CamInfo {
             mouse_sens: 0.75,
             zoom_enabled: true,
-            zoom: Zoom::new(10.0, 30.0),
+            zoom: Zoom::new(5.0, 20.0),
             zoom_sens: 2.0,
             cursor_lock_activation_key: KeyCode::KeyE,
             cursor_lock_active: false,

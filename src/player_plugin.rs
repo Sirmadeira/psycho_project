@@ -107,7 +107,7 @@ fn spawn_hitbox(mut commands: Commands) {
         Player,
         AdditionalMassProperties::Mass(1.0),
         SpatialBundle {
-            transform: Transform::from_xyz(0.0, 2.6, 0.0),
+            transform: Transform::from_xyz(0.0, 1.0, 0.0),
             ..Default::default()
         },
         Velocity::zero(),
@@ -125,60 +125,26 @@ fn spawn_hitbox(mut commands: Commands) {
     let l_leg = (
         RigidBody::Dynamic,
         LockedAxes::ROTATION_LOCKED,
-        Collider::round_cylinder(0.9, 0.09, 0.08),
+        Collider::round_cylinder(0.5, 0.09, 0.08),
         LLeg,
         ActiveEvents::COLLISION_EVENTS,
         CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
     );
 
-    let r_leg = (
-        RigidBody::Dynamic,
-        LockedAxes::ROTATION_LOCKED,
-        Collider::round_cylinder(0.9, 0.09, 0.08),
-        RLeg,
-        CollisionGroups::new(Group::GROUP_2, Group::NONE),
-    );
-
     let torso = (
         RigidBody::Dynamic,
         Torso,
-        Collider::round_cylinder(0.45, 0.18, 0.13),
-        CollisionGroups::new(Group::GROUP_2, Group::NONE),
+        Collider::round_cylinder(0.5, 0.18, 0.13),
+        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
     );
 
-    let head = (
-        RigidBody::Dynamic,
-        Head,
-        LockedAxes::ROTATION_LOCKED,
-        Collider::round_cylinder(0.25, 0.15, 0.10),
-        CollisionGroups::new(Group::GROUP_2, Group::NONE),
-    );
 
-    let par_entity = commands.spawn(main_rigidbody).insert(torso).id();
+    commands.spawn(main_rigidbody).insert(torso)
+    .with_children(|children|{
+        children.spawn(l_leg);
+    });
 
-    let lleg_joint = SphericalJointBuilder::new()
-        .local_anchor1(Vec3::new(0.2, -0.5, 0.0))
-        .local_anchor2(Vec3::new(0.0, 1.1, 0.0));
 
-    let rleg_joint = SphericalJointBuilder::new()
-        .local_anchor1(Vec3::new(-0.2, -0.5, 0.0))
-        .local_anchor2(Vec3::new(0.0, 1.1, 0.0));
-
-    let head_joint = SphericalJointBuilder::new()
-        .local_anchor1(Vec3::new(0.0, 0.7, 0.0))
-        .local_anchor2(Vec3::new(0.0, -0.25, 0.0));
-
-    commands
-        .spawn(l_leg)
-        .insert(ImpulseJoint::new(par_entity, lleg_joint));
-
-    commands
-        .spawn(r_leg)
-        .insert(ImpulseJoint::new(par_entity, rleg_joint));
-
-    commands
-        .spawn(head)
-        .insert(ImpulseJoint::new(par_entity, head_joint));
 }
 
 // Spawn other components
