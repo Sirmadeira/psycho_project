@@ -9,7 +9,7 @@ use bevy::prelude::*;
 #[derive(Component, Debug)]
 pub struct AnimationEntityLink(pub Entity);
 
-// Recursive function interacts through the hiearachy and grab the "first" parent of the scene
+// Recursive function interacts through the hierarchy and grab the "first" parent of the scene
 pub fn get_top_parent(
     mut curr_entity: Entity,
     all_entities_with_parents_query: &Query<&Parent>,

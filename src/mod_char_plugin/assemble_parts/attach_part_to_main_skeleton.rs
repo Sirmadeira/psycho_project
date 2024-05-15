@@ -4,12 +4,12 @@ use crate::mod_char_plugin::assemble_parts::{
     collect_bones::collect_bones, find_child_with_name_containing::find_child_with_name_containing,
 };
 
-
+// The logic here is that we grab the main skeleton bone and attach the bone from the module into it
+// Making it is children, that is why we need to reset the transform, to ensure it stays in the same position
 
 pub fn attach_part_to_main_skeleton(
     commands: &mut Commands,
     all_entities_with_children: &Query<&Children>,
-    transforms: &mut Query<&mut Transform>,
     names: &Query<&Name>,
     part_scene_name: &String,
     part_scene_entity: &Entity,
@@ -34,20 +34,13 @@ pub fn attach_part_to_main_skeleton(
 
     if let Some(part_armature) = part_armature_option {
         let mut part_armature_entity_commands = commands.entity(part_armature);
-        if let Ok(mut transform) = transforms.get_mut(part_armature) {
-            transform.translation.x = 0.0;
-            transform.translation.y = 0.0;
-            transform.translation.z = 0.0;
-            transform.rotation = Quat::from_xyzw(0.0, 0.0, 0.0, 0.0);
-        }
-
-        part_armature_entity_commands.set_parent(*main_armature_entity);
-        // Despawning sucked dried armature as it will not deform and is useless
-        // WARNING CAN ONLY BE DONE WITH BONES WITHOUT WEIGHT
-         commands.entity(part_armature).despawn();
+        part_armature_entity_commands.set_parent_in_place(*main_armature_entity);
+        // DO NOT DESPAWN AS THIS HOLDS THE DATA TO THE MESHES somehow
+        // Interestingly if you delete it the meshes still appear
+        // But if you hide them they dont
     }
 
-
+    // FOR SOME UNGODLY REASON THE FUCKING BONE WITH NO ANIMATION DATA STAYS WITH THE ANIMATION DATA THEREFORE I CANT DELETE IT
     if let Some(root_bone) = root_bone_option {
         let mut part_bones = HashMap::new();
         collect_bones(
@@ -64,17 +57,10 @@ pub fn attach_part_to_main_skeleton(
             let new_parent_option = main_skeleton_bones.get(&name);
 
             if let Some(new_parent) = new_parent_option {       
-                if let Ok(mut transform) = transforms.get_mut(part_bone) {
-                    transform.translation.x = 0.0;
-                    transform.translation.y = 0.0;
-                    transform.translation.z = 0.0;
-                    transform.rotation = Quat::from_xyzw(0.0, 0.0, 0.0, 0.0);
-                }
-
-                entity_commands.set_parent(*new_parent);
+                entity_commands.set_parent_in_place(*new_parent);
             }
         }
     }
-    // Despawn the entitities we sucked dry
+    // Despawn the gltfs we sucked dry
     commands.entity(*part_scene_entity).despawn();
 }
