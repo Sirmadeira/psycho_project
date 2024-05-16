@@ -138,13 +138,12 @@ fn spawn_hitbox(mut commands: Commands) {
         CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
     );
 
-
-    commands.spawn(main_rigidbody).insert(torso)
-    .with_children(|children|{
-        children.spawn(l_leg);
-    });
-
-
+    commands
+        .spawn(main_rigidbody)
+        .insert(torso)
+        .with_children(|children| {
+            children.spawn(l_leg);
+        });
 }
 
 // Spawn other components

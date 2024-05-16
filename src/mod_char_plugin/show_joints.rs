@@ -34,7 +34,6 @@ pub fn cubes_names_on_joints(
         for entity in all_entities_with_children.iter_descendants(scene_entity) {
             if let Err(_) = mesh_handles.get(entity) {
                 if let Ok(_) = global_transforms.get(entity) {
-
                     let name_result = names.get(entity);
 
                     let name = if let Ok(name) = name_result {
@@ -54,7 +53,6 @@ pub fn cubes_names_on_joints(
 
                     // This will make the joint the cube the parent
                     entity_commands.set_parent(entity);
-
 
                     // This will make the text
                     let mut billboard_entity_commands = commands.spawn(BillboardTextBundle {

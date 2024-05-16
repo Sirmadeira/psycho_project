@@ -41,5 +41,5 @@ pub fn get_main_skeleton_bones_and_armature(
 
     println!("Bones in main skeleton: {:#?}", main_bones);
 
-    (main_bones, main_skeleton_armature)
+    return (main_bones, main_skeleton_armature);
 }

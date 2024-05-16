@@ -4,8 +4,6 @@ use bevy::prelude::*;
 // This exists because bevy is very annoying with it is api
 // And doesnt let me dissociate characters easily
 
-
-
 #[derive(Component, Debug)]
 pub struct AnimationEntityLink(pub Entity);
 

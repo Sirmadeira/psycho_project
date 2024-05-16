@@ -1,7 +1,6 @@
 use super::spawn_scenes::SceneName;
 use bevy::prelude::*;
 
-
 // Recursive function - Calls itself until there are no longer any children entities
 // Usefull debugger
 pub fn walk_tree(
@@ -15,6 +14,7 @@ pub fn walk_tree(
         padding.push_str("-")
     }
 
+    // The first two unnamed entities carry the animation
     if let Ok(name) = names.get(*entity) {
         println!("{padding}{:#?} ({:?})", name, entity)
     } else {

@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_mod_billboard::prelude::*;
 use bevy_rapier3d::prelude::*;
 use iyes_perf_ui::prelude::*;
-use bevy_mod_billboard::prelude::*;
 
 mod asset_loader_plugin;
 mod camera_plugin;

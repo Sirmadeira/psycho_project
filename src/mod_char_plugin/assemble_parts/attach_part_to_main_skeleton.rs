@@ -50,17 +50,22 @@ pub fn attach_part_to_main_skeleton(
             &mut part_bones,
         );
         for (name, part_bone) in part_bones {
-
-            println!("Attaching {}, {:#?}",name,part_bone);
+            println!("Attaching {}, {:#?}", name, part_bone);
 
             let mut entity_commands = commands.entity(part_bone);
             let new_parent_option = main_skeleton_bones.get(&name);
 
-            if let Some(new_parent) = new_parent_option {       
+            if let Some(new_parent) = new_parent_option {
                 entity_commands.set_parent_in_place(*new_parent);
             }
         }
     }
     // Despawn the gltfs we sucked dry
     commands.entity(*part_scene_entity).despawn();
+}
+
+
+
+fn make_colliders(){
+    
 }
