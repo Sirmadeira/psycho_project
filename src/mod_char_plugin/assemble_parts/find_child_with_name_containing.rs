@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::collections::VecDeque;
 
-// Totally useless delete late and change for compoennt marker
+// Perhaps make transform the tree into a resource
 
 pub fn find_child_with_name_containing(
     all_entities_with_children: &Query<&Children>,
@@ -29,5 +29,5 @@ pub fn find_child_with_name_containing(
         }
     }
 
-    None
+    return None;
 }

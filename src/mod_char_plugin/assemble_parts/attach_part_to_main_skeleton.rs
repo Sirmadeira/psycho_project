@@ -6,7 +6,6 @@ use crate::mod_char_plugin::assemble_parts::{
 
 // The logic here is that we grab the main skeleton bone and attach the bone from the module into it
 // Making it is children, that is why we need to reset the transform, to ensure it stays in the same position
-
 pub fn attach_part_to_main_skeleton(
     commands: &mut Commands,
     all_entities_with_children: &Query<&Children>,
@@ -16,7 +15,7 @@ pub fn attach_part_to_main_skeleton(
     main_armature_entity: &Entity,
     main_skeleton_bones: &HashMap<String, Entity>,
 ) {
-    println!("Attaching part: {}", part_scene_name);
+    println!("Attaching loaded_asset part: {}", part_scene_name);
 
     let root_bone_option = find_child_with_name_containing(
         all_entities_with_children,
@@ -41,6 +40,7 @@ pub fn attach_part_to_main_skeleton(
     }
 
     // FOR SOME UNGODLY REASON THE FUCKING BONE WITH NO ANIMATION DATA STAYS WITH THE ANIMATION DATA THEREFORE I CANT DELETE IT
+    // The child bones only appear twice in the same ROW of nodes if the bone exists in both of them
     if let Some(root_bone) = root_bone_option {
         let mut part_bones = HashMap::new();
         collect_bones(
@@ -50,7 +50,7 @@ pub fn attach_part_to_main_skeleton(
             &mut part_bones,
         );
         for (name, part_bone) in part_bones {
-            println!("Attaching {}, {:#?}", name, part_bone);
+            println!("Attaching part bone {}, {:#?}", name, part_bone);
 
             let mut entity_commands = commands.entity(part_bone);
             let new_parent_option = main_skeleton_bones.get(&name);
@@ -62,10 +62,4 @@ pub fn attach_part_to_main_skeleton(
     }
     // Despawn the gltfs we sucked dry
     commands.entity(*part_scene_entity).despawn();
-}
-
-
-
-fn make_colliders(){
-    
 }

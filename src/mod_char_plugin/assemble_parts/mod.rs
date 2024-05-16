@@ -1,7 +1,8 @@
 mod attach_part_to_main_skeleton;
 mod collect_bones;
-mod find_child_with_name_containing;
+pub mod find_child_with_name_containing;
 mod get_main_skeleton_bones_and_armature;
+
 use self::{
     attach_part_to_main_skeleton::attach_part_to_main_skeleton,
     get_main_skeleton_bones_and_armature::get_main_skeleton_bones_and_armature,

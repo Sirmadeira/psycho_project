@@ -122,14 +122,6 @@ fn spawn_hitbox(mut commands: Commands) {
         },
     );
 
-    let l_leg = (
-        RigidBody::Dynamic,
-        LockedAxes::ROTATION_LOCKED,
-        Collider::round_cylinder(0.5, 0.09, 0.08),
-        LLeg,
-        ActiveEvents::COLLISION_EVENTS,
-        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
-    );
 
     let torso = (
         RigidBody::Dynamic,
@@ -140,10 +132,7 @@ fn spawn_hitbox(mut commands: Commands) {
 
     commands
         .spawn(main_rigidbody)
-        .insert(torso)
-        .with_children(|children| {
-            children.spawn(l_leg);
-        });
+        .insert(torso);
 }
 
 // Spawn other components
@@ -300,7 +289,7 @@ fn check_status_effect(
 pub fn check_status_grounded(
     rapier_context: Res<RapierContext>,
     mut commands: Commands,
-    q_1: Query<(Entity, &LLeg)>,
+    q_1: Query<(Entity, &Torso)>,
     q_2: Query<(Entity, &Ground)>,
 ) {
     let entity1 = q_1.get_single().unwrap().0; // A first entity with a collider attached.
@@ -322,7 +311,7 @@ pub fn check_status_grounded(
 fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
-    q_1: Query<Has<Grounded>, With<LLeg>>,
+    q_1: Query<Has<Grounded>, With<Torso>>,
     mut q_2: Query<&mut Limit>,
 ) {
     let is_grounded = q_1.get_single().unwrap();
