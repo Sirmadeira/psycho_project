@@ -7,7 +7,7 @@ use self::{
     attach_part_to_main_skeleton::attach_part_to_main_skeleton,
     get_main_skeleton_bones_and_armature::get_main_skeleton_bones_and_armature,
 };
-
+use crate::mod_char_plugin::StateSpawnScene;
 use super::spawn_scenes::{SceneEntitiesByName, SceneName};
 use bevy::prelude::*;
 
@@ -17,6 +17,7 @@ pub fn assemble_parts(
     scene_query: Query<(Entity, &SceneName), With<SceneName>>,
     scene_entities_by_name: Res<SceneEntitiesByName>,
     names: Query<&Name>,
+    mut next_state: ResMut<NextState<StateSpawnScene>>,
 ) {
     let (main_skeleton_bones, main_armature_entity) = get_main_skeleton_bones_and_armature(
         scene_entities_by_name,
@@ -42,4 +43,5 @@ pub fn assemble_parts(
             );
         }
     }
+    next_state.set(StateSpawnScene::FormingPhysics);
 }
