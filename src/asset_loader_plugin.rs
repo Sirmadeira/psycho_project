@@ -27,7 +27,7 @@ pub struct MyAssets {
     // Insert in this path which asset you want to load
     // He will be loaded with multiple handles and a usefull hashmap to identify it in our code
     #[asset(
-        paths("skeleton.glb", "scifi_torso.glb", "witch_legs.glb"),
+        paths("skeleton.glb", "casual.glb" ),
         collection(typed, mapped)
     )]
     pub gltf_files: HashMap<String, Handle<Gltf>>,

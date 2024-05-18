@@ -34,7 +34,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-#[derive(Event)]
+#[derive(Event,Debug)]
 pub enum MovementAction {
     // Movement direction
     Move(Vec2),
@@ -104,9 +104,8 @@ fn spawn_hitbox(mut commands: Commands) {
     let main_rigidbody = (
         RigidBody::Dynamic,
         Player,
-        AdditionalMassProperties::Mass(1.0),
         SpatialBundle {
-            transform: Transform::from_xyz(0.0, 1.0, 0.0),
+            transform: Transform::from_xyz(3.0, 0.0, 0.0),
             ..Default::default()
         },
         Velocity::zero(),
@@ -114,7 +113,6 @@ fn spawn_hitbox(mut commands: Commands) {
             linear_damping: 0.0,
             angular_damping: 0.0,
         },
-        GravityScale(1.0),
         ExternalImpulse {
             impulse: Vec3::ZERO,
             torque_impulse: Vec3::ZERO,
@@ -332,6 +330,7 @@ fn move_character(
     mut q_1: Query<(&mut Velocity, &mut ExternalImpulse), (With<Player>, Without<PlayerRender>)>,
 ) {
     for event in movement_event_reader.read() {
+        println!("{:?}",event);
         for (mut vel, mut status) in &mut q_1 {
             match event {
                 MovementAction::Move(direction) => {

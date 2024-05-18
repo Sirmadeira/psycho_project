@@ -18,6 +18,7 @@ pub fn spawn_colliders(
     all_entities_with_children: Query<&Children>,
     main_entity_option: Query<Entity, With<AnimationEntityLink>>,
     names: Query<&Name>,
+    global_transforms: Query<&GlobalTransform>
 ) {
     let Ok(main_entity) = main_entity_option.get_single() else {
         println!("No player entity available");
@@ -30,22 +31,27 @@ pub fn spawn_colliders(
     let torso_entity_option =
         find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso");
 
-    // IF exists grab it is translation and rotation
+    // If the bone exists grab it is global transform and insert into the resourceee
     if let Some(torso_entity) = torso_entity_option {
-        // Creating rigibody with  collider for it
-        println!("Found torso bone for collider");
+        // Creating rigibody with a collider
+        println!("Found torso bone for collider {:?}",torso_entity);
+
+        let torso_translation = global_transforms.get(torso_entity).unwrap().translation();
+
         let torso_col = (
             RigidBody::Dynamic,
             SpatialBundle {
-                transform:Transform::from_xyz(2.0, 1.0, 0.0),
+                transform:Transform::from_translation(torso_translation),
                 ..Default::default()
             },
-            Collider::ball(0.5),
+            GravityScale(0.0),
+            Collider::ball(0.25),
             Velocity::zero(),
-            CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
+            CollisionGroups::new(Group::GROUP_2, Group::NONE),
         );
         let torso_col_entity = commands.spawn(torso_col).id();
         col_entities_by_name.insert(torso_col_entity,torso_entity);
+
     }
 
     commands.insert_resource(ColAndBone(col_entities_by_name));
@@ -58,9 +64,9 @@ pub fn col_follow_animation(
     transforms: Query<&Transform>,
     mut velocities: Query<&mut Velocity>,
 ) {
-    
+    // The interpolation will be almost immediate
     let mut current_time = 0.0; // Current time, starting from 0
-    let total_s = 1.0; // Max s value of interpolation in seconds
+    let total_s = 0.5; // Max s value of interpolation in seconds
     let dt = 1.0 / 60.0; // Time step for interpolation, adjust as needed
     
     for (current,target) in entities.0.iter(){
@@ -69,12 +75,13 @@ pub fn col_follow_animation(
         let current_t = transforms.get(*current).unwrap().rotation;
         let target_t = transforms.get(*target).unwrap().rotation;
 
-        println!("current{}",current_t);
-        println!("target {}",target_t);
+        // println!("current{}",current_t);
+        // println!("target {}",target_t);
         
 
         for v in current_vel_c.iter_mut(){
             while current_time < total_s {
+                
                 let s = current_time / total_s;
 
                 let interpolated_q = current_t.slerp(target_t, s);

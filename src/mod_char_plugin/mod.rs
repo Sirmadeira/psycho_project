@@ -19,6 +19,7 @@ pub struct ModCharPlugin;
 
 impl Plugin for ModCharPlugin {
     fn build(&self, app: &mut App) {
+        // All of this only occurs once
         app.add_systems(OnEnter(AssetLoaderState::Done), spawn_scenes);
         // Will only load after we finished loading the assets
         app.init_state::<StateSpawnScene>();
@@ -35,6 +36,7 @@ impl Plugin for ModCharPlugin {
             (run_animations, assemble_parts),
         );
         app.add_systems(OnEnter(StateSpawnScene::FormingPhysics),spawn_colliders);
+        // This guys is gonna run infinetely
         app.add_systems(Update, col_follow_animation.run_if(in_state(StateSpawnScene::FormingPhysics)));
 
     }
