@@ -58,35 +58,25 @@ pub fn spawn_colliders(
 
 }
 
-
+// Do ensure this runs after the animations commands
 pub fn col_follow_animation(
+    time: Res<Time>,
     entities: ResMut<ColAndBone>,
-    transforms: Query<&Transform>,
+    transforms: Query<&GlobalTransform>,
     mut velocities: Query<&mut Velocity>,
 ) {
-    // The interpolation will be almost immediate
-    let mut current_time = 0.0; // Current time, starting from 0
-    let total_s = 0.5; // Max s value of interpolation in seconds
-    let dt = 1.0 / 60.0; // Time step for interpolation, adjust as needed
     
     for (current,target) in entities.0.iter(){
+        let dt = time.delta_seconds(); 
 
-        let mut current_vel_c = velocities.get_mut(*current);
-        let current_t = transforms.get(*current).unwrap().rotation;
-        let target_t = transforms.get(*target).unwrap().rotation;
+            if let Ok (mut current_vel) = velocities.get_mut(*current){
+                let current_t = transforms.get(*current).unwrap().to_scale_rotation_translation();
+                let target_t = transforms.get(*target).unwrap().to_scale_rotation_translation();
+                // Need to use global transform with linvel because skeletons transforms are parent based and the animation
+                let new_linvel = (target_t.2-current_t.2)/dt;
+                // SORVETE FDP
+                let q_difference = target_t.1 * current_t.1.inverse();
 
-        // println!("current{}",current_t);
-        // println!("target {}",target_t);
-        
-
-        for v in current_vel_c.iter_mut(){
-            while current_time < total_s {
-                
-                let s = current_time / total_s;
-
-                let interpolated_q = current_t.slerp(target_t, s);
-
-                let q_difference = interpolated_q * current_t.inverse();
 
                 let (axis, angle) = q_difference.to_axis_angle();
 
@@ -95,12 +85,8 @@ pub fn col_follow_animation(
                     axis[1] * angle / dt,
                     axis[2] * angle / dt,
                 );
-
-                v.angvel = angvel.into();
-
-                current_time += dt;
+                current_vel.linvel = new_linvel;
+                current_vel.angvel = angvel.into();
             }
-        }
-
     }
 }
