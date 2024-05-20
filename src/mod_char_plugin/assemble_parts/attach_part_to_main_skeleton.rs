@@ -50,7 +50,6 @@ pub fn attach_part_to_main_skeleton(
             &mut part_bones,
         );
         for (name, part_bone) in part_bones {
-            println!("Attaching part bone {}, {:#?}", name, part_bone);
 
             let mut entity_commands = commands.entity(part_bone);
             let new_parent_option = main_skeleton_bones.get(&name);

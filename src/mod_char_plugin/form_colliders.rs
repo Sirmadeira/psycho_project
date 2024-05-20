@@ -10,9 +10,23 @@ use bevy_rapier3d::prelude::*;
 #[derive(Resource)]
 pub struct ColAndBone(pub HashMap<Entity, Entity>);
 
+// Helper function
+fn create_collider(translation: Vec3) -> (RigidBody, SpatialBundle, GravityScale, Collider, Velocity, CollisionGroups) {
+    (
+        RigidBody::Dynamic,
+        SpatialBundle {
+            transform: Transform::from_translation(translation),
+            ..Default::default()
+        },
+        GravityScale(0.0),
+        Collider::ball(0.10),
+        Velocity::zero(),
+        CollisionGroups::new(Group::GROUP_2, Group::NONE),
+    )
+}
+
 
 // WARNING ONLY ADD TO UNIQUE BONES
-// FILL THE RESOURCE
 pub fn spawn_colliders(
     mut commands: Commands,
     all_entities_with_children: Query<&Children>,
@@ -20,45 +34,54 @@ pub fn spawn_colliders(
     names: Query<&Name>,
     global_transforms: Query<&GlobalTransform>
 ) {
+    // Main bone entity to search in 
     let Ok(main_entity) = main_entity_option.get_single() else {
         println!("No player entity available");
         return;
     };
 
-
+    // Hashmap for resource
     let mut col_entities_by_name = HashMap::new();
-    // Getting unique bone entity
-    let torso_entity_option =
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso");
 
-    // If the bone exists grab it is global transform and insert into the resourceee
-    if let Some(torso_entity) = torso_entity_option {
-        // Creating rigibody with a collider
-        println!("Found torso bone for collider {:?}",torso_entity);
+    // Bone entities to be collected adjust as needed
+    let bone_entities = [
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso").expect("Unique torso bone to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "UpperArm.R").expect("Unique upper right arm to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "UpperArm.L").expect("Unique upper left arm to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "LowerArm.R").expect("Unique lower right arm to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "LowerArm.L").expect("Unique lower left arm to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "UpperLeg.R").expect("Unique upper right leg to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "UpperLeg.L").expect("Unique upper left leg to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "LowerLeg.R").expect("Unique lower right leg to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "LowerLeg.L").expect("Unique lower left leg to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.R").expect("Unique lower feet leg to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.L").expect("Unique lower feet leg to exist"),
+    ];
 
-        let torso_translation = global_transforms.get(torso_entity).unwrap().translation();
+    // Retrieve global transforms for the bone entities
+    let global_transforms_result = global_transforms.get_many(bone_entities);
+    let global_transforms = match global_transforms_result {
+        Ok(transforms) => transforms,
+        Err(_) => {
+            println!("Failed to get global transforms for bone entities");
+            return;
+        }
+    };
 
-        let torso_col = (
-            RigidBody::Dynamic,
-            SpatialBundle {
-                transform:Transform::from_translation(torso_translation),
-                ..Default::default()
-            },
-            GravityScale(0.0),
-            Collider::ball(0.25),
-            Velocity::zero(),
-            CollisionGroups::new(Group::GROUP_2, Group::NONE),
-        );
-        let torso_col_entity = commands.spawn(torso_col).id();
-        col_entities_by_name.insert(torso_col_entity,torso_entity);
-
+    // Create colliders and spawn them
+    for (trans, &bone_entity) in global_transforms.iter().zip(bone_entities.iter()) {
+        let new_collider = create_collider(trans.translation());
+        let new_collider_id = commands.spawn(new_collider).id();
+        col_entities_by_name.insert(new_collider_id, bone_entity);
     }
-
     commands.insert_resource(ColAndBone(col_entities_by_name));
 
 }
 
-// Do ensure this runs after the animations commands
+
+
+
+// Do ensure this runs after the animations commands in postupdate
 pub fn col_follow_animation(
     time: Res<Time>,
     entities: ResMut<ColAndBone>,
@@ -74,7 +97,6 @@ pub fn col_follow_animation(
                 let target_t = transforms.get(*target).unwrap().to_scale_rotation_translation();
                 // Need to use global transform with linvel because skeletons transforms are parent based and the animation
                 let new_linvel = (target_t.2-current_t.2)/dt;
-                // SORVETE FDP
                 let q_difference = target_t.1 * current_t.1.inverse();
 
 
