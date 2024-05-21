@@ -13,7 +13,7 @@ pub enum StateSpawnScene {
     Spawning,
     Spawned,
     Done,
-    FormingPhysics
+    FormingPhysics,
 }
 
 // Marker component that tell me which entities are scenes being loaded from asset_loader

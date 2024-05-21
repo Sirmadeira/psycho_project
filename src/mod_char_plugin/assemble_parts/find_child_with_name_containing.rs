@@ -16,7 +16,7 @@ pub fn find_child_with_name_containing(
         let name_result = names.get(*curr_entity);
         if let Ok(name) = name_result {
             if format!("{}", name).contains(name_to_match) {
-                println!("Found child named {}",name);
+                println!("Found child named {}", name);
                 // found the named entity
                 return Some(*curr_entity);
             }

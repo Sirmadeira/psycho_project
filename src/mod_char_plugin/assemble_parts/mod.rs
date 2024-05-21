@@ -7,8 +7,8 @@ use self::{
     attach_part_to_main_skeleton::attach_part_to_main_skeleton,
     get_main_skeleton_bones_and_armature::get_main_skeleton_bones_and_armature,
 };
-use crate::mod_char_plugin::StateSpawnScene;
 use super::spawn_scenes::{SceneEntitiesByName, SceneName};
+use crate::mod_char_plugin::StateSpawnScene;
 use bevy::prelude::*;
 
 pub fn assemble_parts(

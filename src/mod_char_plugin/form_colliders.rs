@@ -5,13 +5,20 @@ use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_rapier3d::prelude::*;
 
-
-
 #[derive(Resource)]
 pub struct ColAndBone(pub HashMap<Entity, Entity>);
 
 // Helper function
-fn create_collider(translation: Vec3) -> (RigidBody, SpatialBundle, GravityScale, Collider, Velocity, CollisionGroups) {
+fn create_collider(
+    translation: Vec3,
+) -> (
+    RigidBody,
+    SpatialBundle,
+    GravityScale,
+    Collider,
+    Velocity,
+    CollisionGroups,
+) {
     (
         RigidBody::Dynamic,
         SpatialBundle {
@@ -25,16 +32,15 @@ fn create_collider(translation: Vec3) -> (RigidBody, SpatialBundle, GravityScale
     )
 }
 
-
 // WARNING ONLY ADD TO UNIQUE BONES
 pub fn spawn_colliders(
     mut commands: Commands,
     all_entities_with_children: Query<&Children>,
     main_entity_option: Query<Entity, With<AnimationEntityLink>>,
     names: Query<&Name>,
-    global_transforms: Query<&GlobalTransform>
+    global_transforms: Query<&GlobalTransform>,
 ) {
-    // Main bone entity to search in 
+    // Main bone entity to search in
     let Ok(main_entity) = main_entity_option.get_single() else {
         println!("No player entity available");
         return;
@@ -45,17 +51,66 @@ pub fn spawn_colliders(
 
     // Bone entities to be collected adjust as needed
     let bone_entities = [
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso").expect("Unique torso bone to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "UpperArm.R").expect("Unique upper right arm to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "UpperArm.L").expect("Unique upper left arm to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "LowerArm.R").expect("Unique lower right arm to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "LowerArm.L").expect("Unique lower left arm to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "UpperLeg.R").expect("Unique upper right leg to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "UpperLeg.L").expect("Unique upper left leg to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "LowerLeg.R").expect("Unique lower right leg to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "LowerLeg.L").expect("Unique lower left leg to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.R").expect("Unique lower feet leg to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.L").expect("Unique lower feet leg to exist"),
+        // find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso").expect("Unique torso bone to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "UpperArm.R",
+        )
+        .expect("Unique upper right arm to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "LowerArm.R",
+        )
+        .expect("Unique lower right arm to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "UpperArm.L",
+        )
+        .expect("Unique upper left arm to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "LowerArm.L",
+        )
+        .expect("Unique lower left arm to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "UpperLeg.R",
+        )
+        .expect("Unique upper right leg to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "LowerLeg.R",
+        )
+        .expect("Unique lower right leg to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "UpperLeg.L",
+        )
+        .expect("Unique upper left leg to exist"),
+
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "LowerLeg.L",
+        )
+        .expect("Unique lower left leg to exist"),
+        // find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.R").expect("Unique lower feet leg to exist"),
+        // find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.L").expect("Unique lower feet leg to exist"),
     ];
 
     // Retrieve global transforms for the bone entities
@@ -68,18 +123,39 @@ pub fn spawn_colliders(
         }
     };
 
+    let mut collider_ids = vec![];
+
     // Create colliders and spawn them
-    for (trans, &bone_entity) in global_transforms.iter().zip(bone_entities.iter()) {
-        let new_collider = create_collider(trans.translation());
+    for i in 0..global_transforms.len() - 1 {
+        let trans = global_transforms[i].translation();
+        let next_trans = global_transforms[i + 1].translation();
+        let midpoint = Vec3::new(
+            (trans.x + next_trans.x) / 2.0,
+            (trans.y + next_trans.y) / 2.0,
+            (trans.z + next_trans.z) / 2.0,
+        );
+    
+        let new_collider = create_collider(midpoint);
         let new_collider_id = commands.spawn(new_collider).id();
-        col_entities_by_name.insert(new_collider_id, bone_entity);
+        collider_ids.push(new_collider_id);
     }
+    
+    // Handle the last element separately
+    if let Some(last_transform) = global_transforms.last() {
+        let last_trans = last_transform.translation();
+        let new_collider = create_collider(last_trans);
+        let new_collider_id = commands.spawn(new_collider).id();
+        collider_ids.push(new_collider_id);
+    }
+    
+
+    // Creating resource to survive!
+    for (&collider_id, &bone_entity) in collider_ids.iter().zip(&bone_entities) {
+        col_entities_by_name.insert(collider_id, bone_entity);
+    }
+
     commands.insert_resource(ColAndBone(col_entities_by_name));
-
 }
-
-
-
 
 // Do ensure this runs after the animations commands in postupdate
 pub fn col_follow_animation(
@@ -88,27 +164,31 @@ pub fn col_follow_animation(
     transforms: Query<&GlobalTransform>,
     mut velocities: Query<&mut Velocity>,
 ) {
-    
-    for (current,target) in entities.0.iter(){
-        let dt = time.delta_seconds(); 
+    for (current, target) in entities.0.iter() {
+        let dt = time.delta_seconds();
 
-            if let Ok (mut current_vel) = velocities.get_mut(*current){
-                let current_t = transforms.get(*current).unwrap().to_scale_rotation_translation();
-                let target_t = transforms.get(*target).unwrap().to_scale_rotation_translation();
-                // Need to use global transform with linvel because skeletons transforms are parent based and the animation
-                let new_linvel = (target_t.2-current_t.2)/dt;
-                let q_difference = target_t.1 * current_t.1.inverse();
+        if let Ok(mut current_vel) = velocities.get_mut(*current) {
+            let current_t = transforms
+                .get(*current)
+                .unwrap()
+                .to_scale_rotation_translation();
+            let target_t = transforms
+                .get(*target)
+                .unwrap()
+                .to_scale_rotation_translation();
+            // Need to use global transform with linvel because skeletons transforms are parent based and the animation
+            let new_linvel = (target_t.2 - current_t.2) / dt;
+            let q_difference = target_t.1 * current_t.1.inverse();
 
+            let (axis, angle) = q_difference.to_axis_angle();
 
-                let (axis, angle) = q_difference.to_axis_angle();
-
-                let angvel = (
-                    axis[0] * angle / dt,
-                    axis[1] * angle / dt,
-                    axis[2] * angle / dt,
-                );
-                current_vel.linvel = new_linvel;
-                current_vel.angvel = angvel.into();
-            }
+            let angvel = (
+                axis[0] * angle / dt,
+                axis[1] * angle / dt,
+                axis[2] * angle / dt,
+            );
+            current_vel.linvel = new_linvel;
+            current_vel.angvel = angvel.into();
+        }
     }
 }

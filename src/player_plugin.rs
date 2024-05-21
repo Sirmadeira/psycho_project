@@ -34,7 +34,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-#[derive(Event,Debug)]
+#[derive(Event, Debug)]
 pub enum MovementAction {
     // Movement direction
     Move(Vec2),
@@ -330,7 +330,7 @@ fn move_character(
     mut q_1: Query<(&mut Velocity, &mut ExternalImpulse), (With<Player>, Without<PlayerRender>)>,
 ) {
     for event in movement_event_reader.read() {
-        println!("{:?}",event);
+        println!("{:?}", event);
         for (mut vel, mut status) in &mut q_1 {
             match event {
                 MovementAction::Move(direction) => {
