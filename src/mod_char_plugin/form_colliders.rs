@@ -196,11 +196,9 @@ pub fn col_follow_animation(
             let new_linvel = (target_t - current_t.2) / dt;
 
             // Angvel target doesnt need the end point in this case, since the ro
-            let q_difference = end_t.1 * current_t.1.inverse();
+            let q_difference = start_t.1 * current_t.1.inverse();
 
             let (axis, angle) = q_difference.to_axis_angle();
-
-            println!("{}",angle);
 
             let angvel = Vec3::new(
                 axis[0] * angle / dt,
