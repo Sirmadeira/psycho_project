@@ -19,6 +19,7 @@ struct StartTailCollider {
 // Helper function
 fn create_collider(
     translation: Vec3,
+    collider: Collider
 ) -> (
     RigidBody,
     SpatialBundle,
@@ -34,7 +35,7 @@ fn create_collider(
             ..Default::default()
         },
         GravityScale(0.0),
-        Collider::ball(0.10),
+        collider,
         Velocity::zero(),
         CollisionGroups::new(Group::GROUP_2, Group::NONE),
     )
@@ -113,10 +114,16 @@ pub fn spawn_colliders(
             "LowerLeg.L",
         )
         .expect("Unique lower left leg to exist"),
-        // find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.R").expect("Unique lower feet leg to exist"),
-        // find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.L").expect("Unique lower feet leg to exist"),
     ];
 
+    let special_bones = [
+    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso").expect("Unique torso bone to exist"),   
+    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.R").expect("Unique lower feet leg to exist"),
+    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.L").expect("Unique lower feet leg to exist"),
+    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Neck").expect("Unique lower feet leg to exist"),];
+
+
+    // Use this when you want to create a collider between bones
     let mut store_start_tail_collider = vec![];
     // Create colliders and spawn them
     let mut i = 0;
@@ -135,8 +142,10 @@ pub fn spawn_colliders(
             (trans1.y + trans2.y) / 2.0,
             (trans1.z + trans2.z) / 2.0,
         );
+        let half_height = trans1.distance(trans2)/2.0;
+        
 
-        let new_collider = create_collider(mid_point);
+        let new_collider = create_collider(mid_point,Collider::cylinder(half_height, 0.06));
 
         let new_collider_id = commands.spawn(new_collider).id();
 
@@ -151,6 +160,30 @@ pub fn spawn_colliders(
         // Move to the next pair of elements
         i += 2;
     }
+
+
+    // Hard coded bones
+    for bone in special_bones{
+        let name = names.get(bone).unwrap();
+        let trans1 = global_transforms
+            .get(bone)
+            .unwrap()
+            .translation();
+        if name.as_str() == "Torso"{
+            commands.spawn(create_collider(trans1, Collider::cylinder(0.2, 0.15)));
+        }
+        if name.as_str() == "Foot.L"{
+            commands.spawn(create_collider(trans1, Collider::cuboid(0.05, 0.05, 0.15)));
+        }
+        if name.as_str() == "Foot.R"{
+            commands.spawn(create_collider(trans1, Collider::cuboid(0.05, 0.05, 0.15)));
+        }
+        if name.as_str() == "Neck"{
+            commands.spawn(create_collider(trans1, Collider::cuboid(0.15, 0.15, 0.1)));
+        }
+    }
+
+
     commands.insert_resource(StoreStartTailCollider(store_start_tail_collider));
 }
 
