@@ -19,7 +19,7 @@ struct StartTailCollider {
 // Helper function
 fn create_collider(
     translation: Vec3,
-    collider: Collider
+    collider: Collider,
 ) -> (
     RigidBody,
     SpatialBundle,
@@ -57,71 +57,140 @@ pub fn spawn_colliders(
 
     // Bone entities to be collected adjust as needed
     let bone_entities = [
-        // find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso").expect("Unique torso bone to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "UpperArm.R",
-        )
-        .expect("Unique upper right arm to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "UpperArm.R",
+        // )
+        // .expect("Unique upper right arm to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "LowerArm.R",
+        // )
+        // .expect("Unique lower right arm to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "UpperArm.L",
+        // )
+        // .expect("Unique upper left arm to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "LowerArm.L",
+        // )
+        // .expect("Unique lower left arm to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "UpperLeg.R",
+        // )
+        // .expect("Unique upper right leg to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "LowerLeg.R",
+        // )
+        // .expect("Unique lower right leg to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "UpperLeg.L",
+        // )
+        // .expect("Unique upper left leg to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "LowerLeg.L",
+        // )
+        // .expect("Unique lower left leg to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "LowerLeg.R",
+        // )
+        // .expect("Unique lower right leg to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "Foot.R",
+        // )
+        // .expect("Unique lower feet leg to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "LowerLeg.L",
+        // )
+        // .expect("Unique lower left leg to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "Foot.L",
+        // )
+        // .expect("Unique lower feet leg to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "LowerArm.L",
+        // )
+        // .expect("Unique lower left arm to exist"),
+        // find_child_with_name_containing(
+        //     &all_entities_with_children,
+        //     &names,
+        //     &main_entity,
+        //     "Wrist.L",
+        // )
+        // .expect("Unique wrist to exist"),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "LowerArm.R",
         )
-        .expect("Unique lower right arm to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "UpperArm.L",
-        )
-        .expect("Unique upper left arm to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "LowerArm.L",
-        )
         .expect("Unique lower left arm to exist"),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "UpperLeg.R",
+            "Wrist.R",
         )
-        .expect("Unique upper right leg to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "LowerLeg.R",
-        )
-        .expect("Unique lower right leg to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "UpperLeg.L",
-        )
-        .expect("Unique upper left leg to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "LowerLeg.L",
-        )
-        .expect("Unique lower left leg to exist"),
+        .expect("Unique wrist to exist"),
     ];
 
     let special_bones = [
-    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso").expect("Unique torso bone to exist"),   
-    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.R").expect("Unique lower feet leg to exist"),
-    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.L").expect("Unique lower feet leg to exist"),
-    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Neck").expect("Unique lower feet leg to exist"),];
-
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso")
+            .expect("Unique torso bone to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Foot.R",
+        )
+        .expect("Unique lower feet leg to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Foot.L",
+        )
+        .expect("Unique lower feet leg to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Neck")
+            .expect("Unique lower feet leg to exist"),
+    ];
 
     // Use this when you want to create a collider between bones
     let mut store_start_tail_collider = vec![];
@@ -142,10 +211,9 @@ pub fn spawn_colliders(
             (trans1.y + trans2.y) / 2.0,
             (trans1.z + trans2.z) / 2.0,
         );
-        let half_height = trans1.distance(trans2)/2.0;
-        
+        let half_height = trans1.distance(trans2) / 2.0;
 
-        let new_collider = create_collider(mid_point,Collider::cylinder(half_height, 0.06));
+        let new_collider = create_collider(mid_point, Collider::cylinder(half_height, 0.06));
 
         let new_collider_id = commands.spawn(new_collider).id();
 
@@ -161,28 +229,26 @@ pub fn spawn_colliders(
         i += 2;
     }
 
-
     // Hard coded bones
-    for bone in special_bones{
+    for bone in special_bones {
         let name = names.get(bone).unwrap();
-        let trans1 = global_transforms
-            .get(bone)
-            .unwrap()
-            .translation();
-        if name.as_str() == "Torso"{
-            commands.spawn(create_collider(trans1, Collider::cylinder(0.2, 0.15)));
+        let trans1 = global_transforms.get(bone).unwrap().translation();
+        if name.as_str() == "Torso" {
+            commands.spawn(create_collider(trans1, Collider::cylinder(0.25, 0.15)));
         }
-        if name.as_str() == "Foot.L"{
+        if name.as_str() == "Foot.L" {
             commands.spawn(create_collider(trans1, Collider::cuboid(0.05, 0.05, 0.15)));
         }
-        if name.as_str() == "Foot.R"{
+        if name.as_str() == "Foot.R" {
             commands.spawn(create_collider(trans1, Collider::cuboid(0.05, 0.05, 0.15)));
         }
-        if name.as_str() == "Neck"{
-            commands.spawn(create_collider(trans1, Collider::cuboid(0.15, 0.15, 0.1)));
+        if name.as_str() == "Neck" {
+            commands.spawn(create_collider(
+                Vec3::new(trans1.x, trans1.y + 0.2, trans1.z),
+                Collider::cuboid(0.1, 0.15, 0.1),
+            ));
         }
     }
-
 
     commands.insert_resource(StoreStartTailCollider(store_start_tail_collider));
 }
@@ -227,7 +293,9 @@ pub fn col_follow_animation(
             );
             // Sorvete
             let new_linvel = (target_t - current_t.2) / dt;
+            current_vel.linvel = new_linvel;
 
+            
             // Angvel target doesnt need the end point in this case, since the ro
             let q_difference = start_t.1 * current_t.1.inverse();
 
@@ -238,9 +306,6 @@ pub fn col_follow_animation(
                 axis[1] * angle / dt,
                 axis[2] * angle / dt,
             );
-        
-            current_vel.linvel = new_linvel;
-            // Clamp to avoid crazy movements
             
             current_vel.angvel = angvel;
         }

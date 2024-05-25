@@ -35,5 +35,5 @@ pub fn run_animations(
                 .clone_weak(),
         )
         .repeat()
-        .set_speed(0.5);
+        .set_speed(0.1);
 }
