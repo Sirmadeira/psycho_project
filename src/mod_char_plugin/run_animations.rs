@@ -26,6 +26,7 @@ pub fn run_animations(
         .get_mut(animation_player_entity_link.0)
         .expect("To have an animation player on the main skeleton");
 
+    // Make this an event reader
     animation_player
         .play(
             animations

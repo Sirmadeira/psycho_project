@@ -22,6 +22,7 @@ pub fn get_top_parent(
     curr_entity
 }
 
+// Put animation link in parent, that way avoid too many animation players query
 pub fn link_animations(
     animation_players_query: Query<Entity, Added<AnimationPlayer>>,
     all_entities_with_parents_query: Query<&Parent>,

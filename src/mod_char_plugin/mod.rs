@@ -1,16 +1,16 @@
 use bevy::prelude::*;
-use bevy::transform::TransformSystem;
 
 mod assemble_parts;
 mod form_colliders;
 mod link_animations;
 mod run_animations;
-mod scene_tree;
 mod spawn_scenes;
 
 use self::{
-    assemble_parts::assemble_parts, form_colliders::*, link_animations::link_animations,
-    run_animations::run_animations, scene_tree::scene_tree, spawn_scenes::*,
+    spawn_scenes::*,
+    assemble_parts::assemble_parts, 
+    link_animations::link_animations,
+    run_animations::run_animations,
 };
 
 use crate::asset_loader_plugin::AssetLoaderState;
@@ -19,15 +19,14 @@ pub struct ModCharPlugin;
 
 impl Plugin for ModCharPlugin {
     fn build(&self, app: &mut App) {
-        // All of this only occurs once
-        app.add_systems(OnEnter(AssetLoaderState::Done), spawn_scenes);
+        // Loads scenes and spawn handles
+        app.add_systems(OnEnter(AssetLoaderState::Done), (spawn_scenes,spawn_animation_handle,spawn_morph_data_handle));
         // Will only load after we finished loading the assets
         app.init_state::<StateSpawnScene>();
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),
             (
                 disable_culling_for_skinned_meshes,
-                scene_tree,
                 link_animations,
             ),
         );
@@ -35,13 +34,13 @@ impl Plugin for ModCharPlugin {
             OnEnter(StateSpawnScene::Done),
             (run_animations, assemble_parts),
         );
-        app.add_systems(OnEnter(StateSpawnScene::FormingPhysics), spawn_colliders);
+        // app.add_systems(OnEnter(StateSpawnScene::FormingPhysics), spawn_colliders);
         // This guys is gonna run infinetely
-        app.add_systems(
-            PostUpdate,
-            col_follow_animation
-                .run_if(in_state(StateSpawnScene::FormingPhysics))
-                .after(TransformSystem::TransformPropagate),
-        );
+        // app.add_systems(
+        //     PostUpdate,
+        //     col_follow_animation
+        //         .run_if(in_state(StateSpawnScene::FormingPhysics))
+        //         .after(TransformSystem::TransformPropagate),
+        // );
     }
 }
