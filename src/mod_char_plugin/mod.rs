@@ -7,10 +7,8 @@ mod run_animations;
 mod spawn_scenes;
 
 use self::{
-    spawn_scenes::*,
-    assemble_parts::assemble_parts, 
-    link_animations::link_animations,
-    run_animations::run_animations,
+    assemble_parts::assemble_parts, link_animations::link_animations,
+    run_animations::run_animations, spawn_scenes::*,
 };
 
 use crate::asset_loader_plugin::AssetLoaderState;
@@ -20,15 +18,18 @@ pub struct ModCharPlugin;
 impl Plugin for ModCharPlugin {
     fn build(&self, app: &mut App) {
         // Loads scenes and spawn handles
-        app.add_systems(OnEnter(AssetLoaderState::Done), (spawn_scenes,spawn_animation_handle,spawn_morph_data_handle));
+        app.add_systems(
+            OnEnter(AssetLoaderState::Done),
+            (
+                spawn_scenes,
+                spawn_animation_handle,
+            ),
+        );
         // Will only load after we finished loading the assets
         app.init_state::<StateSpawnScene>();
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),
-            (
-                disable_culling_for_skinned_meshes,
-                link_animations,
-            ),
+            (disable_culling_for_skinned_meshes, link_animations),
         );
         app.add_systems(
             OnEnter(StateSpawnScene::Done),

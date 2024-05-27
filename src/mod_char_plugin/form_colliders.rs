@@ -213,7 +213,6 @@
 //             (trans1.z + trans2.z) / 2.0,
 //         );
 
-
 //         let half_height = trans1.distance(trans2) / 2.0;
 
 //         let new_collider = create_collider(mid_point, Collider::cylinder(half_height, 0.06));
@@ -289,18 +288,17 @@
 //             // let new_linvel = (target_t - current_t.2) / dt;
 //             // current_vel.linvel = new_linvel;
 
-            
 //             // Angvel target doesnt need the end point in this case, since the ro
 //             // let q_difference = start_t.1 * -.1.inverse();
 
 //             // let (axis, angle) = q_difference.to_axis_angle();
 
-//             // let angvel = Vec3::new(  
+//             // let angvel = Vec3::new(
 //             //     axis[0] * angle / dt,
 //             //     axis[1] * angle / dt,
 //             //     axis[2] * angle / dt,
 //             // );
-            
+
 //             // current_vel.angvel = angvel;
 //         }
 //     }

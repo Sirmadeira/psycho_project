@@ -29,10 +29,6 @@ pub struct SceneEntitiesByName(pub HashMap<String, Entity>);
 #[derive(Resource)]
 pub struct Animations(pub HashMap<String, Handle<AnimationClip>>);
 
-// Quick way of acessing a specific asset mesh data
-#[derive(Resource)]
-pub struct MorphData(pub HashMap<String,Vec<Handle<Mesh>>>);
-
 // This occcurs after the assets were loaded
 pub fn spawn_scenes(
     mut commands: Commands,
@@ -45,7 +41,6 @@ pub fn spawn_scenes(
     for (file_name, gltf_handle) in &asset_pack.gltf_files {
         // Grabbing the handle for the gltf and spawning it
         if let Some(gltf) = assets_gltf.get(gltf_handle) {
-
             // Spawning the scenes, with a specific scene name struct
             let entity_commands = commands.spawn((
                 SceneBundle {
@@ -63,18 +58,18 @@ pub fn spawn_scenes(
     commands.insert_resource(SceneEntitiesByName(scene_entities_by_name));
 }
 
-
 // Forming the handle for meshes morph data
 pub fn spawn_animation_handle(
     asset_pack: Res<MyAssets>,
     assets_gltf: Res<Assets<Gltf>>,
-    mut commands: Commands){
-
+    mut commands: Commands,
+    mut next_state: ResMut<NextState<StateSpawnScene>>,
+) {
     let mut animations = HashMap::new();
 
-    for gltf_handle in asset_pack.gltf_files.values(){
-        if let Some(gltf) = assets_gltf.get(gltf_handle){
-                        // Forming the handle for animations
+    for gltf_handle in asset_pack.gltf_files.values() {
+        if let Some(gltf) = assets_gltf.get(gltf_handle) {
+            // Forming the handle for animations
             for named_animation in gltf.named_animations.iter() {
                 println!("Insert anim {}", named_animation.0);
                 animations.insert(
@@ -85,36 +80,8 @@ pub fn spawn_animation_handle(
         }
     }
     commands.insert_resource(Animations(animations));
-}
-
-// Forming the handle for meshes morph data
-pub fn spawn_morph_data_handle(
-    mut next_state: ResMut<NextState<StateSpawnScene>>,
-    asset_pack: Res<MyAssets>,
-    assets_gltf: Res<Assets<Gltf>>,
-    assets_meshes: Res<Assets<GltfMesh>>,
-    mut commands: Commands){
-
-    // let mut morph_data = HashMap::new();
-
-
-    for (file_name,gltf_handle) in &asset_pack.gltf_files{
-        if let Some(gltf) = assets_gltf.get(gltf_handle){
-            for (name,handle) in gltf.named_meshes.iter(){
-                println!("{}{:?}",name,handle);
-                for primitive in assets_meshes.get(handle.id()){
-                    println!("{:?}",primitive);
-                }
-
-            }
-        }
-    }
     next_state.set(StateSpawnScene::Spawned);
 }
-
-
-
-
 
 // Avoid skinned meshes bug
 pub fn disable_culling_for_skinned_meshes(

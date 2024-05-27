@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_mod_billboard::prelude::*;
 use bevy_rapier3d::prelude::*;
 use iyes_perf_ui::prelude::*;
 
@@ -56,8 +55,6 @@ fn main() {
         .add_plugins(PlayerPlugin)
         // Camera Plugin
         .add_plugins(CameraPlugin)
-        // Plugin to make multidirectional texts
-        .add_plugins(BillboardPlugin)
         // Loads our assets with handles
         .add_plugins(AssetLoaderPlugin)
         // Loads our modular character
