@@ -8,13 +8,17 @@ use bevy_rapier3d::prelude::*;
 #[derive(Resource, Debug)]
 pub struct StoreStartTailCollider(Vec<StartTailCollider>);
 
-// Bunch of entities needed to calculate the midp
+// Bunch of entities needed to calculate the mid transform
 #[derive(Component, Debug)]
 struct StartTailCollider {
     start: Entity,
     tail: Entity,
     collider: Entity,
 }
+
+// Colliders are not based on another collider axis
+#[derive(Component,Debug)]
+struct SpecialCollider;
 
 // Helper function
 fn create_collider(
@@ -239,6 +243,12 @@ pub fn spawn_colliders(
         if name.as_str() == "Neck"{
             commands.spawn(create_collider(Vec3::new(trans1.x,trans1.y+ 0.15,trans1.z), Collider::cuboid(0.15, 0.15, 0.1)));
         }
+        if name.as_str() == "Wrist.R"{
+            commands.spawn(create_collider(trans1, Collider::cuboid(0.15, 0.15, 0.1)));
+        }
+        if name.as_str() == "Wrist.L"{
+            commands.spawn(create_collider(trans1, Collider::cuboid(0.15, 0.15, 0.1)));
+        }
     }
 
 
@@ -308,3 +318,39 @@ pub fn col_follow_animation(
         }
     }
 }
+
+
+// fn make_collider_look_at(
+//     player_q: Query<&Transform, With<Player>>,
+//     cam_q: Query<&Transform, With<CamInfo>>,
+//     mut vel: Query<&mut Velocity>,
+// ) {
+//     let mut current_time = 0.0; // Current time, starting from 0
+//     let total_s = 1.0; // Max s value of interpolation in seconds
+//     let dt = 1.0 / 60.0; // Time step for interpolation, adjust as needed
+
+//     let current_q = player_q.get_single().unwrap().rotation.normalize();
+//     let target_q = cam_q.get_single().unwrap().rotation.normalize();
+
+//     for mut v in vel.iter_mut() {
+//         while current_time < total_s {
+//             let s = current_time / total_s;
+
+//             let interpolated_q = current_q.slerp(target_q, s);
+
+//             let q_difference = interpolated_q * current_q.inverse();
+
+//             let (axis, angle) = q_difference.to_axis_angle();
+
+//             let angvel = (
+//                 axis[0] * angle / dt,
+//                 axis[1] * angle / dt,
+//                 axis[2] * angle / dt,
+//             );
+
+//             v.angvel = angvel.into();
+
+//             current_time += dt;
+//         }
+//     }
+// }

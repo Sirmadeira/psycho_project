@@ -31,10 +31,10 @@ pub fn run_animations(
         .play(
             animations
                 .0
-                .get("Sword_Slash")
+                .get("HitRecieve")
                 .expect("To have animation with this name to check available names look at spawn_scenes")
                 .clone_weak(),
         )
         .repeat()
-        .set_speed(0.1);
+        .set_speed(1.0);
 }

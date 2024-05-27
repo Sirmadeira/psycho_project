@@ -354,37 +354,3 @@ fn apply_movement_damping(mut query: Query<&mut Damping, With<Player>>) {
     }
 }
 
-// fn make_collider_look_at(
-//     player_q: Query<&Transform, With<Player>>,
-//     cam_q: Query<&Transform, With<CamInfo>>,
-//     mut vel: Query<&mut Velocity>,
-// ) {
-//     let mut current_time = 0.0; // Current time, starting from 0
-//     let total_s = 1.0; // Max s value of interpolation in seconds
-//     let dt = 1.0 / 60.0; // Time step for interpolation, adjust as needed
-
-//     let current_q = player_q.get_single().unwrap().rotation.normalize();
-//     let target_q = cam_q.get_single().unwrap().rotation.normalize();
-
-//     for mut v in vel.iter_mut() {
-//         while current_time < total_s {
-//             let s = current_time / total_s;
-
-//             let interpolated_q = current_q.slerp(target_q, s);
-
-//             let q_difference = interpolated_q * current_q.inverse();
-
-//             let (axis, angle) = q_difference.to_axis_angle();
-
-//             let angvel = (
-//                 axis[0] * angle / dt,
-//                 axis[1] * angle / dt,
-//                 axis[2] * angle / dt,
-//             );
-
-//             v.angvel = angvel.into();
-
-//             current_time += dt;
-//         }
-//     }
-// }
