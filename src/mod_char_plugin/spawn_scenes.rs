@@ -1,5 +1,4 @@
 use crate::asset_loader_plugin::MyAssets;
-use bevy::gltf::GltfMesh;
 use bevy::utils::HashMap;
 use bevy::{
     gltf::Gltf,
