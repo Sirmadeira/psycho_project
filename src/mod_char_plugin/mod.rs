@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::transform::TransformSystem;
 
 mod assemble_parts;
 mod form_colliders;
@@ -8,7 +9,7 @@ mod spawn_scenes;
 
 use self::{
     assemble_parts::assemble_parts, link_animations::link_animations,
-    run_animations::run_animations, spawn_scenes::*,
+    run_animations::run_animations, spawn_scenes::*,form_colliders::*
 };
 
 use crate::asset_loader_plugin::AssetLoaderState;
@@ -35,13 +36,12 @@ impl Plugin for ModCharPlugin {
             OnEnter(StateSpawnScene::Done),
             (run_animations, assemble_parts),
         );
-        // app.add_systems(OnEnter(StateSpawnScene::FormingPhysics), spawn_colliders);
-        // This guys is gonna run infinetely
-        // app.add_systems(
-        //     PostUpdate,
-        //     col_follow_animation
-        //         .run_if(in_state(StateSpawnScene::FormingPhysics))
-        //         .after(TransformSystem::TransformPropagate),
-        // );
+        app.add_systems(OnEnter(StateSpawnScene::FormingPhysics), spawn_colliders);
+        app.add_systems(
+            PostUpdate,
+            col_follow_animation
+                .run_if(in_state(StateSpawnScene::FormingPhysics))
+                .after(TransformSystem::TransformPropagate),
+        );
     }
 }
