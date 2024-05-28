@@ -353,4 +353,3 @@ fn apply_movement_damping(mut query: Query<&mut Damping, With<Player>>) {
         damping_factor.linear_damping = 0.9;
     }
 }
-

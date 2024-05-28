@@ -17,13 +17,17 @@ struct StartTailCollider {
 }
 
 // Colliders are not based on another collider axis
-#[derive(Component,Debug)]
-struct SpecialCollider;
+#[derive(Component, Debug)]
+pub struct BoneCollider(Entity);
+
+// Stores the offset of the specific collider
+#[derive(Reflect, Component, Debug)]
+pub struct Offset(Vec3);
 
 // Helper function
 fn create_collider(
     translation: Vec3,
-    collider: Collider
+    collider: Collider,
 ) -> (
     RigidBody,
     SpatialBundle,
@@ -174,15 +178,42 @@ pub fn spawn_colliders(
             "Wrist.L",
         )
         .expect("Unique wrist to exist"),
-
     ];
 
     let special_bones = [
-    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso").expect("Unique torso bone to exist"),   
-    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.R").expect("Unique lower feet to exist"),
-    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Foot.L").expect("Unique lower feet to exist"),
-    find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Neck").expect("Unique lower feet leg to exist"),];
-
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso")
+            .expect("Unique torso bone to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Foot.R",
+        )
+        .expect("Unique lower feet to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Foot.L",
+        )
+        .expect("Unique lower feet to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Neck")
+            .expect("Unique lower feet leg to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Wrist.L",
+        )
+        .expect("Unique wrist to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Wrist.R",
+        )
+        .expect("Unique wrist to exist"),
+    ];
 
     // Use this when you want to create a collider between bones
     let mut store_start_tail_collider = vec![];
@@ -203,10 +234,9 @@ pub fn spawn_colliders(
             (trans1.y + trans2.y) / 2.0,
             (trans1.z + trans2.z) / 2.0,
         );
-        let half_height = trans1.distance(trans2)/2.0;
-        
+        let half_height = trans1.distance(trans2) / 2.0;
 
-        let new_collider = create_collider(mid_point,Collider::cylinder(half_height, 0.06));
+        let new_collider = create_collider(mid_point, Collider::cylinder(half_height, 0.06));
 
         let new_collider_id = commands.spawn(new_collider).id();
 
@@ -222,40 +252,45 @@ pub fn spawn_colliders(
         i += 2;
     }
 
+    // Hard coded colliders
+    for bone in special_bones {
+        // Use unwrap_or_else to handle potential None values safely if needed
+        let name = names.get(bone).expect("Bone name not found");
 
-    // Hard coded bones
-    for bone in special_bones{
-        let name = names.get(bone).unwrap();
         let trans1 = global_transforms
             .get(bone)
-            .unwrap()
+            .expect("Global transform not found")
             .translation();
 
-        if name.as_str() == "Torso"{
-            commands.spawn(create_collider(trans1, Collider::cylinder(0.2, 0.15)));
-        }
-        if name.as_str() == "Foot.L"{
-            commands.spawn(create_collider(trans1, Collider::cuboid(0.05, 0.05, 0.15)));
-        }
-        if name.as_str() == "Foot.R"{
-            commands.spawn(create_collider(trans1, Collider::cuboid(0.05, 0.05, 0.15)));
-        }
-        if name.as_str() == "Neck"{
-            commands.spawn(create_collider(Vec3::new(trans1.x,trans1.y+ 0.15,trans1.z), Collider::cuboid(0.15, 0.15, 0.1)));
-        }
-        if name.as_str() == "Wrist.R"{
-            commands.spawn(create_collider(trans1, Collider::cuboid(0.15, 0.15, 0.1)));
-        }
-        if name.as_str() == "Wrist.L"{
-            commands.spawn(create_collider(trans1, Collider::cuboid(0.15, 0.15, 0.1)));
-        }
-    }
+        let col_name = Name::new(format!("{}_col", name));
 
+        let (collider, offset) = match name.as_str() {
+            "Torso" => (Collider::cylinder(0.2, 0.15), Vec3::ZERO),
+            "Foot.L" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO),
+            "Foot.R" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO),
+            "Neck" => (Collider::cuboid(0.15, 0.15, 0.1), Vec3::new(0.0, 0.10, 0.00)),
+            "Wrist.R" => (
+                Collider::cuboid(0.05, 0.10, 0.10),
+                Vec3::new(0.00, -0.15, 0.0),
+            ),
+            "Wrist.L" => (
+                Collider::cuboid(0.05, 0.10, 0.10),
+                Vec3::new(0.00, -0.15, 0.0),
+            ),
+            _ => continue, // Skip bones that are not in the list
+        };
+
+        commands
+            .spawn(create_collider(trans1 + offset, collider))
+            .insert(BoneCollider(bone))
+            .insert(Offset(offset))
+            .insert(col_name);
+    }
 
     commands.insert_resource(StoreStartTailCollider(store_start_tail_collider));
 }
 
-// Do ensure this runs after the animations commands in postupdate
+// Do ensure this runs after trasform propagations
 pub fn col_follow_animation(
     time: Res<Time>,
     entities: Res<StoreStartTailCollider>,
@@ -295,7 +330,7 @@ pub fn col_follow_animation(
             );
             // Sorvete
             let new_linvel = (target_t - current_t.2) / dt;
-        
+
             current_vel.linvel = new_linvel;
             // Angvel target doesnt need the end point in this case, since the ro
             let q_difference = start_t.1 * current_t.1.inverse();
@@ -311,46 +346,50 @@ pub fn col_follow_animation(
             // Not ideal but what you gonna do - wait for bevy 0.14 to fix
             if angle > 5.55 || angle < 0.01 {
                 current_vel.angvel = Vec3::splat(0.0);
-            }else {
+            } else {
                 current_vel.angvel = angvel;
             }
-
         }
     }
 }
 
+//
+pub fn hard_colliders_look_at(
+    mut collider_info: Query<
+        (&mut Velocity, &Transform, &BoneCollider, Option<&Offset>),
+        With<BoneCollider>,
+    >,
+    bone_transform: Query<&GlobalTransform>,
+    time: Res<Time>,
+) {
+    let dt = time.delta_seconds();
 
-// fn make_collider_look_at(
-//     player_q: Query<&Transform, With<Player>>,
-//     cam_q: Query<&Transform, With<CamInfo>>,
-//     mut vel: Query<&mut Velocity>,
-// ) {
-//     let mut current_time = 0.0; // Current time, starting from 0
-//     let total_s = 1.0; // Max s value of interpolation in seconds
-//     let dt = 1.0 / 60.0; // Time step for interpolation, adjust as needed
+    for (mut vel, current_transform, &BoneCollider(target_entity), offset) in
+        collider_info.iter_mut()
+    {
+        let target_transform = bone_transform
+            .get(target_entity)
+            .expect("Bone to have transform")
+            .compute_transform();
 
-//     let current_q = player_q.get_single().unwrap().rotation.normalize();
-//     let target_q = cam_q.get_single().unwrap().rotation.normalize();
+        let target_translation = if let Some(offset) = offset {
+            target_transform.translation + offset.0
+        } else {
+            target_transform.translation
+        };
 
-//     for mut v in vel.iter_mut() {
-//         while current_time < total_s {
-//             let s = current_time / total_s;
+        vel.linvel = (target_translation - current_transform.translation) / dt;
 
-//             let interpolated_q = current_q.slerp(target_q, s);
+        let desired_rotation = target_transform.rotation * current_transform.rotation.inverse();
 
-//             let q_difference = interpolated_q * current_q.inverse();
+        let (axis, angle) = desired_rotation.to_axis_angle();
 
-//             let (axis, angle) = q_difference.to_axis_angle();
+        let angvel = (
+            axis[0] * angle / dt,
+            axis[1] * angle / dt,
+            axis[2] * angle / dt,
+        );
 
-//             let angvel = (
-//                 axis[0] * angle / dt,
-//                 axis[1] * angle / dt,
-//                 axis[2] * angle / dt,
-//             );
-
-//             v.angvel = angvel.into();
-
-//             current_time += dt;
-//         }
-//     }
-// }
+        vel.angvel = angvel.into();
+    }
+}
