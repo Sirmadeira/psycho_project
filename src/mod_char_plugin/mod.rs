@@ -25,6 +25,7 @@ impl Plugin for ModCharPlugin {
         );
         // Will only load after we finished loading the assets
         app.init_state::<StateSpawnScene>();
+        app.register_type::<PidInfo>();
         app.register_type::<Offset>();
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),

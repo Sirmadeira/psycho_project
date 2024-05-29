@@ -24,6 +24,20 @@ pub struct BoneCollider(Entity);
 #[derive(Reflect, Component, Debug)]
 pub struct Offset(Vec3);
 
+#[derive(Reflect,Component,Debug)]
+pub struct PidInfo{
+    // Proportional gain how agressive to reac
+    kp: f32,
+    // Integral gain accumulated error over time
+    ki: f32,
+    // Derivative gain predicts future error
+    kd:f32,
+    // These values are here because they need to be agregated
+    integral: Vec3,
+    previous_error: Vec3
+}
+
+
 // Helper function
 fn create_collider(
     translation: Vec3,
@@ -203,16 +217,16 @@ pub fn spawn_colliders(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Wrist.L",
+            "Index1.L",
         )
-        .expect("Unique wrist to exist"),
+        .expect("Unique Index1 to exist"),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Wrist.R",
+            "Index1.R",
         )
-        .expect("Unique wrist to exist"),
+        .expect("Unique Index1 to exist"),
     ];
 
     // Use this when you want to create a collider between bones
@@ -269,13 +283,13 @@ pub fn spawn_colliders(
             "Foot.L" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO),
             "Foot.R" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO),
             "Neck" => (Collider::cuboid(0.15, 0.15, 0.1), Vec3::new(0.0, 0.10, 0.00)),
-            "Wrist.R" => (
+            "Index1.R" => (
                 Collider::cuboid(0.05, 0.10, 0.10),
-                Vec3::new(0.00, -0.15, 0.0),
+                Vec3::new(0.00, -0.1, 0.0),
             ),
-            "Wrist.L" => (
+            "Index1.L" => (
                 Collider::cuboid(0.05, 0.10, 0.10),
-                Vec3::new(0.00, -0.15, 0.0),
+                Vec3::new(0.00, -0.1, 0.0),
             ),
             _ => continue, // Skip bones that are not in the list
         };
@@ -284,7 +298,14 @@ pub fn spawn_colliders(
             .spawn(create_collider(trans1 + offset, collider))
             .insert(BoneCollider(bone))
             .insert(Offset(offset))
-            .insert(col_name);
+            .insert(col_name)
+            .insert(PidInfo{
+                kp: 50.0,
+                ki: 15.0,
+                kd: 0.1,
+                integral: Vec3::ZERO,
+                previous_error: Vec3::ZERO,
+            });
     }
 
     commands.insert_resource(StoreStartTailCollider(store_start_tail_collider));
@@ -356,7 +377,7 @@ pub fn col_follow_animation(
 //
 pub fn hard_colliders_look_at(
     mut collider_info: Query<
-        (&mut Velocity, &Transform, &BoneCollider, Option<&Offset>),
+        (&mut Velocity, &Transform, &BoneCollider,&mut PidInfo, Option<&Offset>),
         With<BoneCollider>,
     >,
     bone_transform: Query<&GlobalTransform>,
@@ -364,22 +385,40 @@ pub fn hard_colliders_look_at(
 ) {
     let dt = time.delta_seconds();
 
-    for (mut vel, current_transform, &BoneCollider(target_entity), offset) in
+    for (mut vel, current_transform, &BoneCollider(target_entity),mut pid, offset) in
         collider_info.iter_mut()
     {
+        // Just grabbing target bone transform
         let target_transform = bone_transform
             .get(target_entity)
             .expect("Bone to have transform")
             .compute_transform();
 
+
+        // Doin this so it considers this offset
         let target_translation = if let Some(offset) = offset {
             target_transform.translation + offset.0
         } else {
             target_transform.translation
         };
 
-        vel.linvel = (target_translation - current_transform.translation) / dt;
+        // Distance vector
+        let error = target_translation - current_transform.translation; 
 
+        // Calculating integral and derivative
+        pid.integral += error * dt;
+
+        // Derivative to avoid future errors
+        let derivative = (error - pid.previous_error)/dt;
+
+        // Aggregate last error for later interaction
+        pid.previous_error = error;
+
+        let output = pid.kp * error + pid.ki * pid.integral  + derivative * pid.kd;
+
+        vel.linvel = output;
+
+        // Angvel ios fucked until 14
         let desired_rotation = target_transform.rotation * current_transform.rotation.inverse();
 
         let (axis, angle) = desired_rotation.to_axis_angle();
