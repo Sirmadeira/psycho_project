@@ -1,24 +1,15 @@
 use super::link_animations::AnimationEntityLink;
-use crate::mod_char_plugin::assemble_parts::find_child_with_name_containing::find_child_with_name_containing;
-
+use crate::mod_char_plugin::assemble_parts::find_child_with_name_containing;
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
+use bevy_rapier3d:: prelude::*;
 
-// Store the correlations
-#[derive(Resource, Debug)]
-pub struct StoreStartTailCollider(Vec<StartTailCollider>);
-
-// Bunch of entities needed to calculate the mid transform
-#[derive(Component, Debug)]
-struct StartTailCollider {
-    start: Entity,
-    tail: Entity,
-    collider: Entity,
-}
 
 // Colliders are not based on another collider axis
 #[derive(Component, Debug)]
-pub struct BoneCollider(Entity);
+pub struct BaseEntities{
+    start: Entity,
+    end: Option<Entity>
+}
 
 // Stores the offset of the specific collider
 #[derive(Reflect, Component, Debug)]
@@ -36,7 +27,6 @@ pub struct PidInfo{
     integral: Vec3,
     previous_error: Vec3
 }
-
 
 // Helper function
 fn create_collider(
@@ -64,7 +54,7 @@ fn create_collider(
 }
 
 // WARNING ONLY ADD TO UNIQUE BONES
-pub fn spawn_colliders(
+pub fn spawn_complex_colliders(
     mut commands: Commands,
     all_entities_with_children: Query<&Children>,
     main_entity_option: Query<Entity, With<AnimationEntityLink>>,
@@ -77,7 +67,7 @@ pub fn spawn_colliders(
         return;
     };
 
-    // Bone entities to be collected adjust as needed
+    // Start and end entities for something
     let bone_entities = [
         // find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso").expect("Unique torso bone to exist"),
         find_child_with_name_containing(
@@ -194,6 +184,74 @@ pub fn spawn_colliders(
         .expect("Unique wrist to exist"),
     ];
 
+    // Create colliders and spawn them
+    let mut i = 0;
+    while i < bone_entities.len() - 1 {
+        let trans1 = global_transforms
+            .get(bone_entities[i])
+            .unwrap()
+            .translation();
+        let trans2 = global_transforms
+            .get(bone_entities[i + 1])
+            .unwrap()
+            .translation();
+
+        let first_name = names.get(bone_entities[i]).expect("Bone name not found");
+        let last_name = names.get(bone_entities[i+1]).expect("Bone to have name");
+
+        let collider_name = Name::new(format!("{}_{}_col", first_name.to_lowercase(),last_name.to_lowercase()));
+
+        // Starting point
+        let mid_point = Vec3::new(
+            (trans1.x + trans2.x) / 2.0,
+            (trans1.y + trans2.y) / 2.0,
+            (trans1.z + trans2.z) / 2.0,
+        );
+
+        // Distance between the two
+        let half_height = trans1.distance(trans2) / 2.0;
+
+        let (collider,offset) = match collider_name.as_str() {
+            "POT" => (Collider::cylinder(half_height, 0.15), Vec3::ZERO),
+            _ =>(Collider::cylinder(half_height, 0.09), Vec3::ZERO)
+        };
+
+        // Optional entity
+        let end = if i + 1 < bone_entities.len() {
+            Some(bone_entities[i + 1])
+        } else {
+            None
+        };
+
+
+        commands.spawn(create_collider(mid_point,collider))
+        .insert(collider_name)
+        .insert(Offset(offset))
+        .insert(BaseEntities{start: bone_entities[i],end: end})
+        .insert(PidInfo{
+            kp: 50.0,
+            ki: 15.0,
+            kd: 0.1,
+            integral: Vec3::ZERO,
+            previous_error: Vec3::ZERO,
+        });
+        // Move to the next pair of elements
+        i += 2;
+    }
+}
+
+pub fn spawn_simple_colliders(  mut commands: Commands,
+    all_entities_with_children: Query<&Children>,
+    main_entity_option: Query<Entity, With<AnimationEntityLink>>,
+    names: Query<&Name>,
+    global_transforms: Query<&GlobalTransform>,){
+
+    // Main bone entity to search in
+    let Ok(main_entity) = main_entity_option.get_single() else {
+        println!("No player entity available");
+        return;
+    };
+    // Bones without tail
     let special_bones = [
         find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso")
             .expect("Unique torso bone to exist"),
@@ -228,46 +286,8 @@ pub fn spawn_colliders(
         )
         .expect("Unique Index1 to exist"),
     ];
-
-    // Use this when you want to create a collider between bones
-    let mut store_start_tail_collider = vec![];
-    // Create colliders and spawn them
-    let mut i = 0;
-    while i < bone_entities.len() - 1 {
-        let trans1 = global_transforms
-            .get(bone_entities[i])
-            .unwrap()
-            .translation();
-        let trans2 = global_transforms
-            .get(bone_entities[i + 1])
-            .unwrap()
-            .translation();
-
-        let mid_point = Vec3::new(
-            (trans1.x + trans2.x) / 2.0,
-            (trans1.y + trans2.y) / 2.0,
-            (trans1.z + trans2.z) / 2.0,
-        );
-        let half_height = trans1.distance(trans2) / 2.0;
-
-        let new_collider = create_collider(mid_point, Collider::cylinder(half_height, 0.06));
-
-        let new_collider_id = commands.spawn(new_collider).id();
-
-        let start_and_tail = StartTailCollider {
-            start: bone_entities[i],
-            tail: bone_entities[i + 1],
-            collider: new_collider_id,
-        };
-
-        store_start_tail_collider.push(start_and_tail);
-
-        // Move to the next pair of elements
-        i += 2;
-    }
-
-    // Hard coded colliders
-    for bone in special_bones {
+     // Hard coded colliders
+     for bone in special_bones {
         // Use unwrap_or_else to handle potential None values safely if needed
         let name = names.get(bone).expect("Bone name not found");
 
@@ -276,7 +296,7 @@ pub fn spawn_colliders(
             .expect("Global transform not found")
             .translation();
 
-        let col_name = Name::new(format!("{}_col", name));
+        let col_name = Name::new(format!("{}_col", name.to_lowercase()));
 
         let (collider, offset) = match name.as_str() {
             "Torso" => (Collider::cylinder(0.2, 0.15), Vec3::ZERO),
@@ -294,9 +314,11 @@ pub fn spawn_colliders(
             _ => continue, // Skip bones that are not in the list
         };
 
+
+
         commands
-            .spawn(create_collider(trans1 + offset, collider))
-            .insert(BoneCollider(bone))
+            .spawn(create_collider(trans1, collider))
+            .insert(BaseEntities{start:bone,end: None})
             .insert(Offset(offset))
             .insert(col_name)
             .insert(PidInfo{
@@ -307,101 +329,41 @@ pub fn spawn_colliders(
                 previous_error: Vec3::ZERO,
             });
     }
-
-    commands.insert_resource(StoreStartTailCollider(store_start_tail_collider));
 }
 
-// Do ensure this runs after trasform propagations
-pub fn col_follow_animation(
-    time: Res<Time>,
-    entities: Res<StoreStartTailCollider>,
-    transforms: Query<&GlobalTransform>,
-    mut velocities: Query<&mut Velocity>,
-) {
-    for store in entities.0.iter() {
-        let dt = time.delta_seconds();
 
-        let start = store.start;
-        let tail = store.tail;
-        let collider = store.collider;
-        // Need to use global transform with linvel because skeletons transforms are parent based and the animation
-
-        if let Ok(mut current_vel) = velocities.get_mut(collider) {
-            // Current collider location
-            let current_t = transforms
-                .get(collider)
-                .unwrap()
-                .to_scale_rotation_translation();
-            // Start bone transform
-            let start_t = transforms
-                .get(start)
-                .unwrap()
-                .to_scale_rotation_translation();
-            // End bone transform
-            let end_t = transforms
-                .get(tail)
-                .unwrap()
-                .to_scale_rotation_translation();
-
-            // Linvel target transform
-            let target_t = Vec3::new(
-                (start_t.2.x + end_t.2.x) / 2.0,
-                (start_t.2.y + end_t.2.y) / 2.0,
-                (start_t.2.z + end_t.2.z) / 2.0,
-            );
-            // Sorvete
-            let new_linvel = (target_t - current_t.2) / dt;
-
-            current_vel.linvel = new_linvel;
-            // Angvel target doesnt need the end point in this case, since the ro
-            let q_difference = start_t.1 * current_t.1.inverse();
-
-            let (axis, angle) = q_difference.to_axis_angle();
-
-            let angvel = Vec3::new(
-                axis[0] * angle / dt,
-                axis[1] * angle / dt,
-                axis[2] * angle / dt,
-            );
-
-            // Not ideal but what you gonna do - wait for bevy 0.14 to fix
-            if angle > 5.55 || angle < 0.01 {
-                current_vel.angvel = Vec3::splat(0.0);
-            } else {
-                current_vel.angvel = angvel;
-            }
-        }
-    }
-}
 
 //
-pub fn hard_colliders_look_at(
+pub fn simple_colliders_look_at(
     mut collider_info: Query<
-        (&mut Velocity, &Transform, &BoneCollider,&mut PidInfo, Option<&Offset>),
-        With<BoneCollider>,
+        (&mut Velocity, &Transform, &BaseEntities,&mut PidInfo, &Offset),
+        With<BaseEntities>,
     >,
     bone_transform: Query<&GlobalTransform>,
     time: Res<Time>,
 ) {
     let dt = time.delta_seconds();
 
-    for (mut vel, current_transform, &BoneCollider(target_entity),mut pid, offset) in
+    for (mut vel, current_transform,base_entities,mut pid, offset) in
         collider_info.iter_mut()
-    {
-        // Just grabbing target bone transform
-        let target_transform = bone_transform
-            .get(target_entity)
-            .expect("Bone to have transform")
-            .compute_transform();
+    {   
 
+        // Start bone for the simple ones
+        let target_transform =  bone_transform.get(base_entities.start).expect("Start bone global transform").compute_transform();
+        let mut target_translation = target_transform.translation;
 
-        // Doin this so it considers this offset
-        let target_translation = if let Some(offset) = offset {
-            target_transform.translation + offset.0
-        } else {
-            target_transform.translation
-        };
+        // End and start bone position 
+        if let Some(end) = base_entities.end{
+            let trans1  = bone_transform.get(base_entities.start).expect("Start bone global transform").translation();
+            let trans2 = bone_transform.get(end).expect("End bone global transform").translation();
+            target_translation =  Vec3::new(
+                (trans1.x + trans2.x) / 2.0,
+                (trans1.y + trans2.y) / 2.0,
+                (trans1.z + trans2.z) / 2.0,
+            );
+        }
 
+        target_translation = target_translation + offset.0;
         // Distance vector
         let error = target_translation - current_transform.translation; 
 

@@ -3,7 +3,6 @@ use bevy::utils::HashMap;
 use bevy::{
     gltf::Gltf,
     prelude::*,
-    render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling},
 };
 
 // Tell me in which state the scene is
@@ -80,14 +79,4 @@ pub fn spawn_animation_handle(
     }
     commands.insert_resource(Animations(animations));
     next_state.set(StateSpawnScene::Spawned);
-}
-
-// Avoid skinned meshes bug
-pub fn disable_culling_for_skinned_meshes(
-    mut commands: Commands,
-    skinned: Query<Entity, Added<SkinnedMesh>>,
-) {
-    for entity in &skinned {
-        commands.entity(entity).insert(NoFrustumCulling);
-    }
 }

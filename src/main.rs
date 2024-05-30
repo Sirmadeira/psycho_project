@@ -51,14 +51,14 @@ fn main() {
         .add_plugins(WorldInspectorPlugin::new())
         // Starting the scene and lighting
         .add_plugins(WorldPlugin)
-        // Player related confids
-        .add_plugins(PlayerPlugin)
-        // Camera Plugin
-        .add_plugins(CameraPlugin)
         // Loads our assets with handles
         .add_plugins(AssetLoaderPlugin)
         // Loads our modular character
         .add_plugins(ModCharPlugin)
+        // Player related confids
+        .add_plugins(PlayerPlugin)
+        // Camera Plugin
+        .add_plugins(CameraPlugin)
         .run();
 }
 

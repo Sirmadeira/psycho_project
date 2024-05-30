@@ -31,7 +31,7 @@ pub fn run_animations(
         .play(
             animations
                 .0
-                .get("HitRecieve")
+                .get("Sword_Slash")
                 .expect("To have animation with this name to check available names look at spawn_scenes")
                 .clone_weak(),
         )

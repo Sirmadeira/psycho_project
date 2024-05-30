@@ -29,22 +29,16 @@ impl Plugin for ModCharPlugin {
         app.register_type::<Offset>();
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),
-            (disable_culling_for_skinned_meshes, link_animations),
+             link_animations,
         );
         app.add_systems(
             OnEnter(StateSpawnScene::Done),
             (run_animations, assemble_parts),
         );
-        app.add_systems(OnEnter(StateSpawnScene::FormingPhysics), spawn_colliders);
+        app.add_systems(OnEnter(StateSpawnScene::FormingPhysics), (spawn_simple_colliders,spawn_complex_colliders));
         app.add_systems(
             PostUpdate,
-            col_follow_animation
-                .run_if(in_state(StateSpawnScene::FormingPhysics))
-                .after(TransformSystem::TransformPropagate),
-        );
-        app.add_systems(
-            PostUpdate,
-            hard_colliders_look_at
+            simple_colliders_look_at
                 .run_if(in_state(StateSpawnScene::FormingPhysics))
                 .after(TransformSystem::TransformPropagate),
         );
