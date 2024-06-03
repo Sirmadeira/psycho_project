@@ -11,8 +11,8 @@ pub enum StateSpawnScene {
     #[default]
     Spawning,
     Spawned,
+    HandlingModularity,
     Done,
-    FormingPhysics,
 }
 
 // Marker component tells me the scene name or the filename in this case

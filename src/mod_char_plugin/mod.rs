@@ -1,14 +1,14 @@
 use bevy::prelude::*;
-use bevy::transform::TransformSystem;
 
-mod assemble_parts;
-mod form_colliders;
-mod link_animations;
-mod run_animations;
-mod spawn_scenes;
+// Making thme public just in case i need to query a specific component or resource for future logic
+pub mod assemble_parts;
+pub mod link_animations;
+pub mod run_animations;
+pub mod spawn_scenes;
+pub mod helpers;
 
 use self::{
-    assemble_parts::assemble_parts, form_colliders::*, link_animations::link_animations,
+    assemble_parts::assemble_parts, link_animations::link_animations,
     run_animations::run_animations, spawn_scenes::*,
 };
 
@@ -25,22 +25,13 @@ impl Plugin for ModCharPlugin {
         );
         // Will only load after we finished loading the assets
         app.init_state::<StateSpawnScene>();
-        app.register_type::<PidInfo>();
-        app.register_type::<Offset>();
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),
              link_animations,
         );
         app.add_systems(
-            OnEnter(StateSpawnScene::Done),
-            (run_animations, assemble_parts),
-        );
-        app.add_systems(OnEnter(StateSpawnScene::FormingPhysics), (spawn_simple_colliders,spawn_complex_colliders));
-        app.add_systems(
-            PostUpdate,
-            simple_colliders_look_at
-                .run_if(in_state(StateSpawnScene::FormingPhysics))
-                .after(TransformSystem::TransformPropagate),
+            OnEnter(StateSpawnScene::HandlingModularity),
+            ( assemble_parts,run_animations),
         );
     }
 }

@@ -1,21 +1,23 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
+use form_hitbox_plugin::FormHitboxPlugin;
 use iyes_perf_ui::prelude::*;
 
 mod asset_loader_plugin;
 mod camera_plugin;
 mod mod_char_plugin;
-mod player_plugin;
 mod resolution_plugin;
 mod world_plugin;
+mod player_plugin;
+mod form_hitbox_plugin;
 
 use asset_loader_plugin::AssetLoaderPlugin;
 use camera_plugin::CameraPlugin;
 use mod_char_plugin::ModCharPlugin;
-use player_plugin::PlayerPlugin;
 use resolution_plugin::ResolutionPlugin;
 use world_plugin::WorldPlugin;
+use player_plugin::PlayerPlugin;
 
 // Main running function
 fn main() {
@@ -57,6 +59,8 @@ fn main() {
         .add_plugins(ModCharPlugin)
         // Player related confids
         .add_plugins(PlayerPlugin)
+        // Forms physical dynamic colliders that will folllow along the transform of the player
+        .add_plugins(FormHitboxPlugin)
         // Camera Plugin
         .add_plugins(CameraPlugin)
         .run();

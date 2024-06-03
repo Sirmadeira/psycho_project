@@ -1,8 +1,27 @@
-use super::link_animations::AnimationEntityLink;
-use crate::mod_char_plugin::assemble_parts::find_child_with_name_containing;
+use crate::mod_char_plugin::spawn_scenes::StateSpawnScene;
+use crate::mod_char_plugin::link_animations::AnimationEntityLink;
+use crate::mod_char_plugin::helpers::find_child_with_name_containing;
+
 use bevy::prelude::*;
 use bevy_rapier3d:: prelude::*;
+use bevy::transform::TransformSystem;
 
+pub struct FormHitboxPlugin;
+
+impl Plugin for FormHitboxPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<PidInfo>();
+        app.register_type::<Offset>();
+        app.add_systems(OnEnter(StateSpawnScene::Done),(spawn_simple_colliders,spawn_complex_colliders));
+        app.add_systems(
+            PostUpdate,
+            simple_colliders_look_at
+                .run_if(in_state(StateSpawnScene::Done))
+                .after(TransformSystem::TransformPropagate),
+        );
+
+    }
+}
 
 // Colliders are not based on another collider axis
 #[derive(Component, Debug)]

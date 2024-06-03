@@ -1,5 +1,6 @@
-use super::spawn_scenes::StateSpawnScene;
 use bevy::prelude::*;
+use super::spawn_scenes::StateSpawnScene;
+
 
 // This exists because bevy is very annoying with it is api
 // And doesnt let me dissociate characters easily
@@ -51,5 +52,5 @@ pub fn link_animations(
         }
     }
     // Notice that the spawn scene will be done only after we add the animation to it
-    next_state.set(StateSpawnScene::Done)
+    next_state.set(StateSpawnScene::HandlingModularity)
 }
