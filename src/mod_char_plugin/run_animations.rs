@@ -1,4 +1,4 @@
-use super::{
+use crate::mod_char_plugin::{
     link_animations::AnimationEntityLink,
     spawn_scenes::{Animations, SceneEntitiesByName, SceneName},
 };

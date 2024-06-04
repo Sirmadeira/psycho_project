@@ -1,11 +1,8 @@
 use bevy::prelude::*;
 use super::spawn_scenes::StateSpawnScene;
 
-
-// This exists because bevy is very annoying with it is api
-// And doesnt let me dissociate characters easily
-
-#[derive(Component, Debug)]
+// Marker component that points out the entity that has and animation player
+#[derive(Reflect,Component, Debug)]
 pub struct AnimationEntityLink(pub Entity);
 
 // Recursive function interacts through the hierarchy and grab the "first" parent of the scene

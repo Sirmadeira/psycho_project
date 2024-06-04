@@ -9,7 +9,7 @@ mod camera_plugin;
 mod mod_char_plugin;
 mod resolution_plugin;
 mod world_plugin;
-mod player_plugin;
+mod player_movement_plugin;
 mod form_hitbox_plugin;
 
 use asset_loader_plugin::AssetLoaderPlugin;
@@ -17,7 +17,7 @@ use camera_plugin::CameraPlugin;
 use mod_char_plugin::ModCharPlugin;
 use resolution_plugin::ResolutionPlugin;
 use world_plugin::WorldPlugin;
-use player_plugin::PlayerPlugin;
+use player_movement_plugin::PlayerMovementPlugin;
 
 // Main running function
 fn main() {
@@ -58,7 +58,7 @@ fn main() {
         // Loads our modular character
         .add_plugins(ModCharPlugin)
         // Player related confids
-        .add_plugins(PlayerPlugin)
+        .add_plugins(PlayerMovementPlugin)
         // Forms physical dynamic colliders that will folllow along the transform of the player
         .add_plugins(FormHitboxPlugin)
         // Camera Plugin

@@ -1,14 +1,13 @@
-use super::spawn_scenes::{SceneEntitiesByName, SceneName};
-use crate::mod_char_plugin::StateSpawnScene;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use crate::mod_char_plugin::StateSpawnScene;
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
 use crate::mod_char_plugin::helpers::collect_bones;
-
+use crate::mod_char_plugin::spawn_scenes::{SceneEntitiesByName, SceneName};
 
 
 // Main function will call everyone
-pub fn assemble_parts(
+pub fn create_mod_player(
     mut commands: Commands,
     all_entities_with_children: Query<&Children>,
     scene_query: Query<(Entity, &SceneName), With<SceneName>>,
@@ -16,13 +15,15 @@ pub fn assemble_parts(
     names: Query<&Name>,
     mut next_state: ResMut<NextState<StateSpawnScene>>,
 ) {
+    // Creates modular player
     let (main_skeleton_bones, main_armature_entity) = get_main_skeleton_bones_and_armature(
         scene_entities_by_name,
         &all_entities_with_children,
         &names,
     );
-
+    // Attaching bones to our skeleton entity with their morphed meshes
     for (part_scene_entity, part_scene_name) in &scene_query {
+        // If statement to attach specific weapons
         if part_scene_name.0 == "sword.glb" {
             let mut sword_entity_commands = commands.entity(part_scene_entity);
             if let Some(handle_bone) = main_skeleton_bones.get("EquipmentHandle.R") {
@@ -41,7 +42,6 @@ pub fn assemble_parts(
         }
     }
     next_state.set(StateSpawnScene::Done);
-    println!("POT");
 }
 
 // Will grab the main skeleton entity

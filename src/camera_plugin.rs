@@ -1,19 +1,21 @@
+use std::f32::consts::PI;
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
-use bevy_rapier3d::plugin::PhysicsSet;
-
-use crate::player_plugin::Player;
 use iyes_perf_ui::prelude::*;
-use std::f32::consts::PI;
+use bevy_rapier3d::plugin::PhysicsSet;
+use crate:: player_movement_plugin::{StatePlayerCreation,Player};
 
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
+        app.register_type::<CamInfo>();
+        app.register_type::<Zoom>();
         app.add_systems(Startup, spawn_camera);
+        
         app.add_systems(
             Update,
             (
@@ -25,13 +27,13 @@ impl Plugin for CameraPlugin {
         );
         app.add_systems(
             PostUpdate,
-            sync_player_camera.after(PhysicsSet::StepSimulation),
+            sync_player_camera.run_if(in_state(StatePlayerCreation::Done)).after(PhysicsSet::StepSimulation),
         );
     }
 }
 
 // Setting of my camera
-#[derive(Component)]
+#[derive(Reflect,Component,Debug)]
 pub struct CamInfo {
     mouse_sens: f32,
     zoom_enabled: bool,
@@ -41,7 +43,8 @@ pub struct CamInfo {
     cursor_lock_active: bool,
 }
 
-/// Sets the zoom bounds (min & max)
+// Sets the zoom bounds (min & max)
+#[derive(Reflect,Component,Debug)]
 pub struct Zoom {
     pub min: f32,
     pub max: f32,
@@ -163,12 +166,8 @@ fn sync_player_camera(
     player_q: Query<&Transform, With<Player>>,
     mut cam_q: Query<(&mut CamInfo, &mut Transform), Without<Player>>,
 ) {
-    let Ok(player) = player_q.get_single() else {
-        return;
-    };
-    let Ok((cam, mut cam_transform)) = cam_q.get_single_mut() else {
-        return;
-    };
+    let player = player_q.get_single().expect("Player to exist");
+    let (cam, mut cam_transform) = cam_q.get_single_mut().expect("Camera to exist");
 
     let rotation_matrix = Mat3::from_quat(cam_transform.rotation);
 

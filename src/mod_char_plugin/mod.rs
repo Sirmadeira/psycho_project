@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use link_animations::AnimationEntityLink;
 
 // Making thme public just in case i need to query a specific component or resource for future logic
 pub mod assemble_parts;
@@ -8,16 +9,18 @@ pub mod spawn_scenes;
 pub mod helpers;
 
 use self::{
-    assemble_parts::assemble_parts, link_animations::link_animations,
+    assemble_parts::create_mod_player, link_animations::link_animations,
     run_animations::run_animations, spawn_scenes::*,
 };
 
 use crate::asset_loader_plugin::AssetLoaderState;
 
+// This plugin creates the character
 pub struct ModCharPlugin;
 
 impl Plugin for ModCharPlugin {
     fn build(&self, app: &mut App) {
+        app.register_type::<AnimationEntityLink>();
         // Loads scenes and spawn handles
         app.add_systems(
             OnEnter(AssetLoaderState::Done),
@@ -31,7 +34,7 @@ impl Plugin for ModCharPlugin {
         );
         app.add_systems(
             OnEnter(StateSpawnScene::HandlingModularity),
-            ( assemble_parts,run_animations),
+            (create_mod_player,run_animations),
         );
     }
 }

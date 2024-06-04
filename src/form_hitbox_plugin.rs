@@ -10,6 +10,8 @@ pub struct FormHitboxPlugin;
 
 impl Plugin for FormHitboxPlugin {
     fn build(&self, app: &mut App) {
+        app.register_type::<Hitbox>();
+        app.register_type::<BaseEntities>();
         app.register_type::<PidInfo>();
         app.register_type::<Offset>();
         app.add_systems(OnEnter(StateSpawnScene::Done),(spawn_simple_colliders,spawn_complex_colliders));
@@ -23,8 +25,13 @@ impl Plugin for FormHitboxPlugin {
     }
 }
 
+// Marker component good to check if any of the colliders are touching the ground collider
+#[derive(Reflect, Component, Debug)]
+pub struct Hitbox;
+
+
 // Colliders are not based on another collider axis
-#[derive(Component, Debug)]
+#[derive(Reflect,Component, Debug)]
 pub struct BaseEntities{
     start: Entity,
     end: Option<Entity>
@@ -245,6 +252,7 @@ pub fn spawn_complex_colliders(
 
         commands.spawn(create_collider(mid_point,collider))
         .insert(collider_name)
+        .insert(Hitbox)
         .insert(Offset(offset))
         .insert(BaseEntities{start: bone_entities[i],end: end})
         .insert(PidInfo{
@@ -317,19 +325,19 @@ pub fn spawn_simple_colliders(  mut commands: Commands,
 
         let col_name = Name::new(format!("{}_col", name.to_lowercase()));
 
-        let (collider, offset) = match name.as_str() {
-            "Torso" => (Collider::cylinder(0.2, 0.15), Vec3::ZERO),
-            "Foot.L" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO),
-            "Foot.R" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO),
-            "Neck" => (Collider::cuboid(0.15, 0.15, 0.1), Vec3::new(0.0, 0.10, 0.00)),
+        let (collider, offset,collision_group) = match name.as_str() {
+            "Torso" => (Collider::cylinder(0.2, 0.15), Vec3::ZERO,CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
+            "Foot.L" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO,CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
+            "Foot.R" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO,CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
+            "Neck" => (Collider::cuboid(0.15, 0.15, 0.1), Vec3::new(0.0, 0.10, 0.00),CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
             "Index1.R" => (
                 Collider::cuboid(0.05, 0.10, 0.10),
                 Vec3::new(0.00, -0.1, 0.0),
-            ),
+            CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
             "Index1.L" => (
                 Collider::cuboid(0.05, 0.10, 0.10),
                 Vec3::new(0.00, -0.1, 0.0),
-            ),
+            CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
             _ => continue, // Skip bones that are not in the list
         };
 
@@ -337,6 +345,7 @@ pub fn spawn_simple_colliders(  mut commands: Commands,
 
         commands
             .spawn(create_collider(trans1, collider))
+            .insert(Hitbox)
             .insert(BaseEntities{start:bone,end: None})
             .insert(Offset(offset))
             .insert(col_name)
@@ -346,7 +355,8 @@ pub fn spawn_simple_colliders(  mut commands: Commands,
                 kd: 0.1,
                 integral: Vec3::ZERO,
                 previous_error: Vec3::ZERO,
-            });
+            })
+            .insert(collision_group);
     }
 }
 
