@@ -3,8 +3,9 @@ use crate::mod_char_plugin::link_animations::AnimationEntityLink;
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
 
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use bevy_rapier3d:: prelude::*;
-use bevy::transform::TransformSystem;
+
 
 pub struct FormHitboxPlugin;
 
@@ -14,16 +15,18 @@ impl Plugin for FormHitboxPlugin {
         app.register_type::<BaseEntities>();
         app.register_type::<PidInfo>();
         app.register_type::<Offset>();
-        app.add_systems(OnEnter(StateSpawnScene::Done),(spawn_simple_colliders,spawn_complex_colliders));
+        app.add_systems(OnEnter(StateSpawnScene::Done),(spawn_simple_colliders));
         app.add_systems(
-            PostUpdate,
-            simple_colliders_look_at
+            Update,
+            colliders_look_at
                 .run_if(in_state(StateSpawnScene::Done))
-                .after(TransformSystem::TransformPropagate),
         );
 
     }
 }
+
+#[derive(Resource)]
+pub struct HitboxAcessor(pub HashMap<String, Entity>);
 
 // Marker component good to check if any of the colliders are touching the ground collider
 #[derive(Reflect, Component, Debug)]
@@ -58,6 +61,7 @@ pub struct PidInfo{
 fn create_collider(
     translation: Vec3,
     collider: Collider,
+    collision_group: CollisionGroups
 ) -> (
     RigidBody,
     SpatialBundle,
@@ -75,7 +79,7 @@ fn create_collider(
         GravityScale(0.0),
         collider,
         Velocity::zero(),
-        CollisionGroups::new(Group::GROUP_2, Group::NONE),
+        collision_group,
     )
 }
 
@@ -237,9 +241,9 @@ pub fn spawn_complex_colliders(
         // Distance between the two
         let half_height = trans1.distance(trans2) / 2.0;
 
-        let (collider,offset) = match collider_name.as_str() {
-            "POT" => (Collider::cylinder(half_height, 0.15), Vec3::ZERO),
-            _ =>(Collider::cylinder(half_height, 0.09), Vec3::ZERO)
+        let (collider,offset,collision_group) = match collider_name.as_str() {
+            "POT" => (Collider::cylinder(half_height, 0.15), Vec3::ZERO,CollisionGroups::new(Group::GROUP_2, Group::NONE)),
+            _ =>(Collider::cylinder(half_height, 0.09), Vec3::ZERO,CollisionGroups::new(Group::GROUP_2, Group::NONE))
         };
 
         // Optional entity
@@ -250,7 +254,7 @@ pub fn spawn_complex_colliders(
         };
 
 
-        commands.spawn(create_collider(mid_point,collider))
+        commands.spawn(create_collider(mid_point,collider,collision_group))
         .insert(collider_name)
         .insert(Hitbox)
         .insert(Offset(offset))
@@ -326,44 +330,53 @@ pub fn spawn_simple_colliders(  mut commands: Commands,
         let col_name = Name::new(format!("{}_col", name.to_lowercase()));
 
         let (collider, offset,collision_group) = match name.as_str() {
-            "Torso" => (Collider::cylinder(0.2, 0.15), Vec3::ZERO,CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
-            "Foot.L" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO,CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
-            "Foot.R" => (Collider::cuboid(0.05, 0.05, 0.05), Vec3::ZERO,CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
-            "Neck" => (Collider::cuboid(0.15, 0.15, 0.1), Vec3::new(0.0, 0.10, 0.00),CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
+            "Torso" => (Collider::cylinder(0.2, 0.15), Vec3::ZERO,CollisionGroups::new(Group::GROUP_1, Group::GROUP_1)),
+            "Foot.L" => (Collider::cuboid(0.05, 0.05, 0.10), Vec3::ZERO,CollisionGroups::new(Group::GROUP_2, Group::NONE)),
+            "Foot.R" => (Collider::cuboid(0.05, 0.05, 0.10), Vec3::ZERO,CollisionGroups::new(Group::GROUP_2, Group::NONE)),
+            "Neck" => (Collider::cuboid(0.15, 0.15, 0.1), Vec3::new(0.0, 0.10, 0.00),CollisionGroups::new(Group::GROUP_2, Group::NONE)),
             "Index1.R" => (
                 Collider::cuboid(0.05, 0.10, 0.10),
                 Vec3::new(0.00, -0.1, 0.0),
-            CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
+                CollisionGroups::new(Group::GROUP_2, Group::NONE)
+            ),
             "Index1.L" => (
                 Collider::cuboid(0.05, 0.10, 0.10),
                 Vec3::new(0.00, -0.1, 0.0),
-            CollisionGroups::new(Group::GROUP_1,Group::GROUP_1)),
+                CollisionGroups::new(Group::GROUP_2, Group::NONE)
+            ),
             _ => continue, // Skip bones that are not in the list
         };
 
+        
 
-
-        commands
-            .spawn(create_collider(trans1, collider))
+        let entity_id = commands
+            .spawn(create_collider(trans1, collider,collision_group))
             .insert(Hitbox)
             .insert(BaseEntities{start:bone,end: None})
             .insert(Offset(offset))
-            .insert(col_name)
+            .insert(col_name.clone())
             .insert(PidInfo{
                 kp: 50.0,
                 ki: 15.0,
                 kd: 0.1,
                 integral: Vec3::ZERO,
                 previous_error: Vec3::ZERO,
-            })
-            .insert(collision_group);
+            }).id();
+        
+        // Creating easy way to acess specific colliders
+        let mut hitbox_acessor = HashMap::new();
+
+        hitbox_acessor.insert(col_name.to_string(),entity_id);
+
+        commands.insert_resource(HitboxAcessor(hitbox_acessor))
+        
     }
 }
 
 
 
 //
-pub fn simple_colliders_look_at(
+pub fn colliders_look_at(
     mut collider_info: Query<
         (&mut Velocity, &Transform, &BaseEntities,&mut PidInfo, &Offset),
         With<BaseEntities>,

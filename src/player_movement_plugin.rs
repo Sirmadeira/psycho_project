@@ -38,7 +38,6 @@ impl Plugin for PlayerMovementPlugin {
                 .chain()
                 .run_if(in_state(StatePlayerCreation::Done)),
         );
-        app.add_systems(Update, display_events);
     }
 }
 
