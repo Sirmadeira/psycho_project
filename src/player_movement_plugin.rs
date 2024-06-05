@@ -124,7 +124,7 @@ fn spawn_main_rigidbody(
             torque_impulse: Vec3::ZERO,
         },
         Name::new("Player1"),
-        Collider::cuboid(0.08, 0.08, 0.08),
+        Collider::ball(0.5),
         CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
         GravityScale(1.0),
         AdditionalMassProperties::Mass(10.0),
@@ -353,7 +353,6 @@ fn move_character(
     mut q_1: Query<(&mut Velocity, &mut ExternalImpulse), With<Player>>,
 ) {
     for event in movement_event_reader.read() {
-        println!("{:?}", event);
         for (mut vel, mut status) in &mut q_1 {
             match event {
                 MovementAction::Move(direction) => {
