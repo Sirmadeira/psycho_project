@@ -1,9 +1,6 @@
 use crate::asset_loader_plugin::MyAssets;
 use bevy::utils::HashMap;
-use bevy::{
-    gltf::Gltf,
-    prelude::*,
-};
+use bevy::{gltf::Gltf, prelude::*};
 
 // Tell me in which state the scene is
 #[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]

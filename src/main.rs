@@ -6,18 +6,18 @@ use iyes_perf_ui::prelude::*;
 
 mod asset_loader_plugin;
 mod camera_plugin;
+mod form_hitbox_plugin;
 mod mod_char_plugin;
+mod player_movement_plugin;
 mod resolution_plugin;
 mod world_plugin;
-mod player_movement_plugin;
-mod form_hitbox_plugin;
 
 use asset_loader_plugin::AssetLoaderPlugin;
 use camera_plugin::CameraPlugin;
 use mod_char_plugin::ModCharPlugin;
+use player_movement_plugin::PlayerMovementPlugin;
 use resolution_plugin::ResolutionPlugin;
 use world_plugin::WorldPlugin;
-use player_movement_plugin::PlayerMovementPlugin;
 
 // Main running function
 fn main() {
@@ -30,7 +30,6 @@ fn main() {
             small: Vec2::new(640.0, 360.0),
         })
         // Thing I may want  to change later
-        .insert_resource(Time::<Fixed>::from_hz(64.0))
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 present_mode: bevy::window::PresentMode::Fifo,

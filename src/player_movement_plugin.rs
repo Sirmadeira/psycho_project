@@ -38,6 +38,7 @@ impl Plugin for PlayerMovementPlugin {
                 .chain()
                 .run_if(in_state(StatePlayerCreation::Done)),
         );
+        app.add_systems(Update, display_events);
     }
 }
 
@@ -126,7 +127,8 @@ fn spawn_main_rigidbody(
         Collider::cuboid(0.08, 0.08, 0.08),
         CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
         GravityScale(1.0),
-        AdditionalMassProperties::Mass(10.0)
+        AdditionalMassProperties::Mass(10.0),
+        ActiveEvents::COLLISION_EVENTS
     );
 
     let main_rigidbody_entity_id = commands.spawn(main_rigidbody).id();
@@ -257,6 +259,20 @@ fn keyboard_dash(
     }
 }
 
+// Usefull info
+fn display_events(
+    mut collision_events: EventReader<CollisionEvent>,
+    mut contact_force_events: EventReader<ContactForceEvent>,
+) {
+    for collision_event in collision_events.read() {
+        println!("Received collision event: {:?}", collision_event);
+    }
+
+    for contact_force_event in contact_force_events.read() {
+        println!("Received contact force event: {:?}", contact_force_event);
+    }
+}
+
 fn check_status_effect(
     time: Res<Time>,
     mut commands: Commands,
@@ -348,7 +364,7 @@ fn move_character(
                     status.impulse.x = direction.x * 100.0;
                     status.impulse.z = direction.y * 100.0;
                 }
-                MovementAction::Jump => vel.linvel.y = 15.0,
+                MovementAction::Jump => vel.linvel.y += 15.0,
             }
         }
     }

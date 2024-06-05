@@ -1,8 +1,8 @@
-use bevy::prelude::*;
 use super::spawn_scenes::StateSpawnScene;
+use bevy::prelude::*;
 
 // Marker component that points out the entity that has and animation player
-#[derive(Reflect,Component, Debug)]
+#[derive(Reflect, Component, Debug)]
 pub struct AnimationEntityLink(pub Entity);
 
 // Recursive function interacts through the hierarchy and grab the "first" parent of the scene

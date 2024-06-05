@@ -1,10 +1,9 @@
+use crate::mod_char_plugin::helpers::collect_bones;
+use crate::mod_char_plugin::helpers::find_child_with_name_containing;
+use crate::mod_char_plugin::spawn_scenes::{SceneEntitiesByName, SceneName};
+use crate::mod_char_plugin::StateSpawnScene;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use crate::mod_char_plugin::StateSpawnScene;
-use crate::mod_char_plugin::helpers::find_child_with_name_containing;
-use crate::mod_char_plugin::helpers::collect_bones;
-use crate::mod_char_plugin::spawn_scenes::{SceneEntitiesByName, SceneName};
-
 
 // Main function will call everyone
 pub fn create_mod_player(
@@ -84,7 +83,6 @@ pub fn get_main_skeleton_bones_and_armature(
 
     return (main_bones, main_skeleton_armature);
 }
-
 
 pub fn attach_part_to_main_skeleton(
     commands: &mut Commands,

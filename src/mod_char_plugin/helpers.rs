@@ -1,10 +1,9 @@
+use bevy::prelude::*;
+use bevy::utils::HashMap;
+use std::collections::VecDeque;
 
-    use bevy::prelude::*;
-    use bevy::utils::HashMap;
-    use std::collections::VecDeque;
-    
-    // Collects a lot of subchild bones   
-    pub fn collect_bones(
+// Collects a lot of subchild bones
+pub fn collect_bones(
     all_entities_with_children: &Query<&Children>,
     names: &Query<&Name>,
     root_bone: &Entity,
