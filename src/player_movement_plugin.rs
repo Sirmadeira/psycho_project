@@ -105,11 +105,12 @@ fn spawn_main_rigidbody(
     mut next_state: ResMut<NextState<StatePlayerCreation>>,
 ){
     let character = mod_character.get_single().expect("Modular character to exist");
+
     let main_rigidbody = (
         RigidBody::Dynamic,
         Player,
         SpatialBundle {
-            transform: Transform::from_xyz(2.0, 0.0, 0.0),
+            transform: Transform::from_xyz(2.0, 1.0, 0.0),
             ..Default::default()
         },
         Velocity::zero(),
@@ -122,13 +123,15 @@ fn spawn_main_rigidbody(
             torque_impulse: Vec3::ZERO,
         },
         Name::new("Player1"),
+        Collider::cuboid(0.08, 0.08, 0.08),
+        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
         GravityScale(1.0),
         AdditionalMassProperties::Mass(10.0)
     );
 
     let main_rigidbody_entity_id = commands.spawn(main_rigidbody).id();
 
-    commands.entity(character).set_parent_in_place(main_rigidbody_entity_id);
+    commands.entity(character).set_parent(main_rigidbody_entity_id);
 
     next_state.set(StatePlayerCreation::Done)
 }
@@ -155,19 +158,6 @@ fn spawn_timers_limits(mut commands: Commands) {
     commands.spawn(limit);
 }
 
-// Usefull info
-fn display_events(
-    mut collision_events: EventReader<CollisionEvent>,
-    mut contact_force_events: EventReader<ContactForceEvent>,
-) {
-    for collision_event in collision_events.read() {
-        println!("Received collision event: {:?}", collision_event);
-    }
-
-    for contact_force_event in contact_force_events.read() {
-        println!("Received contact force event: {:?}", contact_force_event);
-    }
-}
 
 fn keyboard_walk(
     keys: Res<ButtonInput<KeyCode>>,

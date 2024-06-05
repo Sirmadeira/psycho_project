@@ -3,6 +3,7 @@ use crate::mod_char_plugin::link_animations::AnimationEntityLink;
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
 
 use bevy::prelude::*;
+use bevy::transform::TransformSystem;
 use bevy::utils::HashMap;
 use bevy_rapier3d:: prelude::*;
 
@@ -15,13 +16,13 @@ impl Plugin for FormHitboxPlugin {
         app.register_type::<BaseEntities>();
         app.register_type::<PidInfo>();
         app.register_type::<Offset>();
-        app.add_systems(OnEnter(StateSpawnScene::Done),(spawn_simple_colliders));
+        app.add_systems(OnEnter(StateSpawnScene::Done),(spawn_simple_colliders,spawn_complex_colliders).chain());
         app.add_systems(
-            Update,
+            PostUpdate,
             colliders_look_at
                 .run_if(in_state(StateSpawnScene::Done))
+                .after(TransformSystem::TransformPropagate),
         );
-
     }
 }
 
@@ -83,6 +84,109 @@ fn create_collider(
     )
 }
 
+
+pub fn spawn_simple_colliders(  mut commands: Commands,
+    all_entities_with_children: Query<&Children>,
+    main_entity_option: Query<Entity, With<AnimationEntityLink>>,
+    names: Query<&Name>,
+    global_transforms: Query<&GlobalTransform>,){
+
+    // Main bone entity to search in
+    let Ok(main_entity) = main_entity_option.get_single() else {
+        println!("No player entity available");
+        return;
+    };
+    // Bones without tail
+    let special_bones = [
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso")
+            .expect("Unique torso bone to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Foot.R",
+        )
+        .expect("Unique lower feet to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Foot.L",
+        )
+        .expect("Unique lower feet to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Neck")
+            .expect("Unique lower feet leg to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Index1.L",
+        )
+        .expect("Unique Index1 to exist"),
+        find_child_with_name_containing(
+            &all_entities_with_children,
+            &names,
+            &main_entity,
+            "Index1.R",
+        )
+        .expect("Unique Index1 to exist"),
+    ];
+     // Hard coded colliders
+     for bone in special_bones {
+        // Use unwrap_or_else to handle potential None values safely if needed
+        let name = names.get(bone).expect("Bone name not found");
+
+        let trans1 = global_transforms
+            .get(bone)
+            .expect("Global transform not found")
+            .translation();
+
+        let col_name = Name::new(format!("{}_col", name.to_lowercase()));
+
+        let (collider, offset,collision_group) = match name.as_str() {
+            "Torso" => (Collider::cylinder(0.2, 0.15), Vec3::ZERO,CollisionGroups::new(Group::GROUP_2, Group::NONE)),
+            "Foot.L" => (Collider::cuboid(0.05, 0.10, 0.05), Vec3::ZERO,CollisionGroups::new(Group::GROUP_2, Group::NONE)),
+            "Foot.R" => (Collider::cuboid(0.05, 0.10, 0.05), Vec3::ZERO,CollisionGroups::new(Group::GROUP_2, Group::NONE)),
+            "Neck" => (Collider::cuboid(0.15, 0.15, 0.1), Vec3::new(0.0, 0.10, 0.00),CollisionGroups::new(Group::GROUP_2, Group::NONE)),
+            "Index1.R" => (
+                Collider::cuboid(0.05, 0.10, 0.10),
+                Vec3::new(0.00, -0.1, 0.0),
+                CollisionGroups::new(Group::GROUP_2, Group::NONE)
+            ),
+            "Index1.L" => (
+                Collider::cuboid(0.05, 0.10, 0.10),
+                Vec3::new(0.00, -0.1, 0.0),
+                CollisionGroups::new(Group::GROUP_2, Group::NONE)
+            ),
+            _ => continue, // Skip bones that are not in the list
+        };
+
+        
+
+        let entity_id = commands
+            .spawn(create_collider(trans1, collider,collision_group))
+            .insert(Hitbox)
+            .insert(BaseEntities{start:bone,end: None})
+            .insert(Offset(offset))
+            .insert(col_name.clone())
+            .insert(PidInfo{
+                kp: 50.0,
+                ki: 15.0,
+                kd: 0.1,
+                integral: Vec3::ZERO,
+                previous_error: Vec3::ZERO,
+            }).id();
+        
+        // Creating easy way to acess specific colliders
+        let mut hitbox_acessor = HashMap::new();
+
+        hitbox_acessor.insert(col_name.to_string(),entity_id);
+
+        commands.insert_resource(HitboxAcessor(hitbox_acessor))
+        
+    }
+}
+
 // WARNING ONLY ADD TO UNIQUE BONES
 pub fn spawn_complex_colliders(
     mut commands: Commands,
@@ -90,6 +194,7 @@ pub fn spawn_complex_colliders(
     main_entity_option: Query<Entity, With<AnimationEntityLink>>,
     names: Query<&Name>,
     global_transforms: Query<&GlobalTransform>,
+    mut hitbox_acessor: ResMut<HitboxAcessor>
 ) {
     // Main bone entity to search in
     let Ok(main_entity) = main_entity_option.get_single() else {
@@ -99,7 +204,6 @@ pub fn spawn_complex_colliders(
 
     // Start and end entities for something
     let bone_entities = [
-        // find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso").expect("Unique torso bone to exist"),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
@@ -254,8 +358,8 @@ pub fn spawn_complex_colliders(
         };
 
 
-        commands.spawn(create_collider(mid_point,collider,collision_group))
-        .insert(collider_name)
+        let entity_id = commands.spawn(create_collider(mid_point,collider,collision_group))
+        .insert(collider_name.clone())
         .insert(Hitbox)
         .insert(Offset(offset))
         .insert(BaseEntities{start: bone_entities[i],end: end})
@@ -265,113 +369,14 @@ pub fn spawn_complex_colliders(
             kd: 0.1,
             integral: Vec3::ZERO,
             previous_error: Vec3::ZERO,
-        });
+        }).id();
         // Move to the next pair of elements
         i += 2;
+
+        hitbox_acessor.0.insert(collider_name.to_string(), entity_id );
     }
 }
 
-pub fn spawn_simple_colliders(  mut commands: Commands,
-    all_entities_with_children: Query<&Children>,
-    main_entity_option: Query<Entity, With<AnimationEntityLink>>,
-    names: Query<&Name>,
-    global_transforms: Query<&GlobalTransform>,){
-
-    // Main bone entity to search in
-    let Ok(main_entity) = main_entity_option.get_single() else {
-        println!("No player entity available");
-        return;
-    };
-    // Bones without tail
-    let special_bones = [
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso")
-            .expect("Unique torso bone to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "Foot.R",
-        )
-        .expect("Unique lower feet to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "Foot.L",
-        )
-        .expect("Unique lower feet to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Neck")
-            .expect("Unique lower feet leg to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "Index1.L",
-        )
-        .expect("Unique Index1 to exist"),
-        find_child_with_name_containing(
-            &all_entities_with_children,
-            &names,
-            &main_entity,
-            "Index1.R",
-        )
-        .expect("Unique Index1 to exist"),
-    ];
-     // Hard coded colliders
-     for bone in special_bones {
-        // Use unwrap_or_else to handle potential None values safely if needed
-        let name = names.get(bone).expect("Bone name not found");
-
-        let trans1 = global_transforms
-            .get(bone)
-            .expect("Global transform not found")
-            .translation();
-
-        let col_name = Name::new(format!("{}_col", name.to_lowercase()));
-
-        let (collider, offset,collision_group) = match name.as_str() {
-            "Torso" => (Collider::cylinder(0.2, 0.15), Vec3::ZERO,CollisionGroups::new(Group::GROUP_1, Group::GROUP_1)),
-            "Foot.L" => (Collider::cuboid(0.05, 0.05, 0.10), Vec3::ZERO,CollisionGroups::new(Group::GROUP_2, Group::NONE)),
-            "Foot.R" => (Collider::cuboid(0.05, 0.05, 0.10), Vec3::ZERO,CollisionGroups::new(Group::GROUP_2, Group::NONE)),
-            "Neck" => (Collider::cuboid(0.15, 0.15, 0.1), Vec3::new(0.0, 0.10, 0.00),CollisionGroups::new(Group::GROUP_2, Group::NONE)),
-            "Index1.R" => (
-                Collider::cuboid(0.05, 0.10, 0.10),
-                Vec3::new(0.00, -0.1, 0.0),
-                CollisionGroups::new(Group::GROUP_2, Group::NONE)
-            ),
-            "Index1.L" => (
-                Collider::cuboid(0.05, 0.10, 0.10),
-                Vec3::new(0.00, -0.1, 0.0),
-                CollisionGroups::new(Group::GROUP_2, Group::NONE)
-            ),
-            _ => continue, // Skip bones that are not in the list
-        };
-
-        
-
-        let entity_id = commands
-            .spawn(create_collider(trans1, collider,collision_group))
-            .insert(Hitbox)
-            .insert(BaseEntities{start:bone,end: None})
-            .insert(Offset(offset))
-            .insert(col_name.clone())
-            .insert(PidInfo{
-                kp: 50.0,
-                ki: 15.0,
-                kd: 0.1,
-                integral: Vec3::ZERO,
-                previous_error: Vec3::ZERO,
-            }).id();
-        
-        // Creating easy way to acess specific colliders
-        let mut hitbox_acessor = HashMap::new();
-
-        hitbox_acessor.insert(col_name.to_string(),entity_id);
-
-        commands.insert_resource(HitboxAcessor(hitbox_acessor))
-        
-    }
-}
 
 
 
