@@ -5,10 +5,8 @@ use bevy::{
 use bevy_rapier3d::prelude::*;
 use std::time::Duration;
 
+use crate::mod_char_plugin::{link_animations::AnimationEntityLink, spawn_scenes::StateSpawnScene};
 use crate::{camera_plugin::CamInfo, world_plugin::Ground};
-use crate::
-    mod_char_plugin::{link_animations::AnimationEntityLink, spawn_scenes::StateSpawnScene}
-;
 
 pub struct PlayerMovementPlugin;
 
@@ -34,14 +32,13 @@ impl Plugin for PlayerMovementPlugin {
                 keyboard_dash,
                 keyboard_jump,
                 // Event manager
-                move_character,
-                //  WIP
-                apply_movement_damping,
             )
                 .chain()
                 .run_if(in_state(StatePlayerCreation::Done)),
         );
-        app.add_systems(Update, display_events);
+        app.add_systems(FixedUpdate, display_events);
+        app.add_systems(FixedUpdate, move_character.run_if(in_state(StatePlayerCreation::Done)));
+        app.add_systems(FixedUpdate, player_look_at.run_if(in_state(StatePlayerCreation::Done)));
     }
 }
 
@@ -58,7 +55,7 @@ pub struct Player;
 
 // Marker component -
 #[derive(Component)]
-pub struct PlayerCollider;
+pub struct PlayerGroundCollider;
 
 #[derive(Event, Debug)]
 pub enum MovementAction {
@@ -76,7 +73,7 @@ pub enum MovementAction {
 pub struct Grounded;
 
 // Check if has dashed
-#[derive( Reflect,Component, Debug)]
+#[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
 struct StatusEffectDash {
     dash_duration: Timer,
@@ -124,7 +121,7 @@ fn spawn_main_rigidbody(
         },
         Velocity::zero(),
         Damping {
-            linear_damping: 0.0,
+            linear_damping: 0.9,
             angular_damping: 0.0,
         },
         ExternalImpulse {
@@ -141,7 +138,7 @@ fn spawn_main_rigidbody(
         CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
         ActiveEvents::COLLISION_EVENTS,
         TransformBundle::from(Transform::from_xyz(0.0, 0.25, 0.0)),
-        PlayerCollider
+        PlayerGroundCollider,
     );
 
     let main_rigidbody_entity_id = commands
@@ -236,8 +233,7 @@ fn keyboard_dash(
     p_t.up.tick(Duration::from_secs_f32(time.delta_seconds()));
     p_t.down.tick(Duration::from_secs_f32(time.delta_seconds()));
     p_t.left.tick(Duration::from_secs_f32(time.delta_seconds()));
-    p_t.right
-        .tick(Duration::from_secs_f32(time.delta_seconds()));
+    p_t.right.tick(Duration::from_secs_f32(time.delta_seconds()));
 
     if keys.just_released(KeyCode::KeyW) {
         p_t.up.reset();
@@ -315,7 +311,7 @@ fn check_status_effect(
 pub fn check_status_grounded(
     rapier_context: Res<RapierContext>,
     mut commands: Commands,
-    q_1: Query<Entity, With<PlayerCollider>>,
+    q_1: Query<Entity, With<PlayerGroundCollider>>,
     q_2: Query<Entity, With<Ground>>,
 ) {
     // Grabs every hitbox and check if any of them are touching the ground.
@@ -332,16 +328,17 @@ pub fn check_status_grounded(
     } else {
         commands.entity(entity1).remove::<Grounded>();
     }
-
 }
 
 fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
-    q_1: Query<Has<Grounded>,With<PlayerCollider>>,
+    q_1: Query<Has<Grounded>, With<PlayerGroundCollider>>,
     mut q_2: Query<&mut Limit>,
 ) {
-    let is_grounded = q_1.get_single().expect("PlayerCollider to have status grounder");
+    let is_grounded = q_1
+        .get_single()
+        .expect("PlayerCollider to have status grounder");
     for mut jumps in q_2.iter_mut() {
         if is_grounded {
             jumps.jump_limit = Limit {
@@ -369,8 +366,8 @@ fn move_character(
                     vel.linvel.z += direction.y * 20.0 * time.delta_seconds();
                 }
                 MovementAction::Dash(direction) => {
-                    status.impulse.x = direction.x * 100.0;
-                    status.impulse.z = direction.y * 100.0;
+                    status.impulse.x += direction.x * 100.0;
+                    status.impulse.z += direction.y * 100.0;
                 }
                 MovementAction::Jump => vel.linvel.y += 15.0,
             }
@@ -378,9 +375,39 @@ fn move_character(
     }
 }
 
-fn apply_movement_damping(mut query: Query<&mut Damping, With<Player>>) {
-    for mut damping_factor in &mut query {
-        // Todo create state slowing down
-        damping_factor.linear_damping = 0.9;
+fn player_look_at(
+    q_1: Query<&Transform,With<CamInfo>>,
+    mut q_2: Query<&mut Velocity,With<Player>>,
+    q_3: Query<&Transform,With<Player>>,
+    time: Res<Time>
+){
+    let cam_transform = q_1.get_single().expect("Camera to exist");
+    let player_transform =  q_3.get_single().expect("Player to exist");
+
+    let dt = time.delta_seconds();
+    // Value incremented continously until it reach interpolation
+    let mut s = 0.0;
+    // How much your interpolation should delay the bigger the faster it interpolates the lower the smoother it look but it takes a while to adjustx
+    let interpolation_factor:f32 = 5.0;
+
+    let difference = cam_transform.rotation * player_transform.rotation.inverse();
+
+    for mut v in q_2.iter_mut(){
+        while s < 1.0{
+            
+            let (target_axis,angle) = player_transform.rotation.slerp(difference,s).to_axis_angle();
+
+            let angvel = (
+                target_axis[0] * angle / dt,
+                target_axis[1] * angle / dt,
+                target_axis[2] * angle / dt,
+            );
+
+            s += interpolation_factor * dt;
+            
+            v.angvel = angvel.into();
+        }
     }
+
+
 }

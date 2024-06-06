@@ -29,6 +29,8 @@ fn main() {
             medium: Vec2::new(800.0, 600.0),
             small: Vec2::new(640.0, 360.0),
         })
+        // Run at the smae timestep as rapier
+        .insert_resource(Time::<Fixed>::from_hz(60.0))
         // Thing I may want  to change later
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {

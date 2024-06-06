@@ -20,7 +20,7 @@ impl Plugin for FormHitboxPlugin {
             (spawn_simple_colliders, spawn_complex_colliders).chain(),
         );
         app.add_systems(
-            PostUpdate,
+            FixedPostUpdate,
             colliders_look_at
                 .run_if(in_state(StateSpawnScene::Done))
                 .after(TransformSystem::TransformPropagate),
