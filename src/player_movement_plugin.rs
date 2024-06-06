@@ -13,6 +13,7 @@ pub struct PlayerMovementPlugin;
 impl Plugin for PlayerMovementPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<StatusEffectDash>();
+        app.register_type::<PdInfo>();
         app.register_type::<Timers>();
         app.register_type::<Limit>();
         app.add_event::<MovementAction>();
@@ -79,6 +80,13 @@ struct StatusEffectDash {
     dash_duration: Timer,
 }
 
+// Kind of a simple pid
+#[derive(Reflect, Component, Debug)]
+pub struct PdInfo {
+    // Proportional gain how agressive to reac
+    kp: f32,
+}
+
 // Times the dash for each key
 #[derive(Reflect, Component, Debug)]
 struct Timers {
@@ -127,6 +135,9 @@ fn spawn_main_rigidbody(
         ExternalImpulse {
             impulse: Vec3::ZERO,
             torque_impulse: Vec3::ZERO,
+        },
+        PdInfo{
+            kp: 5.0,
         },
         Name::new("Player1"),
         GravityScale(1.0),
@@ -366,8 +377,8 @@ fn move_character(
                     vel.linvel.z += direction.y * 20.0 * time.delta_seconds();
                 }
                 MovementAction::Dash(direction) => {
-                    status.impulse.x += direction.x * 100.0;
-                    status.impulse.z += direction.y * 100.0;
+                    status.impulse.x = direction.x * 100.0;
+                    status.impulse.z = direction.y * 100.0;
                 }
                 MovementAction::Jump => vel.linvel.y += 15.0,
             }
@@ -375,39 +386,27 @@ fn move_character(
     }
 }
 
+
+// This will on a later occasion work a
 fn player_look_at(
     q_1: Query<&Transform,With<CamInfo>>,
-    mut q_2: Query<&mut Velocity,With<Player>>,
-    q_3: Query<&Transform,With<Player>>,
-    time: Res<Time>
+    q_2: Query<(&Transform,&PdInfo),With<Player>>,
+    mut q_3: Query<&mut Velocity,With<Player>>,
 ){
     let cam_transform = q_1.get_single().expect("Camera to exist");
-    let player_transform =  q_3.get_single().expect("Player to exist");
+    let (player_transform ,pd_info)=  q_2.get_single().expect("Player to exist");
 
-    let dt = time.delta_seconds();
-    // Value incremented continously until it reach interpolation
-    let mut s = 0.0;
-    // How much your interpolation should delay the bigger the faster it interpolates the lower the smoother it look but it takes a while to adjustx
-    let interpolation_factor:f32 = 5.0;
+    let rot_error = (cam_transform.rotation * player_transform.rotation.inverse()).normalize();
 
-    let difference = cam_transform.rotation * player_transform.rotation.inverse();
+    let (axis_error,angle_error) = rot_error.to_axis_angle();
 
-    for mut v in q_2.iter_mut(){
-        while s < 1.0{
-            
-            let (target_axis,angle) = player_transform.rotation.slerp(difference,s).to_axis_angle();
+    let angle_error_rad = angle_error.to_radians();
 
-            let angvel = (
-                target_axis[0] * angle / dt,
-                target_axis[1] * angle / dt,
-                target_axis[2] * angle / dt,
-            );
+    let angvel = pd_info.kp * angle_error_rad * axis_error;
 
-            s += interpolation_factor * dt;
-            
-            v.angvel = angvel.into();
+    if angle_error * angle_error > 0.01f32{
+        for mut v in q_3.iter_mut(){
+            v.angvel = angvel;
         }
     }
-
-
 }
