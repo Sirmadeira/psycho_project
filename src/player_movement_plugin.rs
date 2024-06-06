@@ -137,7 +137,7 @@ fn spawn_main_rigidbody(
             torque_impulse: Vec3::ZERO,
         },
         PdInfo{
-            kp: 5.0,
+            kp: 500.0,
         },
         Name::new("Player1"),
         GravityScale(1.0),
@@ -145,7 +145,7 @@ fn spawn_main_rigidbody(
     );
     // Spawning the collider that detects collision
     let main_collider = (
-        Collider::ball(0.25),
+        Collider::capsule_x(0.25, 0.25),
         CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
         ActiveEvents::COLLISION_EVENTS,
         TransformBundle::from(Transform::from_xyz(0.0, 0.25, 0.0)),
