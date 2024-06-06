@@ -1,12 +1,12 @@
-use std::f32::consts::PI;
+use crate::player_movement_plugin::{Player, StatePlayerCreation};
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
-use iyes_perf_ui::prelude::*;
 use bevy_rapier3d::plugin::PhysicsSet;
-use crate:: player_movement_plugin::{StatePlayerCreation,Player};
+use iyes_perf_ui::prelude::*;
+use std::f32::consts::PI;
 
 pub struct CameraPlugin;
 
@@ -15,7 +15,7 @@ impl Plugin for CameraPlugin {
         app.register_type::<CamInfo>();
         app.register_type::<Zoom>();
         app.add_systems(Startup, spawn_camera);
-        
+
         app.add_systems(
             Update,
             (
@@ -27,13 +27,15 @@ impl Plugin for CameraPlugin {
         );
         app.add_systems(
             PostUpdate,
-            sync_player_camera.run_if(in_state(StatePlayerCreation::Done)).after(PhysicsSet::StepSimulation),
+            sync_player_camera
+                .run_if(in_state(StatePlayerCreation::Done))
+                .after(PhysicsSet::StepSimulation),
         );
     }
 }
 
 // Setting of my camera
-#[derive(Reflect,Component,Debug)]
+#[derive(Reflect, Component, Debug)]
 pub struct CamInfo {
     mouse_sens: f32,
     zoom_enabled: bool,
@@ -44,7 +46,7 @@ pub struct CamInfo {
 }
 
 // Sets the zoom bounds (min & max)
-#[derive(Reflect,Component,Debug)]
+#[derive(Reflect, Component, Debug)]
 pub struct Zoom {
     pub min: f32,
     pub max: f32,

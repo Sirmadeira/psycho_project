@@ -1,16 +1,16 @@
-use std::time::Duration;
 use bevy::{
-     prelude::*, time::{Stopwatch, Timer}
+    prelude::*,
+    time::{Stopwatch, Timer},
 };
 use bevy_rapier3d::prelude::*;
-use bevy::ecs::query::QuerySingleError;
+use std::time::Duration;
 
-use crate::{form_hitbox_plugin::Hitbox, mod_char_plugin::{link_animations::AnimationEntityLink, spawn_scenes::StateSpawnScene}};
 use crate::{camera_plugin::CamInfo, world_plugin::Ground};
-
+use crate::
+    mod_char_plugin::{link_animations::AnimationEntityLink, spawn_scenes::StateSpawnScene}
+;
 
 pub struct PlayerMovementPlugin;
-
 
 impl Plugin for PlayerMovementPlugin {
     fn build(&self, app: &mut App) {
@@ -18,7 +18,10 @@ impl Plugin for PlayerMovementPlugin {
         app.register_type::<Timers>();
         app.register_type::<Limit>();
         app.add_event::<MovementAction>();
-        app.add_systems(OnEnter(StateSpawnScene::Done),  (spawn_main_rigidbody,spawn_timers_limits));
+        app.add_systems(
+            OnEnter(StateSpawnScene::Done),
+            (spawn_main_rigidbody, spawn_timers_limits),
+        );
         app.init_state::<StatePlayerCreation>();
         app.add_systems(
             Update,
@@ -42,18 +45,20 @@ impl Plugin for PlayerMovementPlugin {
     }
 }
 
-
-
 #[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub enum StatePlayerCreation{
+pub enum StatePlayerCreation {
     #[default]
     Spawning,
-    Done
+    Done,
 }
 
-// Marker component
+// Marker component - Basically the rigid body that will move the player
 #[derive(Component)]
 pub struct Player;
+
+// Marker component -
+#[derive(Component)]
+pub struct PlayerCollider;
 
 #[derive(Event, Debug)]
 pub enum MovementAction {
@@ -71,14 +76,14 @@ pub enum MovementAction {
 pub struct Grounded;
 
 // Check if has dashed
-#[derive(Component,Reflect,Debug)]
+#[derive( Reflect,Component, Debug)]
 #[component(storage = "SparseSet")]
 struct StatusEffectDash {
     dash_duration: Timer,
 }
 
 // Times the dash for each key
-#[derive(Reflect,Component,Debug)]
+#[derive(Reflect, Component, Debug)]
 struct Timers {
     up: Stopwatch,
     down: Stopwatch,
@@ -87,7 +92,7 @@ struct Timers {
 }
 
 // Amount of jumps you can have
-#[derive(Reflect,Component,Debug)]
+#[derive(Reflect, Component, Debug)]
 struct Limit {
     jump_limit: u8,
 }
@@ -102,11 +107,14 @@ impl Default for Limit {
 // Make it as the parent of the animation bones
 fn spawn_main_rigidbody(
     mut commands: Commands,
-    mod_character: Query<Entity,With<AnimationEntityLink>>,
+    mod_character: Query<Entity, With<AnimationEntityLink>>,
     mut next_state: ResMut<NextState<StatePlayerCreation>>,
-){
-    let character = mod_character.get_single().expect("Modular character to exist");
-
+) {
+    // Getting modular character
+    let character = mod_character
+        .get_single()
+        .expect("Modular character to exist");
+    // Spawning main physical body
     let main_rigidbody = (
         RigidBody::Dynamic,
         Player,
@@ -124,16 +132,28 @@ fn spawn_main_rigidbody(
             torque_impulse: Vec3::ZERO,
         },
         Name::new("Player1"),
-        Collider::ball(0.5),
-        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
         GravityScale(1.0),
         AdditionalMassProperties::Mass(10.0),
-        ActiveEvents::COLLISION_EVENTS
+    );
+    // Spawning the collider that detects collision
+    let main_collider = (
+        Collider::ball(0.25),
+        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
+        ActiveEvents::COLLISION_EVENTS,
+        TransformBundle::from(Transform::from_xyz(0.0, 0.25, 0.0)),
+        PlayerCollider
     );
 
-    let main_rigidbody_entity_id = commands.spawn(main_rigidbody).id();
+    let main_rigidbody_entity_id = commands
+        .spawn(main_rigidbody)
+        .with_children(|children| {
+            children.spawn(main_collider);
+        })
+        .id();
 
-    commands.entity(character).set_parent(main_rigidbody_entity_id);
+    commands
+        .entity(character)
+        .set_parent(main_rigidbody_entity_id);
 
     next_state.set(StatePlayerCreation::Done)
 }
@@ -150,16 +170,16 @@ fn spawn_timers_limits(mut commands: Commands) {
         Name::new("DashTimers"),
     );
 
-    let limit = (Limit {
-        ..Default::default()
-        
-    },
-    Name::new("Limits"));
+    let limit = (
+        Limit {
+            ..Default::default()
+        },
+        Name::new("Limits"),
+    );
 
     commands.spawn(timers);
     commands.spawn(limit);
 }
-
 
 fn keyboard_walk(
     keys: Res<ButtonInput<KeyCode>>,
@@ -292,47 +312,36 @@ fn check_status_effect(
     }
 }
 
-
 pub fn check_status_grounded(
     rapier_context: Res<RapierContext>,
     mut commands: Commands,
-    q_1: Query<Entity,With<Hitbox>>,
-    q_2: Query<(Entity, &Ground)>,
+    q_1: Query<Entity, With<PlayerCollider>>,
+    q_2: Query<Entity, With<Ground>>,
 ) {
     // Grabs every hitbox and check if any of them are touching the ground.
-    for entity1 in q_1.iter(){
-
-        let entity2 = q_2.get_single().unwrap().0;
-        /* Find the contact pair, if it exists, between two colliders. */
-        if let Some(contact_pair) = rapier_context.contact_pair(entity1, entity2) {
-            // The contact pair exists meaning that the broad-phase identified a potential contact.
-            if contact_pair.has_any_active_contacts() {
-                // The contact pair has active contacts, meaning that it
-                // contains contacts for which contact forces were computed.
-                commands.entity(entity1).insert(Grounded);
-            }
-        } else {
-            commands.entity(entity1).remove::<Grounded>();
+    let entity1 = q_1.get_single().expect("Player to exist");
+    let entity2 = q_2.get_single().expect("Ground to exist");
+    /* Find the contact pair, if it exists, between two colliders. */
+    if let Some(contact_pair) = rapier_context.contact_pair(entity1, entity2) {
+        // The contact pair exists meaning that the broad-phase identified a potential contact.
+        if contact_pair.has_any_active_contacts() {
+            // The contact pair has active contacts, meaning that it
+            // contains contacts for which contact forces were computed.
+            commands.entity(entity1).insert(Grounded);
         }
+    } else {
+        commands.entity(entity1).remove::<Grounded>();
+    }
 
-    }    
 }
 
 fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
-    q_1: Query<Has<Grounded>>,
+    q_1: Query<Has<Grounded>,With<PlayerCollider>>,
     mut q_2: Query<&mut Limit>,
 ) {
-    let is_grounded = match q_1.get_single() {
-        Ok(_) => true,
-        Err(QuerySingleError::NoEntities(_)) => false,
-        Err(QuerySingleError::MultipleEntities(_)) => {
-            // Handle the case where multiple entities are found if needed
-            true
-        },
-    };
-
+    let is_grounded = q_1.get_single().expect("PlayerCollider to have status grounder");
     for mut jumps in q_2.iter_mut() {
         if is_grounded {
             jumps.jump_limit = Limit {
