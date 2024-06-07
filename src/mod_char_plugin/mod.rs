@@ -5,13 +5,9 @@ use link_animations::AnimationEntityLink;
 pub mod assemble_parts;
 pub mod helpers;
 pub mod link_animations;
-pub mod run_animations;
 pub mod spawn_scenes;
 
-use self::{
-    assemble_parts::create_mod_player, link_animations::link_animations,
-    run_animations::run_animations, spawn_scenes::*,
-};
+use self::{assemble_parts::create_mod_player, link_animations::link_animations, spawn_scenes::*};
 
 use crate::asset_loader_plugin::AssetLoaderState;
 
@@ -31,7 +27,7 @@ impl Plugin for ModCharPlugin {
         app.add_systems(OnEnter(StateSpawnScene::Spawned), link_animations);
         app.add_systems(
             OnEnter(StateSpawnScene::HandlingModularity),
-            (create_mod_player, run_animations),
+            create_mod_player,
         );
     }
 }

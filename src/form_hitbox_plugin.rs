@@ -228,114 +228,113 @@ pub fn spawn_complex_colliders(
             &main_entity,
             "UpperArm.R",
         )
-        .expect("Unique upper right arm to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "LowerArm.R",
         )
-        .expect("Unique lower right arm to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "UpperArm.L",
         )
-        .expect("Unique upper left arm to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "LowerArm.L",
         )
-        .expect("Unique lower left arm to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "UpperLeg.R",
         )
-        .expect("Unique upper right leg to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "LowerLeg.R",
         )
-        .expect("Unique lower right leg to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "UpperLeg.L",
         )
-        .expect("Unique upper left leg to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "LowerLeg.L",
         )
-        .expect("Unique lower left leg to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "LowerLeg.L",
         )
-        .expect("Unique lower left leg to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "Foot.L",
         )
-        .expect("Unique lower left leg to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "LowerLeg.R",
         )
-        .expect("Unique lower left leg to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "Foot.R",
         )
-        .expect("Unique lower left leg to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "LowerArm.R",
         )
-        .expect("Unique lower right arm to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "Wrist.R",
         )
-        .expect("Unique wrist to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "LowerArm.L",
         )
-        .expect("Unique lower right arm to exist"),
+        .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
             "Wrist.L",
         )
-        .expect("Unique wrist to exist"),
+        .unwrap(),
     ];
-
     // Create colliders and spawn them
     let mut i = 0;
     while i < bone_entities.len() - 1 {

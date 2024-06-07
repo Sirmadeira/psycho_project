@@ -6,7 +6,7 @@ use bevy_rapier3d::prelude::*;
 use std::time::Duration;
 
 use crate::mod_char_plugin::{link_animations::AnimationEntityLink, spawn_scenes::StateSpawnScene};
-use crate::{camera_plugin::CamInfo, world_plugin::Ground};
+use crate::{camera_plugin::CamInfo, treat_animations_plugin::AnimationType, world_plugin::Ground};
 
 pub struct PlayerMovementPlugin;
 
@@ -38,8 +38,14 @@ impl Plugin for PlayerMovementPlugin {
                 .run_if(in_state(StatePlayerCreation::Done)),
         );
         app.add_systems(FixedUpdate, display_events);
-        app.add_systems(FixedUpdate, move_character.run_if(in_state(StatePlayerCreation::Done)));
-        app.add_systems(FixedUpdate, player_look_at.run_if(in_state(StatePlayerCreation::Done)));
+        app.add_systems(
+            FixedUpdate,
+            move_character.run_if(in_state(StatePlayerCreation::Done)),
+        );
+        app.add_systems(
+            FixedUpdate,
+            player_look_at.run_if(in_state(StatePlayerCreation::Done)),
+        );
     }
 }
 
@@ -136,9 +142,7 @@ fn spawn_main_rigidbody(
             impulse: Vec3::ZERO,
             torque_impulse: Vec3::ZERO,
         },
-        PdInfo{
-            kp: 500.0,
-        },
+        PdInfo { kp: 500.0 },
         Name::new("Player1"),
         GravityScale(1.0),
         AdditionalMassProperties::Mass(10.0),
@@ -192,34 +196,41 @@ fn spawn_timers_limits(mut commands: Commands) {
 fn keyboard_walk(
     keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
+    mut animation_type_writer: EventWriter<AnimationType>,
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
     let Ok(cam) = q_1.get_single() else { return };
 
     let mut direction = Vec2::ZERO;
 
+    let mut movetype: u8 = 0;
     //forward
     if keys.pressed(KeyCode::KeyW) {
         direction.x = cam.forward().x;
         direction.y = cam.forward().z;
+        movetype = 1;
     }
     // back
     if keys.pressed(KeyCode::KeyS) {
         direction.x = cam.back().x;
         direction.y = cam.back().z;
+        movetype = 2;
     }
     // left
     if keys.pressed(KeyCode::KeyA) {
         direction.x = cam.left().x;
         direction.y = cam.left().z;
+        movetype = 3;
     }
     // right
     if keys.pressed(KeyCode::KeyD) {
         direction.x = cam.right().x;
         direction.y = cam.right().z;
+        movetype = 4;
     }
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
+        animation_type_writer.send(AnimationType::MoveType(movetype));
     }
 }
 
@@ -228,9 +239,10 @@ fn keyboard_dash(
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut movement_event_writer: EventWriter<MovementAction>,
+    mut animation_type_writer: EventWriter<AnimationType>,
     mut q: Query<&mut Timers>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<(Entity, &Player)>,
+    q_2: Query<Entity, With<Player>>,
     q_3: Query<Has<StatusEffectDash>, With<Player>>,
 ) {
     let mut p_t = q.get_single_mut().unwrap();
@@ -241,10 +253,13 @@ fn keyboard_dash(
 
     let mut direction = Vec2::ZERO;
 
+    let mut movetype: u8 = 0;
+
     p_t.up.tick(Duration::from_secs_f32(time.delta_seconds()));
     p_t.down.tick(Duration::from_secs_f32(time.delta_seconds()));
     p_t.left.tick(Duration::from_secs_f32(time.delta_seconds()));
-    p_t.right.tick(Duration::from_secs_f32(time.delta_seconds()));
+    p_t.right
+        .tick(Duration::from_secs_f32(time.delta_seconds()));
 
     if keys.just_released(KeyCode::KeyW) {
         p_t.up.reset();
@@ -252,6 +267,7 @@ fn keyboard_dash(
     if p_t.up.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyW) {
         direction.x = cam.forward().x;
         direction.y = cam.forward().z;
+        movetype = 1;
     }
     if keys.just_released(KeyCode::KeyS) {
         p_t.down.reset();
@@ -259,6 +275,7 @@ fn keyboard_dash(
     if p_t.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS) {
         direction.x = cam.back().x;
         direction.y = cam.back().z;
+        movetype = 2;
     }
     if keys.just_released(KeyCode::KeyA) {
         p_t.left.reset();
@@ -266,6 +283,7 @@ fn keyboard_dash(
     if p_t.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA) {
         direction.x = cam.left().x;
         direction.y = cam.left().z;
+        movetype = 3;
     }
     if keys.just_released(KeyCode::KeyD) {
         p_t.right.reset();
@@ -273,16 +291,20 @@ fn keyboard_dash(
     if p_t.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD) {
         direction.x = cam.right().x;
         direction.y = cam.right().z;
+        movetype = 4;
     }
 
     if direction != Vec2::ZERO && has_dashed == false {
-        movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
         // Add dash status effect
-        let entity_1 = q_2.get_single().unwrap().0;
+        let entity_1 = q_2.get_single().expect("Player to exist");
         let status_dash = StatusEffectDash {
             dash_duration: Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once),
         };
         commands.entity(entity_1).insert(status_dash);
+
+        // Sending events
+        movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
+        animation_type_writer.send(AnimationType::MoveType(movetype));
     }
 }
 
@@ -343,13 +365,17 @@ pub fn check_status_grounded(
 
 fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,
-    mut movement_event_writer: EventWriter<MovementAction>,
     q_1: Query<Has<Grounded>, With<PlayerGroundCollider>>,
     mut q_2: Query<&mut Limit>,
+    mut movement_event_writer: EventWriter<MovementAction>,
+    mut animation_type_writer: EventWriter<AnimationType>,
 ) {
     let is_grounded = q_1
         .get_single()
         .expect("PlayerCollider to have status grounder");
+
+    let movetype: u8 = 5;
+
     for mut jumps in q_2.iter_mut() {
         if is_grounded {
             jumps.jump_limit = Limit {
@@ -360,6 +386,7 @@ fn keyboard_jump(
         if keys.just_pressed(KeyCode::Space) && jumps.jump_limit != 0 {
             jumps.jump_limit -= 1;
             movement_event_writer.send(MovementAction::Jump);
+            animation_type_writer.send(AnimationType::MoveType(movetype));
         }
     }
 }
@@ -386,25 +413,24 @@ fn move_character(
     }
 }
 
-
 // This will on a later occasion work a
 fn player_look_at(
-    q_1: Query<&Transform,With<CamInfo>>,
-    q_2: Query<(&Transform,&PdInfo),With<Player>>,
-    mut q_3: Query<&mut Velocity,With<Player>>,
-){
+    q_1: Query<&Transform, With<CamInfo>>,
+    q_2: Query<(&Transform, &PdInfo), With<Player>>,
+    mut q_3: Query<&mut Velocity, With<Player>>,
+) {
     let cam_transform = q_1.get_single().expect("Camera to exist");
-    let (player_transform ,pd_info)=  q_2.get_single().expect("Player to exist");
+    let (player_transform, pd_info) = q_2.get_single().expect("Player to exist");
 
     let rot_error = (cam_transform.rotation * player_transform.rotation.inverse()).normalize();
 
-    let (axis_error,angle_error) = rot_error.to_axis_angle();
+    let (axis_error, angle_error) = rot_error.to_axis_angle();
 
     let angle_error_rad = angle_error.to_radians();
 
     let angvel = pd_info.kp * angle_error_rad * axis_error;
 
-    for mut v in q_3.iter_mut(){
+    for mut v in q_3.iter_mut() {
         v.angvel = angvel;
     }
 }

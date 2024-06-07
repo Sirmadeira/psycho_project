@@ -2,6 +2,7 @@ use super::spawn_scenes::StateSpawnScene;
 use bevy::prelude::*;
 
 // Marker component that points out the entity that has and animation player
+// This is handy to know who is the parent of the animation entity
 #[derive(Reflect, Component, Debug)]
 pub struct AnimationEntityLink(pub Entity);
 
