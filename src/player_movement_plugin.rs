@@ -404,9 +404,7 @@ fn player_look_at(
 
     let angvel = pd_info.kp * angle_error_rad * axis_error;
 
-    if angle_error * angle_error > 0.01f32{
-        for mut v in q_3.iter_mut(){
-            v.angvel = angvel;
-        }
+    for mut v in q_3.iter_mut(){
+        v.angvel = angvel;
     }
 }
