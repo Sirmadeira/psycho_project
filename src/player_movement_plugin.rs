@@ -124,7 +124,7 @@ fn spawn_main_rigidbody(
         RigidBody::Dynamic,
         Player,
         SpatialBundle {
-            transform: Transform::from_xyz(2.0, 1.0, 0.0),
+            transform: Transform::from_xyz(0.0, 0.25, 0.0),
             ..Default::default()
         },
         Velocity::zero(),
