@@ -15,6 +15,7 @@ I aspire for this game to become both competitive and immensely enjoyable.
 ## TIPS for myself
   * When reutilizing MIXAMO animations, always import from it  with skin, it gets buggy if you dont.
   * Search for things like catwalk for the female character they look hella sexy
+  * IF YOU WANT TO ADD OFFSET VIA NLA BAKE THE ANIMATIONS https://blender.stackexchange.com/questions/277082/export-mixed-nla-editor-data
 
 Cheerios,
 Sirmadeira!
