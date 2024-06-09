@@ -15,7 +15,7 @@ pub fn create_mod_player(
     mut next_state: ResMut<NextState<StateSpawnScene>>,
 ) {
     // Creates modular player
-    let (main_skeleton_bones, main_armature_entity) = get_main_skeleton_bones_and_armature(
+    let main_skeleton_bones = get_main_skeleton_bones_and_armature(
         scene_entities_by_name,
         &all_entities_with_children,
         &names,
@@ -28,14 +28,13 @@ pub fn create_mod_player(
             if let Some(handle_bone) = main_skeleton_bones.get("EquipmentHandle.R") {
                 sword_entity_commands.set_parent(*handle_bone);
             }
-        } else if part_scene_name.0 != "skeleton.glb" {
+        } else if part_scene_name.0 != "skeleton_female.glb" {
             attach_part_to_main_skeleton(
                 &mut commands,
                 &all_entities_with_children,
                 &names,
                 &part_scene_name.0,
                 &part_scene_entity,
-                &main_armature_entity,
                 &main_skeleton_bones,
             );
         }
@@ -48,29 +47,21 @@ pub fn get_main_skeleton_bones_and_armature(
     scene_entities_by_name: Res<SceneEntitiesByName>,
     all_entities_with_children: &Query<&Children>,
     names: &Query<&Name>,
-) -> (HashMap<String, Entity>, Entity) {
+) -> HashMap<String, Entity> {
     let mut main_bones = HashMap::new();
 
     let main_skeleton_entity = scene_entities_by_name
         .0
-        .get("skeleton.glb")
+        .get("skeleton_female.glb")
         .expect("to have spawned the main skeleton scene");
 
     let root_bone = find_child_with_name_containing(
         all_entities_with_children,
         &names,
         &main_skeleton_entity,
-        "Root",
+        "Hips",
     )
     .expect("the skeleton to have a bone called 'Root'");
-
-    let main_skeleton_armature = find_child_with_name_containing(
-        all_entities_with_children,
-        &names,
-        &main_skeleton_entity,
-        "CharacterArmature",
-    )
-    .expect("the skeleton to have an armature");
 
     collect_bones(
         all_entities_with_children,
@@ -81,7 +72,7 @@ pub fn get_main_skeleton_bones_and_armature(
 
     println!("Bones in main skeleton: {:#?}", main_bones);
 
-    return (main_bones, main_skeleton_armature);
+    return main_bones;
 }
 
 pub fn attach_part_to_main_skeleton(
@@ -90,7 +81,6 @@ pub fn attach_part_to_main_skeleton(
     names: &Query<&Name>,
     part_scene_name: &String,
     part_scene_entity: &Entity,
-    main_armature_entity: &Entity,
     main_skeleton_bones: &HashMap<String, Entity>,
 ) {
     println!("Attaching loaded_asset part: {}", part_scene_name);
@@ -99,24 +89,8 @@ pub fn attach_part_to_main_skeleton(
         all_entities_with_children,
         names,
         &part_scene_entity,
-        "Root",
+        "Hips",
     );
-
-    let part_armature_option = find_child_with_name_containing(
-        all_entities_with_children,
-        names,
-        &part_scene_entity,
-        "CharacterArmature",
-    );
-
-    if let Some(part_armature) = part_armature_option {
-        let mut part_armature_entity_commands = commands.entity(part_armature);
-        part_armature_entity_commands.set_parent_in_place(*main_armature_entity);
-        // DO NOT DESPAWN AS THIS HOLDS THE DATA TO THE MESHES somehow
-        // Interestingly if you delete it the meshes still appear
-        // But if you hide them they dont
-    }
-
     // FOR SOME UNGODLY REASON THE FUCKING BONE WITH NO ANIMATION DATA STAYS WITH THE ANIMATION DATA THEREFORE I CANT DELETE IT
     // The child bones only appear twice in the same ROW of nodes if the bone exists in both of them
     if let Some(root_bone) = root_bone_option {

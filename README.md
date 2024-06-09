@@ -12,6 +12,10 @@ I aspire for this game to become both competitive and immensely enjoyable.
   * UI the idea of betting in your dueling skill
   * Extremely dynamic movement - Dashes, parry gun play and sword play 
 
+## TIPS for myself
+  * When reutilizing MIXAMO animations, always import from it  with skin, it gets buggy if you dont.
+  * Search for things like catwalk for the female character they look hella sexy
+
 Cheerios,
 Sirmadeira!
 ****

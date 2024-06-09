@@ -26,6 +26,6 @@ impl Plugin for AssetLoaderPlugin {
 pub struct MyAssets {
     // Insert in this path which asset you want to load
     // He will be loaded with multiple handles and a usefull hashmap to identify it in our code
-    #[asset(paths("skeleton.glb", "casual.glb"), collection(typed, mapped))]
+    #[asset(paths("skeleton_female.glb", "rigge_female.glb"), collection(typed, mapped))]
     pub gltf_files: HashMap<String, Handle<Gltf>>,
 }

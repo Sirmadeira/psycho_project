@@ -22,6 +22,8 @@ impl Plugin for ModCharPlugin {
             OnEnter(AssetLoaderState::Done),
             (spawn_scenes, spawn_animation_handle),
         );
+        // Avoid bug in skinnes meshes
+        app.add_systems(Update, disable_culling_for_skinned_meshes);
         // Will only load after we finished loading the assets
         app.init_state::<StateSpawnScene>();
         app.add_systems(OnEnter(StateSpawnScene::Spawned), link_animations);

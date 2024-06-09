@@ -38,22 +38,22 @@ fn event_based_animations(
         for event in animation_type_event_reader.read() {
             match event {
                 AnimationType::MoveType(1) => {
-                    animation_player.play(animations.0.get("Run").expect("Run animation to exist").clone_weak()).repeat().set_speed(1.0);
+                    animation_player.play(animations.0.get("fast_run").expect("Run animation to exist").clone_weak()).repeat().set_speed(1.0);
                 }
                 AnimationType::MoveType(2) => {
-                    animation_player.play(animations.0.get("Run_Back").expect("Run back animation to exist").clone_weak()).repeat().set_speed(1.0);
+                    animation_player.play(animations.0.get("left_strafe").expect("Run back animation to exist").clone_weak()).repeat().set_speed(1.0);
                 }
                 AnimationType::MoveType(3) => {
-                    animation_player.play(animations.0.get("Run_Left").expect("Run left animation to exist").clone_weak()).repeat().set_speed(1.0);
+                    animation_player.play(animations.0.get("right_strafe").expect("Run left animation to exist").clone_weak()).repeat().set_speed(1.0);
                 }
                 AnimationType::MoveType(4) => {
-                    animation_player.play(animations.0.get("Run_Right").expect("Run right animation to exist").clone_weak()).repeat().set_speed(1.0);
+                    animation_player.play(animations.0.get("t_pose").expect("Run right animation to exist").clone_weak()).repeat().set_speed(1.0);
                 }
                 AnimationType::MoveType(5) => {
-                    animation_player.play(animations.0.get("Run_Right").expect("Run right animation to exist").clone_weak()).repeat().set_speed(1.0);
+                    animation_player.play(animations.0.get("t_pose").expect("Run right animation to exist").clone_weak()).repeat().set_speed(1.0);
                 }
                 _ => {
-                    animation_player.play(animations.0.get("Idle_Sword").expect("Idle sword animation to exist").clone_weak()).repeat().set_speed(1.0);
+                    animation_player.play(animations.0.get("t_pose").expect("Idle sword animation to exist").clone_weak()).repeat().set_speed(1.0);
                 }
             }
         }
