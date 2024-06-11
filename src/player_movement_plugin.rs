@@ -413,7 +413,7 @@ fn move_character(
     }
 }
 
-// This will on a later occasion work a
+// Probably gonna make this only affect a few bones or use animations
 fn player_look_at(
     q_1: Query<&Transform, With<CamInfo>>,
     q_2: Query<(&Transform, &PdInfo), With<Player>>,
