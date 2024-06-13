@@ -42,7 +42,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("walk_forward_with_sword")
+                                .get("full_walk_sword")
                                 .expect("Walk forward to exist")
                                 .clone_weak(),
                         )
@@ -54,7 +54,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("walk_backwards_with_sword")
+                                .get("t_pose")
                                 .expect("Run back animation to exist")
                                 .clone_weak(),
                         )
@@ -66,7 +66,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("left_strafe_with_sword")
+                                .get("t_pose")
                                 .expect("Run left animation to exist")
                                 .clone_weak(),
                         )
@@ -78,7 +78,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("right_strafe_with_sword")
+                                .get("t_pose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )

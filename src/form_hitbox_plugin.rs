@@ -15,10 +15,7 @@ impl Plugin for FormHitboxPlugin {
         app.register_type::<BaseEntities>();
         app.register_type::<PidInfo>();
         app.register_type::<Offset>();
-        app.add_systems(
-            OnEnter(StateSpawnScene::Done),
-            spawn_simple_colliders,
-        );
+        app.add_systems(OnEnter(StateSpawnScene::Done), (spawn_simple_colliders,spawn_complex_colliders).chain());
         app.add_systems(
             FixedPostUpdate,
             colliders_look_at
@@ -57,32 +54,6 @@ pub struct PidInfo {
     // These values are here because they need to be agregated
     integral: Vec3,
     previous_error: Vec3,
-}
-
-// Helper function
-fn create_collider(
-    translation: Vec3,
-    collider: Collider,
-    collision_group: CollisionGroups,
-) -> (
-    RigidBody,
-    SpatialBundle,
-    GravityScale,
-    Collider,
-    Velocity,
-    CollisionGroups,
-) {
-    (
-        RigidBody::Dynamic,
-        SpatialBundle {
-            transform: Transform::from_translation(translation),
-            ..Default::default()
-        },
-        GravityScale(0.0),
-        collider,
-        Velocity::zero(),
-        collision_group,
-    )
 }
 
 pub fn spawn_simple_colliders(
@@ -144,7 +115,6 @@ pub fn spawn_simple_colliders(
             .get(bone)
             .expect("Global transform not found")
             .translation();
-        
 
         let col_name = Name::new(format!("{}_col", name.to_lowercase()));
 
@@ -183,14 +153,12 @@ pub fn spawn_simple_colliders(
         };
 
         let entity_id = commands
-            .spawn(create_collider(trans1, collider, collision_group))
+            .spawn(RigidBody::Dynamic)
             .insert(Hitbox)
             .insert(BaseEntities {
                 start: bone,
                 end: None,
             })
-            .insert(Offset(offset))
-            .insert(col_name.clone())
             .insert(PidInfo {
                 kp: 50.0,
                 ki: 15.0,
@@ -198,10 +166,20 @@ pub fn spawn_simple_colliders(
                 integral: Vec3::ZERO,
                 previous_error: Vec3::ZERO,
             })
+            .insert(Offset(offset))
+            .insert(SpatialBundle {
+                transform: Transform::from_translation(trans1),
+                ..Default::default()
+            })
+            .insert(Velocity::zero())
+            .with_children(|children| {
+                children
+                    .spawn(collider)
+                    .insert(Sensor)
+                    .insert(collision_group);
+            })
             .id();
-
         hitbox_acessor.insert(col_name.to_string(), entity_id);
-        println!("{:?}",entity_id);
     }
     commands.insert_resource(HitboxAcessor(hitbox_acessor))
 }
@@ -388,10 +366,8 @@ pub fn spawn_complex_colliders(
         };
 
         let entity_id = commands
-            .spawn(create_collider(mid_point, collider, collision_group))
-            .insert(collider_name.clone())
+            .spawn(RigidBody::Dynamic)
             .insert(Hitbox)
-            .insert(Offset(offset))
             .insert(BaseEntities {
                 start: bone_entities[i],
                 end: end,
@@ -403,7 +379,20 @@ pub fn spawn_complex_colliders(
                 integral: Vec3::ZERO,
                 previous_error: Vec3::ZERO,
             })
+            .insert(Offset(offset))
+            .insert(SpatialBundle {
+                transform: Transform::from_translation(mid_point),
+                ..Default::default()
+            })
+            .insert(Velocity::zero())
+            .with_children(|children| {
+                children
+                    .spawn(collider)
+                    .insert(collision_group)
+                    .insert(Sensor);
+            })
             .id();
+
         // Move to the next pair of elements
         i += 2;
 

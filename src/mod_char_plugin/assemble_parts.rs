@@ -2,6 +2,7 @@ use crate::mod_char_plugin::helpers::collect_bones;
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
 use crate::mod_char_plugin::spawn_scenes::{SceneEntitiesByName, SceneName};
 use crate::mod_char_plugin::StateSpawnScene;
+
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 
@@ -23,10 +24,10 @@ pub fn create_mod_player(
     // Attaching bones to our skeleton entity with their morphed meshes
     for (part_scene_entity, part_scene_name) in &scene_query {
         // If statement to attach specific weapons
-        if part_scene_name.0 == "sword.glb" {
+        if part_scene_name.0 == "start_katana.glb" {
             let mut sword_entity_commands = commands.entity(part_scene_entity);
-            if let Some(handle_bone) = main_skeleton_bones.get("EquipmentHandle.R") {
-                sword_entity_commands.set_parent(*handle_bone);
+            if let Some(handle_bone) = main_skeleton_bones.get("mixamorig:Handle") {
+                sword_entity_commands.set_parent_in_place(*handle_bone);
             }
         } else if part_scene_name.0 != "skeleton_female.glb" {
             attach_part_to_main_skeleton(
