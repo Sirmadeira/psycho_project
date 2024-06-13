@@ -17,7 +17,7 @@ impl Plugin for FormHitboxPlugin {
         app.register_type::<Offset>();
         app.add_systems(
             OnEnter(StateSpawnScene::Done),
-            (spawn_simple_colliders, spawn_complex_colliders).chain(),
+            spawn_simple_colliders,
         );
         app.add_systems(
             FixedPostUpdate,
@@ -99,39 +99,42 @@ pub fn spawn_simple_colliders(
     };
     // Bones without tail
     let special_bones = [
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Torso")
-            .expect("Unique torso bone to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Spine")
+            .expect("Unique spine bone to exist"),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Foot.R",
+            "RightFoot",
         )
         .expect("Unique lower feet to exist"),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Foot.L",
+            "LeftFoot",
         )
         .expect("Unique lower feet to exist"),
-        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Neck")
-            .expect("Unique lower feet leg to exist"),
+        find_child_with_name_containing(&all_entities_with_children, &names, &main_entity, "Head")
+            .expect("Unique head to exist"),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Index1.L",
+            "RightHand",
         )
-        .expect("Unique Index1 to exist"),
+        .expect("Unique hand to exist"),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Index1.R",
+            "LeftHand",
         )
-        .expect("Unique Index1 to exist"),
+        .expect("Unique hand to exist"),
     ];
+
+    // Creating easy way to acess specific colliders
+    let mut hitbox_acessor = HashMap::new();
     // Hard coded colliders
     for bone in special_bones {
         // Use unwrap_or_else to handle potential None values safely if needed
@@ -141,36 +144,37 @@ pub fn spawn_simple_colliders(
             .get(bone)
             .expect("Global transform not found")
             .translation();
+        
 
         let col_name = Name::new(format!("{}_col", name.to_lowercase()));
 
         let (collider, offset, collision_group) = match name.as_str() {
-            "Torso" => (
+            name if name.contains("Spine") => (
                 Collider::cylinder(0.2, 0.15),
                 Vec3::ZERO,
                 CollisionGroups::new(Group::GROUP_2, Group::NONE),
             ),
-            "Foot.L" => (
+            name if name.contains("RightFoot") => (
                 Collider::cuboid(0.05, 0.10, 0.05),
                 Vec3::ZERO,
                 CollisionGroups::new(Group::GROUP_2, Group::NONE),
             ),
-            "Foot.R" => (
+            name if name.contains("LeftFoot") => (
                 Collider::cuboid(0.05, 0.10, 0.05),
                 Vec3::ZERO,
                 CollisionGroups::new(Group::GROUP_2, Group::NONE),
             ),
-            "Neck" => (
+            name if name.contains("Head") => (
                 Collider::cuboid(0.15, 0.15, 0.1),
                 Vec3::new(0.0, 0.10, 0.00),
                 CollisionGroups::new(Group::GROUP_2, Group::NONE),
             ),
-            "Index1.R" => (
+            name if name.contains("RightHand") => (
                 Collider::cuboid(0.05, 0.10, 0.10),
                 Vec3::new(0.00, -0.1, 0.0),
                 CollisionGroups::new(Group::GROUP_2, Group::NONE),
             ),
-            "Index1.L" => (
+            name if name.contains("LeftHand") => (
                 Collider::cuboid(0.05, 0.10, 0.10),
                 Vec3::new(0.00, -0.1, 0.0),
                 CollisionGroups::new(Group::GROUP_2, Group::NONE),
@@ -196,13 +200,10 @@ pub fn spawn_simple_colliders(
             })
             .id();
 
-        // Creating easy way to acess specific colliders
-        let mut hitbox_acessor = HashMap::new();
-
         hitbox_acessor.insert(col_name.to_string(), entity_id);
-
-        commands.insert_resource(HitboxAcessor(hitbox_acessor))
+        println!("{:?}",entity_id);
     }
+    commands.insert_resource(HitboxAcessor(hitbox_acessor))
 }
 
 // WARNING ONLY ADD TO UNIQUE BONES
@@ -226,112 +227,112 @@ pub fn spawn_complex_colliders(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "UpperArm.R",
+            "LeftArm",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "LowerArm.R",
+            "LeftForeArm",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "UpperArm.L",
+            "RightArm",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "LowerArm.L",
+            "RightForeArm",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "UpperLeg.R",
+            "LeftUpLeg",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "LowerLeg.R",
+            "LeftLeg",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "UpperLeg.L",
+            "RightUpLeg",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "LowerLeg.L",
+            "RightLeg",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "LowerLeg.L",
+            "LeftLeg",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Foot.L",
+            "LeftFoot",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "LowerLeg.R",
+            "RightLeg",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Foot.R",
+            "RightFoot",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "LowerArm.R",
+            "LeftForeArm",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Wrist.R",
+            "LeftHand",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "LowerArm.L",
+            "RightForeArm",
         )
         .unwrap(),
         find_child_with_name_containing(
             &all_entities_with_children,
             &names,
             &main_entity,
-            "Wrist.L",
+            "RightHand",
         )
         .unwrap(),
     ];

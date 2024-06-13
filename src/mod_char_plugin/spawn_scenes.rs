@@ -1,6 +1,10 @@
 use crate::asset_loader_plugin::MyAssets;
 use bevy::utils::HashMap;
-use bevy::{gltf::Gltf, prelude::*,render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling},};
+use bevy::{
+    gltf::Gltf,
+    prelude::*,
+    render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling},
+};
 
 // Tell me in which state the scene is
 #[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]

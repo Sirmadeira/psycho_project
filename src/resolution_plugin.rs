@@ -10,10 +10,6 @@ impl Plugin for ResolutionPlugin {
     }
 }
 
-// Marker component for the text that displays the current resolution.
-#[derive(Component)]
-struct ResolutionText;
-
 // Spawns the UI
 fn setup_ui(mut cmd: Commands) {
     // Node that fills entire background
