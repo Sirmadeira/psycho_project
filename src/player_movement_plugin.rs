@@ -44,7 +44,7 @@ impl Plugin for PlayerMovementPlugin {
         );
         app.add_systems(
             FixedUpdate,
-            player_look_at.run_if(in_state(StatePlayerCreation::Done)),
+            player_look_at_camera.run_if(in_state(StatePlayerCreation::Done)),
         );
     }
 }
@@ -413,8 +413,15 @@ fn move_character(
     }
 }
 
-// Probably gonna make this only affect a few bones or use animations
-fn player_look_at(
+// Tells me where each specific scene will look at
+fn player_scenes_look_at(
+){
+
+}
+
+
+
+fn player_look_at_camera(
     q_1: Query<&Transform, With<CamInfo>>,
     q_2: Query<(&Transform, &PdInfo), With<Player>>,
     mut q_3: Query<&mut Velocity, With<Player>>,

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use link_animations::AnimationEntityLink;
+use spawn_scenes::SceneName;
 
 // Making thme public just in case i need to query a specific component or resource for future logic
 pub mod assemble_parts;
@@ -17,6 +18,7 @@ pub struct ModCharPlugin;
 impl Plugin for ModCharPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<AnimationEntityLink>();
+        app.register_type::<SceneName>();
         // Loads scenes and spawn handles
         app.add_systems(
             OnEnter(AssetLoaderState::Done),

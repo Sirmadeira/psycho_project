@@ -42,7 +42,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("full_walk_sword")
+                                .get("sword_slash")
                                 .expect("Walk forward to exist")
                                 .clone_weak(),
                         )
