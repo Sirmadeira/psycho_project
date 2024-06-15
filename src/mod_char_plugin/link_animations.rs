@@ -1,25 +1,13 @@
-use super::spawn_scenes::StateSpawnScene;
+
 use bevy::prelude::*;
+use super::spawn_scenes::StateSpawnScene;
+use crate::mod_char_plugin::helpers::get_top_parent;
 
 // Marker component that points out the entity that has and animation player
 // This is handy to know who is the parent of the animation entity
 #[derive(Reflect, Component, Debug)]
 pub struct AnimationEntityLink(pub Entity);
 
-// Recursive function interacts through the hierarchy and grab the "first" parent of the scene
-pub fn get_top_parent(
-    mut curr_entity: Entity,
-    all_entities_with_parents_query: &Query<&Parent>,
-) -> Entity {
-    loop {
-        if let Ok(ref_to_parent) = all_entities_with_parents_query.get(curr_entity) {
-            curr_entity = ref_to_parent.get();
-        } else {
-            break;
-        }
-    }
-    curr_entity
-}
 
 // Put animation link in parent, that way avoid too many animation players query
 pub fn link_animations(

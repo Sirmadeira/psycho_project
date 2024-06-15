@@ -18,6 +18,7 @@ I aspire for this game to become both competitive and immensely enjoyable.
   * IF YOU WANT TO ADD OFFSET VIA NLA like put the arm a little to the side on, BAKE THE ANIMATIONS follow this step by step https://blender.stackexchange.com/questions/277082/export-mixed-nla-editor-data
   * IF YOU WANT TO KEEP YOUR ANIMATION IN PLACE JUST DISABLE THE AXIS LOCATION OF THE HIP BONE (TECHNICALLY THE ROOT BONE) in mixamo, you can chose the axis.
   * PAY ATTENTION TO WHEN THE CLIP ENDS
+  * Always point the character to the positive ye
 
 Cheerios,
 Sirmadeira!

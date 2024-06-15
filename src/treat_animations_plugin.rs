@@ -22,6 +22,12 @@ pub enum AnimationType {
     MoveType(u8),
 }
 
+
+
+
+
+
+// Turn this into a state machine later
 fn event_based_animations(
     animations: Res<Animations>,
     mut animation_type_event_reader: EventReader<AnimationType>,
