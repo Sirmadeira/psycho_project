@@ -15,7 +15,10 @@ impl Plugin for FormHitboxPlugin {
         app.register_type::<BaseEntities>();
         app.register_type::<PidInfo>();
         app.register_type::<Offset>();
-        app.add_systems(OnEnter(StateSpawnScene::Done), (spawn_simple_colliders,spawn_complex_colliders).chain());
+        app.add_systems(
+            OnEnter(StateSpawnScene::Done),
+            (spawn_simple_colliders, spawn_complex_colliders).chain(),
+        );
         app.add_systems(
             FixedPostUpdate,
             colliders_look_at

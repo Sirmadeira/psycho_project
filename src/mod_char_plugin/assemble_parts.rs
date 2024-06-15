@@ -27,7 +27,6 @@ pub fn create_mod_player(
         if part_scene_name.0 == "start_katana.glb" {
             let mut sword_entity_commands = commands.entity(part_scene_entity);
             if let Some(handle_bone) = main_skeleton_bones.get("mixamorig:Handle") {
-
                 sword_entity_commands.set_parent(*handle_bone);
             }
         } else if part_scene_name.0 != "skeleton_female.glb" {

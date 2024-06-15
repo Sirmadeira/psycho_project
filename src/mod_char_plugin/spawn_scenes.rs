@@ -17,7 +17,7 @@ pub enum StateSpawnScene {
 }
 
 // Marker component tells me the scene name or the filename in this case
-#[derive(Component,Reflect, Debug)]
+#[derive(Component, Reflect, Debug)]
 pub struct SceneName(pub String);
 
 // Marker resource that tell me the name of the scene and the scene entity that I am acessing

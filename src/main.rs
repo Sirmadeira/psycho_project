@@ -8,7 +8,7 @@ mod asset_loader_plugin;
 mod camera_plugin;
 mod form_hitbox_plugin;
 mod mod_char_plugin;
-mod player_movement_plugin;
+mod player_effects_plugin;
 mod resolution_plugin;
 mod treat_animations_plugin;
 mod world_plugin;
@@ -16,7 +16,7 @@ mod world_plugin;
 use asset_loader_plugin::AssetLoaderPlugin;
 use camera_plugin::CameraPlugin;
 use mod_char_plugin::ModCharPlugin;
-use player_movement_plugin::PlayerMovementPlugin;
+use player_effects_plugin::PlayerEffectsPlugin;
 use resolution_plugin::ResolutionPlugin;
 use treat_animations_plugin::TreatAnimationsPlugin;
 use world_plugin::WorldPlugin;
@@ -63,7 +63,7 @@ fn main() {
         // Forms physical dynamic colliders that will folllow along the transform of the player
         .add_plugins(FormHitboxPlugin)
         // Player movement plugin
-        .add_plugins(PlayerMovementPlugin)
+        .add_plugins(PlayerEffectsPlugin)
         // Reads animations according to events and make they smooth
         .add_plugins(TreatAnimationsPlugin)
         // Camera Plugin

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::mod_char_plugin::link_animations::AnimationEntityLink;
 use crate::mod_char_plugin::spawn_scenes::Animations;
-use crate::player_movement_plugin::StatePlayerCreation;
+use crate::player_effects_plugin::lib::StatePlayerCreation;
 
 pub struct TreatAnimationsPlugin;
 

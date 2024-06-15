@@ -1,4 +1,4 @@
-use crate::player_movement_plugin::{Player, StatePlayerCreation};
+use crate::player_effects_plugin::lib::{Player, StatePlayerCreation};
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
