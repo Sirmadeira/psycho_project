@@ -8,7 +8,7 @@ pub mod move_character;
 pub mod spawn_objects;
 pub mod status_effects;
 
-use crate::mod_char_plugin::spawn_scenes::StateSpawnScene;
+use crate::mod_char_plugin::spawn_modular::StateSpawnScene;
 
 pub struct PlayerEffectsPlugin;
 

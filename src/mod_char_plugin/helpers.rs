@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 
 // Collects a lot of subchild bones
 pub fn collect_bones(
-    all_entities_with_children: &Query<&Children>,
+    children_entities: &Query<&Children>,
     names: &Query<&Name>,
     root_bone: &Entity,
     collected: &mut HashMap<String, Entity>,
@@ -12,9 +12,9 @@ pub fn collect_bones(
     if let Ok(name) = names.get(*root_bone) {
         collected.insert(format!("{}", name), *root_bone);
 
-        if let Ok(children) = all_entities_with_children.get(*root_bone) {
+        if let Ok(children) = children_entities.get(*root_bone) {
             for child in children {
-                collect_bones(all_entities_with_children, names, child, collected)
+                collect_bones(children_entities, names, child, collected)
             }
         }
     }
@@ -37,7 +37,7 @@ pub fn get_top_parent(
 
 // Finds a bone with a certain name
 pub fn find_child_with_name_containing(
-    all_entities_with_children: &Query<&Children>,
+    children_entities: &Query<&Children>,
     names: &Query<&Name>,
     entity: &Entity,
     name_to_match: &str,
@@ -54,7 +54,7 @@ pub fn find_child_with_name_containing(
             }
         }
 
-        let children_result = all_entities_with_children.get(*curr_entity);
+        let children_result = children_entities.get(*curr_entity);
         if let Ok(children) = children_result {
             for child in children {
                 queue.push_back(child)

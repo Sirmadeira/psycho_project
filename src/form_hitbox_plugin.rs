@@ -1,6 +1,6 @@
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
 use crate::mod_char_plugin::link_animations::AnimationEntityLink;
-use crate::mod_char_plugin::spawn_scenes::StateSpawnScene;
+use crate::mod_char_plugin::spawn_modular::StateSpawnScene;
 
 use bevy::prelude::*;
 use bevy::transform::TransformSystem;

@@ -1,13 +1,11 @@
-
-use bevy::prelude::*;
-use super::spawn_scenes::StateSpawnScene;
+use super::spawn_modular::StateSpawnScene;
 use crate::mod_char_plugin::helpers::get_top_parent;
+use bevy::prelude::*;
 
 // Marker component that points out the entity that has and animation player
 // This is handy to know who is the parent of the animation entity
 #[derive(Reflect, Component, Debug)]
 pub struct AnimationEntityLink(pub Entity);
-
 
 // Put animation link in parent, that way avoid too many animation players query
 pub fn link_animations(
@@ -38,5 +36,5 @@ pub fn link_animations(
         }
     }
     // Notice that the spawn scene will be done only after we add the animation to it
-    next_state.set(StateSpawnScene::HandlingModularity)
+    next_state.set(StateSpawnScene::Done)
 }
