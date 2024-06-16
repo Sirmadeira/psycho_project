@@ -24,21 +24,22 @@ impl Plugin for ModCharPlugin {
         app.register_type::<AnimationEntityLink>();
         app.register_type::<SceneName>();
         // Config resources
+        app.insert_resource(AmountPlayers{
+            quantity:2
+        });
         app.insert_resource(ConfigModularCharacters {
-            quantity: 2,
             visuals_to_be_attached: vec![String::from("rigge_female")],
-            weapons: vec![String::from("katana")],
+            weapons_to_be_attached: vec![String::from("katana")],
         });
         // Loads scenes and spawn handles
         app.add_systems(
             OnEnter(AssetLoaderState::Done),
-            (spawn_scenes, spawn_animation_handle).chain(),
+            (spawn_skeleton_and_attachments, spawn_animation_handle).chain(),
         );
-        // Avoid bug in skinnes meshes
-        app.add_systems(Update, disable_culling_for_skinned_meshes);
-        // Will only load after we finished loading the assets
+        // Will only load after we finished loading the assets and formulating the skeletons
         app.init_state::<StateSpawnScene>();
-        app.add_systems(OnEnter(StateSpawnScene::Spawned), link_animations);
-
+        app.add_systems(OnEnter(StateSpawnScene::Spawned), (attach_to_skeletons,link_animations));
+        // Avoid bug in skinned meshes
+        app.add_systems(Update, disable_culling_for_skinned_meshes);
     }
 }
