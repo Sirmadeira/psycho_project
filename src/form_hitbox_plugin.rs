@@ -1,5 +1,6 @@
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
-use crate::player_effects_plugin::lib::{Player, SidePlayer, StatePlayerCreation};
+use crate::player_effects_plugin::lib:: StatePlayerCreation;
+use crate::mod_char_plugin::lib::Skeleton;
 
 use bevy::prelude::*;
 use bevy::transform::TransformSystem;
@@ -57,12 +58,12 @@ pub struct PidInfo {
 pub fn spawn_simple_colliders(
     mut commands: Commands,
     all_entities_with_children: Query<&Children>,
-    main_entity_option: Query<Entity, Or<(With<Player>,With<SidePlayer>)>>,
+    main_entity_option: Query<Entity, With<Skeleton>>,
     names: Query<&Name>,
     global_transforms: Query<&GlobalTransform>,
 ) {
     // Main bone entity to search in
-    for main_entity in main_entity_option.iter() {
+    for (collision_number,main_entity) in main_entity_option.iter().enumerate() {
         // Bones without tail
         let special_bones = [
             find_child_with_name_containing(
@@ -110,6 +111,12 @@ pub fn spawn_simple_colliders(
         ];
         // Hard coded colliders
         for bone in special_bones {
+            let membership_str;
+            if collision_number == 1{
+                membership_str = format!("GROUP_{}",collision_number);
+                let membership_group = Group::from_name(&membership_str).expect("To create a godamm group");
+            }
+
             // Use unwrap_or_else to handle potential None values safely if needed
             let name = names.get(bone).expect("Bone name not found");
 
@@ -186,7 +193,7 @@ pub fn spawn_simple_colliders(
 pub fn spawn_complex_colliders(
     mut commands: Commands,
     all_entities_with_children: Query<&Children>,
-    main_entity_option: Query<Entity, Or<(With<Player>,With<SidePlayer>)>>,
+    main_entity_option: Query<Entity, With<Skeleton>>,
     names: Query<&Name>,
     global_transforms: Query<&GlobalTransform>,
 ) {

@@ -14,10 +14,11 @@ pub struct PlayerEffectsPlugin;
 
 impl Plugin for PlayerEffectsPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<StatusEffectDash>();
         app.register_type::<PdInfo>();
         app.register_type::<Timers>();
         app.register_type::<Limit>();
+        app.register_type::<Health>();
+        app.register_type::<StatusEffectDash>();
         app.add_event::<MovementAction>();
         app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
         app.init_state::<StatePlayerCreation>();

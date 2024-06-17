@@ -71,3 +71,8 @@ impl Default for Limit {
         Self { jump_limit: 2 }
     }
 }
+
+
+#[derive(Component,Reflect,Debug)]
+
+pub struct Health(pub u8);

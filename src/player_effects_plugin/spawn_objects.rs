@@ -4,7 +4,7 @@ use bevy_rapier3d::prelude::*;
 
 use crate::mod_char_plugin::lib::Skeleton;
 use crate::player_effects_plugin::{
-    Limit, PdInfo, Player, PlayerGroundCollider, SidePlayer, StatePlayerCreation, Timers,
+    Limit, PdInfo, Player, PlayerGroundCollider, SidePlayer, StatePlayerCreation, Timers,Health
 };
 
 // Adding physical body that will move our modular character dynamically move
@@ -46,6 +46,8 @@ pub fn spawn_main_rigidbody(
             PlayerGroundCollider,
         );
 
+        let health = Health(10);
+
         let timers = (Timers {
             up: Stopwatch::new(),
             down: Stopwatch::new(),
@@ -57,22 +59,37 @@ pub fn spawn_main_rigidbody(
             ..Default::default()
         },);
 
+
+
         if scene_name.to_string() == "skeleton_1" {
-            let main_rigidbody_entity_id = commands
+            let player_details = commands
                 .spawn(main_rigidbody)
                 .insert(Player)
                 .insert(timers)
                 .insert(limit)
-                .with_children(|children| {
+                .insert(health)
+                .with_children(|children: &mut ChildBuilder| {
                     children.spawn(main_collider);
                 })
                 .id();
 
             commands
                 .entity(player_character)
-                .set_parent(main_rigidbody_entity_id);
+                .set_parent(player_details);
         } else {
-            commands.entity(player_character).insert(SidePlayer);
+
+            let other_details = commands.spawn(main_rigidbody)
+            .insert(SidePlayer)
+            .insert(timers)
+            .insert(limit)
+            .insert(health)
+            .with_children(|children: &mut ChildBuilder| {
+                children.spawn(main_collider);
+            }).id();
+
+
+            commands.entity(player_character)
+            .set_parent(other_details);
         }
     }
 

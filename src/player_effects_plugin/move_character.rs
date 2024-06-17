@@ -55,72 +55,73 @@ pub fn keyboard_dash(
     mut commands: Commands,
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
-    mut q: Query<&mut Timers>,
+    mut q: Query<(&mut Timers,Entity,Has<StatusEffectDash>),With<Player>>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<Entity, With<Player>>,
-    q_3: Query<Has<StatusEffectDash>, With<Player>>,
 ) {
-    let mut p_t = q.get_single_mut().unwrap();
 
-    let cam = q_1.get_single().unwrap();
 
-    let has_dashed = q_3.get_single().unwrap();
+    for (mut timers,player,has_dashed) in q.iter_mut(){
 
-    let mut direction = Vec2::ZERO;
+        let mut movetype: u8 = 0;
+        let mut direction = Vec2::ZERO;
+        let cam = q_1.get_single().unwrap();
 
-    let mut movetype: u8 = 0;
+        timers.up.tick(Duration::from_secs_f32(time.delta_seconds()));
+        timers.down.tick(Duration::from_secs_f32(time.delta_seconds()));
+        timers.left.tick(Duration::from_secs_f32(time.delta_seconds()));
+        timers.right.tick(Duration::from_secs_f32(time.delta_seconds()));
 
-    p_t.up.tick(Duration::from_secs_f32(time.delta_seconds()));
-    p_t.down.tick(Duration::from_secs_f32(time.delta_seconds()));
-    p_t.left.tick(Duration::from_secs_f32(time.delta_seconds()));
-    p_t.right
-        .tick(Duration::from_secs_f32(time.delta_seconds()));
+        if keys.just_released(KeyCode::KeyW) {
+            timers.up.reset();
+        }
+        if timers.up.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyW) {
+            direction.x = cam.forward().x;
+            direction.y = cam.forward().z;
+            movetype = 1;
+        }
+        if keys.just_released(KeyCode::KeyS) {
+            timers.down.reset();
+        }
+        if timers.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS) {
+            direction.x = cam.back().x;
+            direction.y = cam.back().z;
+            movetype = 2;
+        }
+        if keys.just_released(KeyCode::KeyA) {
+            timers.left.reset();
+        }
+        if timers.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA) {
+            direction.x = cam.left().x;
+            direction.y = cam.left().z;
+            movetype = 3;
+        }
+        if keys.just_released(KeyCode::KeyD) {
+            timers.right.reset();
+        }
+        if timers.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD) {
+            direction.x = cam.right().x;
+            direction.y = cam.right().z;
+            movetype = 4;
+        }
 
-    if keys.just_released(KeyCode::KeyW) {
-        p_t.up.reset();
-    }
-    if p_t.up.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyW) {
-        direction.x = cam.forward().x;
-        direction.y = cam.forward().z;
-        movetype = 1;
-    }
-    if keys.just_released(KeyCode::KeyS) {
-        p_t.down.reset();
-    }
-    if p_t.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS) {
-        direction.x = cam.back().x;
-        direction.y = cam.back().z;
-        movetype = 2;
-    }
-    if keys.just_released(KeyCode::KeyA) {
-        p_t.left.reset();
-    }
-    if p_t.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA) {
-        direction.x = cam.left().x;
-        direction.y = cam.left().z;
-        movetype = 3;
-    }
-    if keys.just_released(KeyCode::KeyD) {
-        p_t.right.reset();
-    }
-    if p_t.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD) {
-        direction.x = cam.right().x;
-        direction.y = cam.right().z;
-        movetype = 4;
+        if direction != Vec2::ZERO && has_dashed == false {
+            // Add dash status effect
+            let status_dash = StatusEffectDash {
+                dash_duration: Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once),
+            };
+            commands.entity(player).insert(status_dash);
+    
+            // Sending events
+            movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
+            animation_type_writer.send(AnimationType::MoveType(movetype));
+        }
     }
 
-    if direction != Vec2::ZERO && has_dashed == false {
-        // Add dash status effect
-        let entity_1 = q_2.get_single().expect("Player to exist");
-        let status_dash = StatusEffectDash {
-            dash_duration: Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once),
-        };
-        commands.entity(entity_1).insert(status_dash);
 
-        // Sending events
-        movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
-        animation_type_writer.send(AnimationType::MoveType(movetype));
-    }
+
+
+
+    
 }
 
 pub fn keyboard_jump(
@@ -130,25 +131,23 @@ pub fn keyboard_jump(
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
 ) {
-    let is_grounded = q_1
-        .get_single()
-        .expect("PlayerCollider to have status grounder");
-
     let movetype: u8 = 5;
-
-    for mut jumps in q_2.iter_mut() {
-        if is_grounded {
-            jumps.jump_limit = Limit {
-                ..Default::default()
+    for is_grounded in q_1.iter(){
+        for mut jumps in q_2.iter_mut() {
+            if is_grounded {
+                jumps.jump_limit = Limit {
+                    ..Default::default()
+                }
+                .jump_limit
             }
-            .jump_limit
-        }
-        if keys.just_pressed(KeyCode::Space) && jumps.jump_limit != 0 {
-            jumps.jump_limit -= 1;
-            movement_event_writer.send(MovementAction::Jump);
-            animation_type_writer.send(AnimationType::MoveType(movetype));
+            if keys.just_pressed(KeyCode::Space) && jumps.jump_limit != 0 {
+                jumps.jump_limit -= 1;
+                movement_event_writer.send(MovementAction::Jump);
+                animation_type_writer.send(AnimationType::MoveType(movetype));
+            }
         }
     }
+
 }
 
 pub fn move_character(
