@@ -1,32 +1,19 @@
-use regex::Regex;
-use bevy::{ gltf::Gltf, prelude::*, render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling}
+use crate::asset_loader_plugin::MyAssets;
+use crate::mod_char_plugin::{
+    assemble_parts::attach_part_to_main_skeleton, lib::ConfigModularCharacters, AmountPlayers,
+    Animations, Skeleton, StateSpawnScene,
 };
 use bevy::utils::HashMap;
-use crate::asset_loader_plugin::MyAssets;
-use crate::mod_char_plugin::{lib::ConfigModularCharacters,AmountPlayers,assemble_parts::attach_part_to_main_skeleton};
+use bevy::{
+    gltf::Gltf,
+    prelude::*,
+    render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling},
+};
+use regex::Regex;
 
 use super::{assemble_parts::get_main_skeleton_bones_and_armature, Attachments};
 
-// Tell me in which state the scene is
-#[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub enum StateSpawnScene {
-    #[default]
-    Spawning,
-    Spawned,
-    Done,
-}
-
-
-
-// Marker component tells me the scene name or the filename in this case
-#[derive(Component, Reflect, Debug)]
-pub struct SceneName(pub String);
-
-// Quick way of acessing animation data. I know  there is gltf animation but i dont want to call my asset pack all the time
-#[derive(Resource)]
-pub struct Animations(pub HashMap<String, Handle<AnimationClip>>);
-
-// 
+//
 pub fn spawn_skeleton_and_attachments(
     mut commands: Commands,
     asset_pack: Res<MyAssets>,
@@ -35,11 +22,14 @@ pub fn spawn_skeleton_and_attachments(
     modular_config: Res<ConfigModularCharacters>,
 ) {
     for number_of_player in 1..=amount_players.quantity {
-        let mut skeleton_entity_id: Option<Entity> = None; 
+        let mut skeleton_entity_id: Option<Entity> = None;
         let mut weapons: Vec<Option<Entity>> = Vec::new();
         let mut visuals: Vec<Option<Entity>> = Vec::new();
 
-        let max_len = std::cmp::max(modular_config.weapons_to_be_attached.len(), modular_config.visuals_to_be_attached.len());
+        let max_len = std::cmp::max(
+            modular_config.weapons_to_be_attached.len(),
+            modular_config.visuals_to_be_attached.len(),
+        );
 
         for i in 0..max_len {
             for (file_name, gltf_handle) in &asset_pack.gltf_files {
@@ -48,42 +38,73 @@ pub fn spawn_skeleton_and_attachments(
                 // Check and spawn the skeleton
                 if skeleton_entity_id.is_none() {
                     if Regex::new(r"(?i)skeleton").unwrap().is_match(file_name) {
-                        skeleton_entity_id = Some(commands.spawn((
-                            SceneBundle {
-                                scene: gltf.named_scenes["Scene"].clone(),
-                                transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                                ..Default::default()
-                            },
-                            SceneName(format!("{}{}", file_name, number_of_player)),
-                        )).id());
+                        skeleton_entity_id = Some(
+                            commands
+                                .spawn((
+                                    SceneBundle {
+                                        scene: gltf.named_scenes["Scene"].clone(),
+                                        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                                        ..Default::default()
+                                    },
+                                    Name::new(format!(
+                                        "{}_{}",
+                                        &file_name[0..file_name.len() - 4],
+                                        number_of_player
+                                    )),
+                                    Skeleton,
+                                ))
+                                .id(),
+                        );
                     }
                 }
 
                 // Check and spawn the weapon
                 if let Some(wep) = modular_config.weapons_to_be_attached.get(i) {
-                    if Regex::new(&format!(r"(?i){}", wep)).unwrap().is_match(file_name) {
-                        weapons.push(Some(commands.spawn((
-                            SceneBundle {
-                                scene: gltf.named_scenes["Scene"].clone(),
-                                transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                                ..Default::default()
-                            },
-                            SceneName(format!("{}{}", file_name, number_of_player)),
-                        )).id()));
+                    if Regex::new(&format!(r"(?i){}", wep))
+                        .unwrap()
+                        .is_match(file_name)
+                    {
+                        weapons.push(Some(
+                            commands
+                                .spawn((
+                                    SceneBundle {
+                                        scene: gltf.named_scenes["Scene"].clone(),
+                                        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                                        ..Default::default()
+                                    },
+                                    Name::new(format!(
+                                        "{}_{}",
+                                        &file_name[0..file_name.len() - 4],
+                                        number_of_player
+                                    )),
+                                ))
+                                .id(),
+                        ));
                     }
                 }
 
                 // Check and spawn the visual
                 if let Some(vis) = modular_config.visuals_to_be_attached.get(i) {
-                    if Regex::new(&format!(r"(?i){}", vis)).unwrap().is_match(file_name) {
-                        visuals.push(Some(commands.spawn((
-                            SceneBundle {
-                                scene: gltf.named_scenes["Scene"].clone(),
-                                transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                                ..Default::default()
-                            },
-                            SceneName(format!("{}{}", file_name, number_of_player)),
-                        )).id()));
+                    if Regex::new(&format!(r"(?i){}", vis))
+                        .unwrap()
+                        .is_match(file_name)
+                    {
+                        visuals.push(Some(
+                            commands
+                                .spawn((
+                                    SceneBundle {
+                                        scene: gltf.named_scenes["Scene"].clone(),
+                                        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                                        ..Default::default()
+                                    },
+                                    Name::new(format!(
+                                        "{}_{}",
+                                        &file_name[0..file_name.len() - 4],
+                                        number_of_player
+                                    )),
+                                ))
+                                .id(),
+                        ));
                     }
                 }
             }
@@ -98,7 +119,6 @@ pub fn spawn_skeleton_and_attachments(
         }
     }
 }
-
 
 // Forming the handle for meshes morph data
 pub fn spawn_animation_handle(
@@ -125,17 +145,22 @@ pub fn spawn_animation_handle(
     next_state.set(StateSpawnScene::Spawned);
 }
 
-pub fn attach_to_skeletons (q_1: Query<(Entity,&Attachments),With<Attachments>>,children_entities: Query<&Children>,names: Query<&Name>,mut commands: Commands){
-
-    for (skeleton_entity_id,attachment) in q_1.iter() {
+pub fn attach_to_skeletons(
+    q_1: Query<(Entity, &Attachments), With<Attachments>>,
+    children_entities: Query<&Children>,
+    names: Query<&Name>,
+    mut commands: Commands,
+) {
+    for (skeleton_entity_id, attachment) in q_1.iter() {
         // Get sub children
-        let skeleton_bones = get_main_skeleton_bones_and_armature(&children_entities, &names, &skeleton_entity_id);
+        let skeleton_bones =
+            get_main_skeleton_bones_and_armature(&children_entities, &names, &skeleton_entity_id);
 
         // Get primary weapon
         let primary_weapon = attachment.weapons[0].expect("TO have at least one weapon");
         let handle_bone = skeleton_bones
-        .get("mixamorig:Handle")
-        .expect("Skellie to have bone");
+            .get("mixamorig:Handle")
+            .expect("Skellie to have bone");
 
         commands.entity(primary_weapon).set_parent(*handle_bone);
         // Attach visual according to the bone
@@ -149,7 +174,6 @@ pub fn attach_to_skeletons (q_1: Query<(Entity,&Attachments),With<Attachments>>,
         );
     }
 }
-
 
 pub fn disable_culling_for_skinned_meshes(
     mut commands: Commands,

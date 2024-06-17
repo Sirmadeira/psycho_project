@@ -8,7 +8,7 @@ pub mod move_character;
 pub mod spawn_objects;
 pub mod status_effects;
 
-use crate::mod_char_plugin::spawn_modular::StateSpawnScene;
+use crate::mod_char_plugin::lib::StateSpawnScene;
 
 pub struct PlayerEffectsPlugin;
 
@@ -19,10 +19,7 @@ impl Plugin for PlayerEffectsPlugin {
         app.register_type::<Timers>();
         app.register_type::<Limit>();
         app.add_event::<MovementAction>();
-        app.add_systems(
-            OnEnter(StateSpawnScene::Done),
-            (spawn_main_rigidbody, spawn_timers_limits),
-        );
+        app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
         app.init_state::<StatePlayerCreation>();
         app.add_systems(
             Update,

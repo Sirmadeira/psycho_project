@@ -14,6 +14,10 @@ pub enum StatePlayerCreation {
 #[derive(Component)]
 pub struct Player;
 
+// Skeletons that are yet to have a player
+#[derive(Component)]
+pub struct SidePlayer;
+
 // Marker component -
 #[derive(Component)]
 pub struct PlayerGroundCollider;

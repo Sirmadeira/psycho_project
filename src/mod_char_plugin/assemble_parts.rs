@@ -1,9 +1,6 @@
-use crate::mod_char_plugin::
-    helpers::{collect_bones, find_child_with_name_containing}
-;
+use crate::mod_char_plugin::helpers::{collect_bones, find_child_with_name_containing};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-
 
 // Will grab the main skeleton entity
 pub fn get_main_skeleton_bones_and_armature(
@@ -31,7 +28,6 @@ pub fn attach_part_to_main_skeleton(
     part_scene_entity: &Entity,
     main_skeleton_bones: &HashMap<String, Entity>,
 ) {
-
     let root_bone_option =
         find_child_with_name_containing(children_entities, names, &part_scene_entity, "Hips");
 
