@@ -37,12 +37,13 @@ fn spawn_light(mut commands: Commands) {
     commands.spawn(sun_light);
 }
 
+
+// Spawns the main collider floor and a ugly mesh
 fn spawn_floor(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // O chao de tudo
     let floor = (
         PbrBundle {
             mesh: meshes.add(Plane3d::default().mesh().size(10.0, 10.0)),
@@ -51,10 +52,11 @@ fn spawn_floor(
         },
         Name::new("Floor"),
     );
+    // He is group 10 because for now we can only have 10 players
     let collider = (
         Collider::cuboid(100.0, 0.0, 100.0),
         Ground,
-        CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
+        CollisionGroups::new(Group::GROUP_10, Group::GROUP_10),
     );
 
     commands.spawn(floor).insert(collider);

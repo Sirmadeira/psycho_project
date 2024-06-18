@@ -40,7 +40,7 @@ pub fn spawn_main_rigidbody(
         // Spawning the collider that moves and tells things
         let main_collider = (
             Collider::capsule_x(0.25, 0.25),
-            CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
+            CollisionGroups::new(Group::GROUP_10, Group::GROUP_10),
             ActiveEvents::COLLISION_EVENTS,
             TransformBundle::from(Transform::from_xyz(0.0, 0.25, 0.0)),
             PlayerGroundCollider,

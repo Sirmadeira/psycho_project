@@ -1,6 +1,6 @@
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
 use crate::player_effects_plugin::lib:: StatePlayerCreation;
-use crate::mod_char_plugin::lib::Skeleton;
+use crate::mod_char_plugin::lib::{AmountPlayers, Skeleton};
 
 use bevy::prelude::*;
 use bevy::transform::TransformSystem;
@@ -16,7 +16,7 @@ impl Plugin for FormHitboxPlugin {
         app.register_type::<Offset>();
         app.add_systems(
             OnEnter(StatePlayerCreation::Done),
-            (spawn_simple_colliders, spawn_complex_colliders).chain(),
+            spawn_simple_colliders,
         );
         app.add_systems(
             FixedPostUpdate,
@@ -55,15 +55,40 @@ pub struct PidInfo {
     previous_error: Vec3,
 }
 
+fn create_dynamic_collider_groups(player_amount: &Res<AmountPlayers>,collision_number:u32)->CollisionGroups{
+
+    let membership_group =  Group::from_bits(collision_number).expect("TO have at least a membership");
+    println!("{:?}",membership_group);
+
+    let mut filter_group = Group::empty();
+
+    for group in (1..=player_amount.quantity).rev(){
+
+        let to_be_group = Group::from_bits(group).expect("Group");
+
+        if membership_group.ne(&to_be_group){
+            filter_group |= to_be_group;
+            println!("{:?}",group);
+        }
+    }
+
+    return CollisionGroups::new(membership_group,filter_group);
+}
+
+
 pub fn spawn_simple_colliders(
     mut commands: Commands,
     all_entities_with_children: Query<&Children>,
     main_entity_option: Query<Entity, With<Skeleton>>,
     names: Query<&Name>,
     global_transforms: Query<&GlobalTransform>,
+    player_amount: Res<AmountPlayers>,
 ) {
     // Main bone entity to search in
-    for (collision_number,main_entity) in main_entity_option.iter().enumerate() {
+    for (main_entity,collision_number) in main_entity_option.iter().zip(1u32..) {
+
+        let collision_groups = create_dynamic_collider_groups(&player_amount, collision_number);
+
         // Bones without tail
         let special_bones = [
             find_child_with_name_containing(
@@ -111,12 +136,6 @@ pub fn spawn_simple_colliders(
         ];
         // Hard coded colliders
         for bone in special_bones {
-            let membership_str;
-            if collision_number == 1{
-                membership_str = format!("GROUP_{}",collision_number);
-                let membership_group = Group::from_name(&membership_str).expect("To create a godamm group");
-            }
-
             // Use unwrap_or_else to handle potential None values safely if needed
             let name = names.get(bone).expect("Bone name not found");
 
@@ -125,36 +144,30 @@ pub fn spawn_simple_colliders(
                 .expect("Global transform not found")
                 .translation();
 
-            let (collider, offset, collision_group) = match name.as_str() {
+            let (collider, offset) = match name.as_str() {
                 name if name.contains("Spine") => (
                     Collider::cylinder(0.2, 0.15),
                     Vec3::ZERO,
-                    CollisionGroups::new(Group::GROUP_2, Group::NONE),
                 ),
                 name if name.contains("RightFoot") => (
                     Collider::cuboid(0.05, 0.10, 0.05),
                     Vec3::ZERO,
-                    CollisionGroups::new(Group::GROUP_2, Group::NONE),
                 ),
                 name if name.contains("LeftFoot") => (
                     Collider::cuboid(0.05, 0.10, 0.05),
                     Vec3::ZERO,
-                    CollisionGroups::new(Group::GROUP_2, Group::NONE),
                 ),
                 name if name.contains("Head") => (
                     Collider::cuboid(0.15, 0.15, 0.1),
                     Vec3::new(0.0, 0.10, 0.00),
-                    CollisionGroups::new(Group::GROUP_2, Group::NONE),
                 ),
                 name if name.contains("RightHand") => (
                     Collider::cuboid(0.05, 0.10, 0.10),
                     Vec3::new(0.00, -0.1, 0.0),
-                    CollisionGroups::new(Group::GROUP_2, Group::NONE),
                 ),
                 name if name.contains("LeftHand") => (
                     Collider::cuboid(0.05, 0.10, 0.10),
                     Vec3::new(0.00, -0.1, 0.0),
-                    CollisionGroups::new(Group::GROUP_2, Group::NONE),
                 ),
                 _ => continue, // Skip bones that are not in the list
             };
@@ -183,7 +196,7 @@ pub fn spawn_simple_colliders(
                     children
                         .spawn(collider)
                         .insert(Sensor)
-                        .insert(collision_group);
+                        .insert(collision_groups);
                 });
         }
     }
@@ -196,9 +209,11 @@ pub fn spawn_complex_colliders(
     main_entity_option: Query<Entity, With<Skeleton>>,
     names: Query<&Name>,
     global_transforms: Query<&GlobalTransform>,
+    player_amount: Res<AmountPlayers>,
 ) {
     // Main bone entity to search in
-    for main_entity in main_entity_option.iter() {
+    for (main_entity,collision_number) in main_entity_option.iter().zip(1u32..) {
+        let collision_groups = create_dynamic_collider_groups(&player_amount, collision_number);
         // Start and end entities for something
         let bone_entities = [
             find_child_with_name_containing(
@@ -345,16 +360,14 @@ pub fn spawn_complex_colliders(
             // Distance between the two
             let half_height = trans1.distance(trans2) / 2.0;
 
-            let (collider, offset, collision_group) = match collider_name.as_str() {
+            let (collider, offset) = match collider_name.as_str() {
                 "POT" => (
                     Collider::cylinder(half_height, 0.15),
                     Vec3::ZERO,
-                    CollisionGroups::new(Group::GROUP_2, Group::NONE),
                 ),
                 _ => (
                     Collider::cylinder(half_height, 0.09),
                     Vec3::ZERO,
-                    CollisionGroups::new(Group::GROUP_2, Group::NONE),
                 ),
             };
 
@@ -388,7 +401,7 @@ pub fn spawn_complex_colliders(
                 .with_children(|children| {
                     children
                         .spawn(collider)
-                        .insert(collision_group)
+                        .insert(collision_groups)
                         .insert(Sensor);
                 });
 

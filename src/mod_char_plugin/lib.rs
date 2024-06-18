@@ -6,7 +6,7 @@ use bevy::utils::HashMap;
 
 #[derive(Resource, Reflect)]
 pub struct AmountPlayers {
-    pub quantity: u8,
+    pub quantity: u32,
 }
 // Resource that defines what to add to skeleton - TODO make UI that definesi
 #[derive(Resource, Reflect)]
