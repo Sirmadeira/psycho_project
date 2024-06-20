@@ -14,7 +14,7 @@ pub fn spawn_main_rigidbody(
     mod_characters: Query<(Entity, &Name), With<Skeleton>>,
     mut next_state: ResMut<NextState<StatePlayerCreation>>,
 ) {
-    for (player_count, (player_character, scene_name)) in mod_characters.iter().enumerate() {
+    for (( player_character, scene_name),player_count) in mod_characters.iter().zip(1..) {
         // Spawning main physical body
         let main_rigidbody = (
             RigidBody::Dynamic,
@@ -32,7 +32,7 @@ pub fn spawn_main_rigidbody(
                 torque_impulse: Vec3::ZERO,
             },
             PdInfo { kp: 500.0 },
-            Name::new(format!("Player_{}", player_count + 1)),
+            Name::new(format!("Player_{}", player_count)),
             GravityScale(1.0),
             AdditionalMassProperties::Mass(10.0),
         );

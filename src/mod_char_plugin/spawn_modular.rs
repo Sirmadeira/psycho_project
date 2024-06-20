@@ -1,17 +1,20 @@
-use crate::asset_loader_plugin::MyAssets;
-use crate::mod_char_plugin::{
-    assemble_parts::attach_part_to_main_skeleton, lib::ConfigModularCharacters, AmountPlayers,
-    Animations, Skeleton, StateSpawnScene,
-};
-use bevy::utils::HashMap;
+use regex::Regex;
 use bevy::{
     gltf::Gltf,
     prelude::*,
     render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling},
 };
-use regex::Regex;
+use bevy::utils::HashMap;
+
 
 use super::{assemble_parts::get_main_skeleton_bones_and_armature, Attachments};
+
+use crate::asset_loader_plugin::MyAssets;
+use crate::mod_char_plugin::{
+    assemble_parts::attach_part_to_main_skeleton, lib::ConfigModularCharacters, AmountPlayers,
+    Animations, Skeleton, StateSpawnScene
+};
+
 
 //
 pub fn spawn_skeleton_and_attachments(
@@ -151,6 +154,7 @@ pub fn attach_to_skeletons(
     names: Query<&Name>,
     mut commands: Commands,
 ) {
+    // TODO - MAKE PARENT ACCORDING TO SKELETON
     for (skeleton_entity_id, attachment) in q_1.iter() {
         // Get sub children
         let skeleton_bones =

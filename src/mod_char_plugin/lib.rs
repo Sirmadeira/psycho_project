@@ -26,6 +26,8 @@ pub struct Attachments {
 #[derive(Component)]
 pub struct Skeleton;
 
+
+
 // Marker component that points out the entity that has and animation player
 // This is handy to know who is the parent of the animation entity
 #[derive(Reflect, Component, Debug)]

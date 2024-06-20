@@ -1,24 +1,25 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::mod_char_plugin::lib::{AmountPlayers, Skeleton};
+use crate::mod_char_plugin::lib::{AmountPlayers, Skeleton,Attachments};
+use crate::mod_char_plugin::helpers::find_child_with_name_containing;
 
 use crate::form_hitbox_plugin::helpers::create_dynamic_collider_groups;
 use crate::form_hitbox_plugin::lib::{BaseEntities, Hitbox, Offset, PidInfo};
-use crate::mod_char_plugin::helpers::find_child_with_name_containing;
+
 
 pub fn spawn_simple_colliders(
     mut commands: Commands,
-    all_entities_with_children: Query<&Children>,
-    main_entity_option: Query<Entity, With<Skeleton>>,
+    children_entities: Query<&Children>,
+    skeleton_entities: Query<Entity, With<Skeleton>>,
     names: Query<&Name>,
     global_transforms: Query<&GlobalTransform>,
     player_amount: Res<AmountPlayers>,
 ) {
     // Main bone entity to search in
-    for (main_entity, collision_number) in main_entity_option.iter().zip(1u32..) {
+    for (main_entity, number) in skeleton_entities.iter().zip(1u32..) {
         // Creates dynamic specific groups according to the amount of players
-        let collision_groups = create_dynamic_collider_groups(&player_amount, collision_number);
+        let collision_groups = create_dynamic_collider_groups(&player_amount, number);
 
         // Name of bones
         let bone_names = vec![
@@ -34,7 +35,7 @@ pub fn spawn_simple_colliders(
 
         for bone_name in bone_names {
             let bone = find_child_with_name_containing(
-                &all_entities_with_children,
+                &children_entities,
                 &names,
                 &main_entity,
                 bone_name,
@@ -109,18 +110,81 @@ pub fn spawn_simple_colliders(
     }
 }
 
+pub fn spawn_hitbox_weapon(mut commands: Commands,
+    skeleton_entities: Query<&Attachments, With<Skeleton>>,
+    names: Query<&Name>,
+    global_transforms: Query<&GlobalTransform>,
+    player_amount: Res<AmountPlayers>,
+
+    )
+{   
+    // The only difference between this guy and the other is that I dont grab the bone since I know the weapon is already in the correct position
+    // Creates a specific hitbox to each weapon in the skeleton entity, later we turn on and off them.
+    for (attachments,number) in skeleton_entities.iter().zip(1..){
+        
+        for weapon in &attachments.weapons{
+            // In case player doesnt have a weapon do nothing
+            if let Some(weapon_entity) = weapon{
+                let collision_groups = create_dynamic_collider_groups(&player_amount, number);
+                let weapon_name = names.get(*weapon_entity).expect("Weapon to have a name");
+                println!("{}",weapon_name);
+                let (collider,offset) = match weapon_name.as_str(){
+                    weapon_name if weapon_name.contains("katana") => (Collider::cylinder(0.4, 0.05),Offset(Vec3::new(0.0,0.0,0.0))),
+                    _ => continue,
+                };
+
+                let trans1 = global_transforms.get(*weapon_entity).expect("Weapon entity to have transform").translation();
+
+                commands.spawn(RigidBody::Dynamic)
+                .insert(Hitbox)
+                .insert(BaseEntities{
+                    start: *weapon_entity,
+                    end: None
+                })
+                .insert(PidInfo{
+                    kp: 50.0,
+                    ki: 15.0,
+                    kd: 0.1,
+                    integral: Vec3::ZERO,
+                    previous_error: Vec3::ZERO,
+                })
+                .insert(offset)
+                .insert(SpatialBundle {
+                    transform: Transform::from_translation(trans1),
+                    ..Default::default()
+                })
+                .insert(Velocity::zero())
+                .insert(Name::new(format!("{}_{}_col", weapon_name,number)))
+                .with_children(|children| {
+                    children
+                        .spawn(collider)
+                        .insert(Sensor)
+                        .insert(collision_groups)
+                        .insert(ActiveEvents::COLLISION_EVENTS);
+                });
+
+            }
+        }
+
+
+    }
+}
+
+
+
+
 // WARNING ONLY ADD TO UNIQUE BONES
 // pub fn spawn_complex_colliders(
 //     mut commands: Commands,
-//     all_entities_with_children: Query<&Children>,
-//     main_entity_option: Query<Entity, With<Skeleton>>,
+//     children_entities: Query<&Children>,
+//     skeleton_entities: Query<Entity, With<Skeleton>>,
 //     names: Query<&Name>,
 //     global_transforms: Query<&GlobalTransform>,
 //     player_amount: Res<AmountPlayers>,
 // ) {
 //     // Main bone entity to search in
-//     for (main_entity,collision_number) in main_entity_option.iter().zip(1u32..) {
-//         let collision_groups = create_dynamic_collider_groups(&player_amount, collision_number);
+//     for (main_entity,number) in skeleton_entities.iter().zip(1u32..) {
+//         let collision_groups = create_dynamic_collider_groups(&player_amount, number);
 //         // Define the bone names we want to find
 //         let bone_names = vec![
 //             "LeftArm", "LeftForeArm", "RightArm", "RightForeArm",
