@@ -129,7 +129,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
                 let weapon_name = names.get(*weapon_entity).expect("Weapon to have a name");
                 println!("{}",weapon_name);
                 let (collider,offset) = match weapon_name.as_str(){
-                    weapon_name if weapon_name.contains("katana") => (Collider::cylinder(0.4, 0.05),Offset(Vec3::new(0.0,0.0,0.0))),
+                    weapon_name if weapon_name.contains("katana") => (Collider::cylinder(0.4, 0.05),Offset(Vec3::new(0.0,0.5,0.0))),
                     _ => continue,
                 };
 
