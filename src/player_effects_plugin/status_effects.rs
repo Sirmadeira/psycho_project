@@ -31,7 +31,7 @@ pub fn check_status_grounded(
     q_2: Query<Entity, With<Ground>>,
 ) {
     // Grabs every hitbox and check if any of them are touching the ground.
-    for entity1 in q_1.iter(){
+    for entity1 in q_1.iter() {
         let entity2 = q_2.get_single().expect("Ground to exist");
         /* Find the contact pair, if it exists, between two colliders. */
         if let Some(contact_pair) = rapier_context.contact_pair(entity1, entity2) {

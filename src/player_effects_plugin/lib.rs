@@ -72,7 +72,6 @@ impl Default for Limit {
     }
 }
 
-
-#[derive(Component,Reflect,Debug)]
+#[derive(Component, Reflect, Debug)]
 
 pub struct Health(pub u8);

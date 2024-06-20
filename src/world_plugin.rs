@@ -37,7 +37,6 @@ fn spawn_light(mut commands: Commands) {
     commands.spawn(sun_light);
 }
 
-
 // Spawns the main collider floor and a ugly mesh
 fn spawn_floor(
     mut commands: Commands,

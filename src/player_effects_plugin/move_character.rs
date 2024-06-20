@@ -55,21 +55,26 @@ pub fn keyboard_dash(
     mut commands: Commands,
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
-    mut q: Query<(&mut Timers,Entity,Has<StatusEffectDash>),With<Player>>,
+    mut q: Query<(&mut Timers, Entity, Has<StatusEffectDash>), With<Player>>,
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
-
-
-    for (mut timers,player,has_dashed) in q.iter_mut(){
-
+    for (mut timers, player, has_dashed) in q.iter_mut() {
         let mut movetype: u8 = 0;
         let mut direction = Vec2::ZERO;
         let cam = q_1.get_single().unwrap();
 
-        timers.up.tick(Duration::from_secs_f32(time.delta_seconds()));
-        timers.down.tick(Duration::from_secs_f32(time.delta_seconds()));
-        timers.left.tick(Duration::from_secs_f32(time.delta_seconds()));
-        timers.right.tick(Duration::from_secs_f32(time.delta_seconds()));
+        timers
+            .up
+            .tick(Duration::from_secs_f32(time.delta_seconds()));
+        timers
+            .down
+            .tick(Duration::from_secs_f32(time.delta_seconds()));
+        timers
+            .left
+            .tick(Duration::from_secs_f32(time.delta_seconds()));
+        timers
+            .right
+            .tick(Duration::from_secs_f32(time.delta_seconds()));
 
         if keys.just_released(KeyCode::KeyW) {
             timers.up.reset();
@@ -110,18 +115,12 @@ pub fn keyboard_dash(
                 dash_duration: Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once),
             };
             commands.entity(player).insert(status_dash);
-    
+
             // Sending events
             movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
             animation_type_writer.send(AnimationType::MoveType(movetype));
         }
     }
-
-
-
-
-
-    
 }
 
 pub fn keyboard_jump(
@@ -132,7 +131,7 @@ pub fn keyboard_jump(
     mut animation_type_writer: EventWriter<AnimationType>,
 ) {
     let movetype: u8 = 5;
-    for is_grounded in q_1.iter(){
+    for is_grounded in q_1.iter() {
         for mut jumps in q_2.iter_mut() {
             if is_grounded {
                 jumps.jump_limit = Limit {
@@ -147,7 +146,6 @@ pub fn keyboard_jump(
             }
         }
     }
-
 }
 
 pub fn move_character(

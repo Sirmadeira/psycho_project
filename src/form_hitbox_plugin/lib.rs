@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-
 // Marker component good to check if any of the colliders are touching the ground collider
 #[derive(Reflect, Component, Debug)]
 pub struct Hitbox;
