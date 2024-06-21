@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::form_hitbox_plugin::WeaponHitbox;
+
 use crate::mod_char_plugin::lib::{AmountPlayers, Skeleton,Attachments};
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
 
 use crate::form_hitbox_plugin::helpers::create_dynamic_collider_groups;
-use crate::form_hitbox_plugin::lib::{BaseEntities, Hitbox, Offset, PidInfo};
+use crate::form_hitbox_plugin::lib::{BaseEntities, Hitbox, Offset, PidInfo,WeaponCollider};
 
 
 pub fn spawn_simple_colliders(
@@ -81,7 +81,6 @@ pub fn spawn_simple_colliders(
 
             commands
                 .spawn(RigidBody::Dynamic)
-                .insert(Hitbox)
                 .insert(BaseEntities {
                     start: bone,
                     end: None,
@@ -104,6 +103,7 @@ pub fn spawn_simple_colliders(
                     children
                         .spawn(collider)
                         .insert(Sensor)
+                        .insert(Hitbox)
                         .insert(collision_groups)
                         .insert(ActiveEvents::COLLISION_EVENTS);
                 });
@@ -137,7 +137,6 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 
                 commands.spawn(RigidBody::Dynamic)
                 .insert(Hitbox)
-                .insert(WeaponHitbox)
                 .insert(BaseEntities{
                     start: *weapon_entity,
                     end: None
@@ -160,6 +159,8 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
                     children
                         .spawn(collider)
                         .insert(Sensor)
+                        .insert(Hitbox)
+                        .insert(WeaponCollider)
                         .insert(Name::new(format!("{}_col", weapon_name)))
                         .insert(collision_groups)
                         .insert(ActiveEvents::COLLISION_EVENTS);
@@ -259,7 +260,6 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 
 //             commands
 //                 .spawn(RigidBody::Dynamic)
-//                 .insert(Hitbox)
 //                 .insert(BaseEntities {
 //                     start: bone_entities[i],
 //                     end: end,
@@ -281,6 +281,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 //                     children
 //                         .spawn(collider)
 //                         .insert(collision_groups)
+//                         .insert(Hitbox)
 //                         .insert(Sensor)
 //                         .insert(ActiveEvents::COLLISION_EVENTS);
 //                 });

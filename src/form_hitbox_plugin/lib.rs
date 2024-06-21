@@ -6,7 +6,7 @@ pub struct Hitbox;
 
 // Marker collider that point out the collider that actually can deal damage. And to handle specific scenarios
 #[derive(Component,Debug)]
-pub struct WeaponHitbox;
+pub struct WeaponCollider;
 
 // Colliders are not based on another collider axis
 #[derive(Reflect, Component, Debug)]

@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
 
 use self::{lib::*, move_character::*, spawn_objects::*, status_effects::*,health_mechanics::*};
 
@@ -38,7 +37,6 @@ impl Plugin for PlayerEffectsPlugin {
                 .chain()
                 .run_if(in_state(StatePlayerCreation::Done)),
         );
-        app.add_systems(FixedUpdate, display_events);
         app.add_systems(
             FixedUpdate,
             move_character.run_if(in_state(StatePlayerCreation::Done)),
@@ -51,19 +49,5 @@ impl Plugin for PlayerEffectsPlugin {
             FixedUpdate,
             detect_hits.run_if(in_state(StatePlayerCreation::Done)),
         );
-    }
-}
-
-// Display collision events between colliders
-fn display_events(
-    mut collision_events: EventReader<CollisionEvent>,
-    mut contact_force_events: EventReader<ContactForceEvent>,
-) {
-    for collision_event in collision_events.read() {
-        println!("Received collision event: {:?}", collision_event);
-    }
-
-    for contact_force_event in contact_force_events.read() {
-        println!("Received contact force event: {:?}", contact_force_event);
     }
 }
