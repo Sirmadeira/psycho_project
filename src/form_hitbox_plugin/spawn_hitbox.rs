@@ -14,11 +14,15 @@ pub fn spawn_simple_colliders(
     children_entities: Query<&Children>,
     skeleton_entities: Query<Entity, With<Skeleton>>,
     names: Query<&Name>,
-    global_transforms: Query<&GlobalTransform>,
     player_amount: Res<AmountPlayers>,
 ) {
+
+    let mut  z = 0.0;
     // Main bone entity to search in
     for (main_entity, number) in skeleton_entities.iter().zip(1u32..) {
+
+        z += 0.0;
+
         // Creates dynamic specific groups according to the amount of players
         let collision_groups = create_dynamic_collider_groups(&player_amount, number);
 
@@ -51,10 +55,6 @@ pub fn spawn_simple_colliders(
             // Use unwrap_or_else to handle potential None values safely if needed
             let name = names.get(bone).expect("Bone name not found");
 
-            let trans1 = global_transforms
-                .get(bone)
-                .expect("Global transform not found")
-                .translation();
 
             let (collider, offset) = match name.as_str() {
                 name if name.contains("Spine") => (Collider::cylinder(0.2, 0.15), Vec3::ZERO),
@@ -94,7 +94,7 @@ pub fn spawn_simple_colliders(
                 })
                 .insert(Offset(offset))
                 .insert(SpatialBundle {
-                    transform: Transform::from_translation(trans1),
+                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, z)),
                     ..Default::default()
                 })
                 .insert(Velocity::zero())
@@ -114,15 +114,17 @@ pub fn spawn_simple_colliders(
 pub fn spawn_hitbox_weapon(mut commands: Commands,
     skeleton_entities: Query<&Attachments, With<Skeleton>>,
     names: Query<&Name>,
-    global_transforms: Query<&GlobalTransform>,
     player_amount: Res<AmountPlayers>,
 
     )
 {   
+    let mut z = 0.0;
     // The only difference between this guy and the other is that I dont grab the bone since I know the weapon is already in the correct position
     // Creates a specific hitbox to each weapon in the skeleton entity, later we turn on and off them.
     for (attachments,number) in skeleton_entities.iter().zip(1..){
-        
+        // Slowly incrementing so it avoid collision on initialization
+        z += 2.0;
+
         for weapon in &attachments.weapons{
             // In case player doesnt have a weapon do nothing
             if let Some(weapon_entity) = weapon{
@@ -133,7 +135,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
                     _ => continue,
                 };
 
-                let trans1 = global_transforms.get(*weapon_entity).expect("Weapon entity to have transform").translation();
+
 
                 commands.spawn(RigidBody::Dynamic)
                 .insert(Hitbox)
@@ -150,7 +152,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
                 })
                 .insert(offset)
                 .insert(SpatialBundle {
-                    transform: Transform::from_translation(trans1),
+                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, z)),
                     ..Default::default()
                 })
                 .insert(Velocity::zero())
@@ -182,11 +184,13 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 //     children_entities: Query<&Children>,
 //     skeleton_entities: Query<Entity, With<Skeleton>>,
 //     names: Query<&Name>,
-//     global_transforms: Query<&GlobalTransform>,
 //     player_amount: Res<AmountPlayers>,
+//     global_transforms: Query<&GlobalTransform>
 // ) {
-//     // Main bone entity to search in
+//     let mut z =0.0;
 //     for (main_entity,number) in skeleton_entities.iter().zip(1u32..) {
+
+//         z += 2.0;
 //         let collision_groups = create_dynamic_collider_groups(&player_amount, number);
 //         // Define the bone names we want to find
 //         let bone_names = vec![
@@ -200,7 +204,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 
 //         for bone_name in bone_names {
 //             let bone = find_child_with_name_containing(
-//                 &all_entities_with_children,
+//                 &children_entities,
 //                 &names,
 //                 &main_entity,
 //                 bone_name,
@@ -229,13 +233,6 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 //                 first_name.to_lowercase(),
 //                 last_name.to_lowercase()
 //             ));
-
-//             // Starting point
-//             let mid_point = Vec3::new(
-//                 (trans1.x + trans2.x) / 2.0,
-//                 (trans1.y + trans2.y) / 2.0,
-//                 (trans1.z + trans2.z) / 2.0,
-//             );
 
 //             // Distance between the two
 //             let half_height = trans1.distance(trans2) / 2.0;
@@ -273,7 +270,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 //                 })
 //                 .insert(Offset(offset))
 //                 .insert(SpatialBundle {
-//                     transform: Transform::from_translation(mid_point),
+//                     transform: Transform::from_translation(Vec3::new(0.0, 0.0, z)),
 //                     ..Default::default()
 //                 })
 //                 .insert(Velocity::zero())

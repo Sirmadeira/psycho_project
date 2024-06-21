@@ -19,7 +19,7 @@ pub fn spawn_main_rigidbody(
         let main_rigidbody = (
             RigidBody::Dynamic,
             SpatialBundle {
-                transform: Transform::from_xyz(0.0, 0.25, 0.0),
+                transform: Transform::from_xyz(-2.0, 0.25, -3.0),
                 ..Default::default()
             },
             Velocity::zero(),
@@ -40,7 +40,7 @@ pub fn spawn_main_rigidbody(
         let second_rigidbody = (
             RigidBody::Fixed,
             SpatialBundle {
-                transform: Transform::from_xyz(2.0, 0.25, 0.0),
+                transform: Transform::from_xyz(4.0, 0.25, 3.0),
                 ..Default::default()
             },
             Velocity::zero(),
