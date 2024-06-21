@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
+use crate::form_hitbox_plugin::WeaponHitbox;
 use crate::mod_char_plugin::lib::{AmountPlayers, Skeleton,Attachments};
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
 
@@ -127,7 +128,6 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
             if let Some(weapon_entity) = weapon{
                 let collision_groups = create_dynamic_collider_groups(&player_amount, number);
                 let weapon_name = names.get(*weapon_entity).expect("Weapon to have a name");
-                println!("{}",weapon_name);
                 let (collider,offset) = match weapon_name.as_str(){
                     weapon_name if weapon_name.contains("katana") => (Collider::cylinder(0.4, 0.05),Offset(Vec3::new(0.0,0.5,0.0))),
                     _ => continue,
@@ -137,6 +137,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 
                 commands.spawn(RigidBody::Dynamic)
                 .insert(Hitbox)
+                .insert(WeaponHitbox)
                 .insert(BaseEntities{
                     start: *weapon_entity,
                     end: None
@@ -154,11 +155,12 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
                     ..Default::default()
                 })
                 .insert(Velocity::zero())
-                .insert(Name::new(format!("{}_{}_col", weapon_name,number)))
+                .insert(Name::new(format!("{}_rigid", weapon_name)))
                 .with_children(|children| {
                     children
                         .spawn(collider)
                         .insert(Sensor)
+                        .insert(Name::new(format!("{}_col", weapon_name)))
                         .insert(collision_groups)
                         .insert(ActiveEvents::COLLISION_EVENTS);
                 });

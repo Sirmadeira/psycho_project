@@ -1,12 +1,13 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use self::{lib::*, move_character::*, spawn_objects::*, status_effects::*};
+use self::{lib::*, move_character::*, spawn_objects::*, status_effects::*,health_mechanics::*};
 
 pub mod lib;
-pub mod move_character;
 pub mod spawn_objects;
 pub mod status_effects;
+pub mod health_mechanics;
+pub mod move_character;
 
 use crate::mod_char_plugin::lib::StateSpawnScene;
 
@@ -46,10 +47,14 @@ impl Plugin for PlayerEffectsPlugin {
             FixedUpdate,
             player_look_at_camera.run_if(in_state(StatePlayerCreation::Done)),
         );
+        app.add_systems(
+            FixedUpdate,
+            detect_hits.run_if(in_state(StatePlayerCreation::Done)),
+        );
     }
 }
 
-// Display collision events between entities
+// Display collision events between colliders
 fn display_events(
     mut collision_events: EventReader<CollisionEvent>,
     mut contact_force_events: EventReader<ContactForceEvent>,
