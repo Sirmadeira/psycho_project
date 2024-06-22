@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-
-use crate::mod_char_plugin::lib::{AmountPlayers, Skeleton,Attachments};
 use crate::mod_char_plugin::helpers::find_child_with_name_containing;
+use crate::mod_char_plugin::lib::{AmountPlayers, Attachments, Skeleton};
 
 use crate::form_hitbox_plugin::helpers::create_dynamic_collider_groups;
-use crate::form_hitbox_plugin::lib::{BaseEntities, Hitbox, Offset, PidInfo,WeaponCollider};
+use crate::form_hitbox_plugin::lib::{BaseEntities, Hitbox, Offset, PidInfo, WeaponCollider};
 
+use super::BaseSkeleton;
 
 pub fn spawn_simple_colliders(
     mut commands: Commands,
@@ -16,11 +16,9 @@ pub fn spawn_simple_colliders(
     names: Query<&Name>,
     player_amount: Res<AmountPlayers>,
 ) {
-
-    let mut  z = 0.0;
+    let mut z = 0.0;
     // Main bone entity to search in
-    for (main_entity, number) in skeleton_entities.iter().zip(1u32..) {
-
+    for (main_skeleton, number) in skeleton_entities.iter().zip(1u32..) {
         z += 0.0;
 
         // Creates dynamic specific groups according to the amount of players
@@ -42,7 +40,7 @@ pub fn spawn_simple_colliders(
             let bone = find_child_with_name_containing(
                 &children_entities,
                 &names,
-                &main_entity,
+                &main_skeleton,
                 bone_name,
             )
             .expect(&format!("Unique {} bone to exist", bone_name));
@@ -54,7 +52,6 @@ pub fn spawn_simple_colliders(
         for bone in special_bones {
             // Use unwrap_or_else to handle potential None values safely if needed
             let name = names.get(bone).expect("Bone name not found");
-
 
             let (collider, offset) = match name.as_str() {
                 name if name.contains("Spine") => (Collider::cylinder(0.2, 0.15), Vec3::ZERO),
@@ -102,6 +99,7 @@ pub fn spawn_simple_colliders(
                 .with_children(|children| {
                     children
                         .spawn(collider)
+                        .insert(BaseSkeleton(main_skeleton))
                         .insert(Sensor)
                         .insert(Hitbox)
                         .insert(collision_groups)
@@ -111,72 +109,68 @@ pub fn spawn_simple_colliders(
     }
 }
 
-pub fn spawn_hitbox_weapon(mut commands: Commands,
-    skeleton_entities: Query<&Attachments, With<Skeleton>>,
+pub fn spawn_hitbox_weapon(
+    mut commands: Commands,
+    skeleton_entities: Query<(Entity, &Attachments), With<Skeleton>>,
     names: Query<&Name>,
     player_amount: Res<AmountPlayers>,
-
-    )
-{   
+) {
     let mut z = 0.0;
     // The only difference between this guy and the other is that I dont grab the bone since I know the weapon is already in the correct position
     // Creates a specific hitbox to each weapon in the skeleton entity, later we turn on and off them.
-    for (attachments,number) in skeleton_entities.iter().zip(1..){
+    for ((main_skeleton, attachments), number) in skeleton_entities.iter().zip(1..) {
         // Slowly incrementing so it avoid collision on initialization
         z += 2.0;
 
-        for weapon in &attachments.weapons{
+        for weapon in &attachments.weapons {
             // In case player doesnt have a weapon do nothing
-            if let Some(weapon_entity) = weapon{
+            if let Some(weapon_entity) = weapon {
                 let collision_groups = create_dynamic_collider_groups(&player_amount, number);
                 let weapon_name = names.get(*weapon_entity).expect("Weapon to have a name");
-                let (collider,offset) = match weapon_name.as_str(){
-                    weapon_name if weapon_name.contains("katana") => (Collider::cylinder(0.4, 0.05),Offset(Vec3::new(0.0,0.5,0.0))),
+                let (collider, offset) = match weapon_name.as_str() {
+                    weapon_name if weapon_name.contains("katana") => (
+                        Collider::cylinder(0.4, 0.05),
+                        Offset(Vec3::new(0.0, 0.5, 0.0)),
+                    ),
                     _ => continue,
                 };
 
-
-
-                commands.spawn(RigidBody::Dynamic)
-                .insert(Hitbox)
-                .insert(BaseEntities{
-                    start: *weapon_entity,
-                    end: None
-                })
-                .insert(PidInfo{
-                    kp: 50.0,
-                    ki: 15.0,
-                    kd: 0.1,
-                    integral: Vec3::ZERO,
-                    previous_error: Vec3::ZERO,
-                })
-                .insert(offset)
-                .insert(SpatialBundle {
-                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, z)),
-                    ..Default::default()
-                })
-                .insert(Velocity::zero())
-                .insert(Name::new(format!("{}_rigid", weapon_name)))
-                .with_children(|children| {
-                    children
-                        .spawn(collider)
-                        .insert(Sensor)
-                        .insert(Hitbox)
-                        .insert(WeaponCollider)
-                        .insert(Name::new(format!("{}_col", weapon_name)))
-                        .insert(collision_groups)
-                        .insert(ActiveEvents::COLLISION_EVENTS);
-                });
-
+                commands
+                    .spawn(RigidBody::Dynamic)
+                    .insert(Hitbox)
+                    .insert(BaseEntities {
+                        start: *weapon_entity,
+                        end: None,
+                    })
+                    .insert(PidInfo {
+                        kp: 50.0,
+                        ki: 15.0,
+                        kd: 0.1,
+                        integral: Vec3::ZERO,
+                        previous_error: Vec3::ZERO,
+                    })
+                    .insert(offset)
+                    .insert(SpatialBundle {
+                        transform: Transform::from_translation(Vec3::new(0.0, 0.0, z)),
+                        ..Default::default()
+                    })
+                    .insert(Velocity::zero())
+                    .insert(Name::new(format!("{}_rigid", weapon_name)))
+                    .with_children(|children| {
+                        children
+                            .spawn(collider)
+                            .insert(BaseSkeleton(main_skeleton))
+                            .insert(Sensor)
+                            .insert(Hitbox)
+                            .insert(WeaponCollider)
+                            .insert(Name::new(format!("{}_col", weapon_name)))
+                            .insert(collision_groups)
+                            .insert(ActiveEvents::COLLISION_EVENTS);
+                    });
             }
         }
-
-
     }
 }
-
-
-
 
 // WARNING ONLY ADD TO UNIQUE BONES
 // pub fn spawn_complex_colliders(
@@ -188,7 +182,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 //     global_transforms: Query<&GlobalTransform>
 // ) {
 //     let mut z =0.0;
-//     for (main_entity,number) in skeleton_entities.iter().zip(1u32..) {
+//     for (main_skeleton,number) in skeleton_entities.iter().zip(1u32..) {
 
 //         z += 2.0;
 //         let collision_groups = create_dynamic_collider_groups(&player_amount, number);
@@ -206,7 +200,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 //             let bone = find_child_with_name_containing(
 //                 &children_entities,
 //                 &names,
-//                 &main_entity,
+//                 &main_skeleton,
 //                 bone_name,
 //             ).expect(&format!("Unique {} bone to exist", bone_name));
 
@@ -278,6 +272,7 @@ pub fn spawn_hitbox_weapon(mut commands: Commands,
 //                     children
 //                         .spawn(collider)
 //                         .insert(collision_groups)
+//                         .insert(BaseSkeleton(main_skeleton))
 //                         .insert(Hitbox)
 //                         .insert(Sensor)
 //                         .insert(ActiveEvents::COLLISION_EVENTS);

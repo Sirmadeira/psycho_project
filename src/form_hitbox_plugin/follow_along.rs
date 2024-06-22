@@ -45,7 +45,7 @@ pub fn colliders_look_at(
         }
 
         let rotated_offset = target_transform.rotation * offset.0;
-        
+
         target_translation = target_translation + rotated_offset;
         // Distance vector
         let error = target_translation - current_transform.translation;

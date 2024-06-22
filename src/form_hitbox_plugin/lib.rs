@@ -5,10 +5,14 @@ use bevy::prelude::*;
 pub struct Hitbox;
 
 // Marker collider that point out the collider that actually can deal damage. And to handle specific scenarios
-#[derive(Component,Debug)]
+#[derive(Component, Debug)]
 pub struct WeaponCollider;
 
-// Colliders are not based on another collider axis
+// Tell me who is the main father of the entity
+#[derive(Component, Debug)]
+pub struct BaseSkeleton(pub Entity);
+
+// Component that tells me who the collider is following
 #[derive(Reflect, Component, Debug)]
 pub struct BaseEntities {
     pub start: Entity,

@@ -1,20 +1,18 @@
-use regex::Regex;
+use bevy::utils::HashMap;
 use bevy::{
     gltf::Gltf,
     prelude::*,
     render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling},
 };
-use bevy::utils::HashMap;
-
+use regex::Regex;
 
 use super::{assemble_parts::get_main_skeleton_bones_and_armature, Attachments};
 
 use crate::asset_loader_plugin::MyAssets;
 use crate::mod_char_plugin::{
     assemble_parts::attach_part_to_main_skeleton, lib::ConfigModularCharacters, AmountPlayers,
-    Animations, Skeleton, StateSpawnScene
+    Animations, Skeleton, StateSpawnScene,
 };
-
 
 //
 pub fn spawn_skeleton_and_attachments(

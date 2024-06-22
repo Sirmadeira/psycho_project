@@ -14,7 +14,7 @@ pub fn spawn_main_rigidbody(
     mod_characters: Query<(Entity, &Name), With<Skeleton>>,
     mut next_state: ResMut<NextState<StatePlayerCreation>>,
 ) {
-    for (( player_character, scene_name),player_count) in mod_characters.iter().zip(1..) {
+    for ((player_character, scene_name), player_count) in mod_characters.iter().zip(1..) {
         // Spawning main physical body
         let main_rigidbody = (
             RigidBody::Dynamic,

@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
-use self::{lib::*, move_character::*, spawn_objects::*, status_effects::*,health_mechanics::*};
+use self::{health_mechanics::*, lib::*, move_character::*, spawn_objects::*, status_effects::*};
 
+pub mod health_mechanics;
 pub mod lib;
+pub mod move_character;
 pub mod spawn_objects;
 pub mod status_effects;
-pub mod health_mechanics;
-pub mod move_character;
 
 use crate::mod_char_plugin::lib::StateSpawnScene;
 

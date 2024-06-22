@@ -74,4 +74,4 @@ impl Default for Limit {
 
 #[derive(Component, Reflect, Debug)]
 
-pub struct Health(pub u8);
+pub struct Health(pub i8);
