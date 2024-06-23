@@ -15,10 +15,23 @@ impl Plugin for TreatAnimationsPlugin {
     }
 }
 
+// Tells me which type of movement i should pass, to avoid multiple arguments or enums
 #[derive(Event, Debug)]
 pub enum AnimationType {
     // If it is forward backwards and so on
     MoveType(u8),
+    None,
+    Idle,
+    WalkForward,
+    WalkBackward,
+    WalkLeft,
+    WalkRight,
+    Attack,
+    Jump,
+    DashForward,
+    DashBackward,
+    DashLeft,
+    DashRight,
 }
 
 // Turn this into a state machine later
@@ -37,19 +50,19 @@ fn event_based_animations(
 
         for event in animation_type_event_reader.read() {
             match event {
-                AnimationType::MoveType(1) => {
+                AnimationType::WalkForward => {
                     animation_player
                         .play(
                             animations
                                 .0
-                                .get("sword_slash")
+                                .get("t_pose")
                                 .expect("Walk forward to exist")
                                 .clone_weak(),
                         )
                         .repeat()
                         .set_speed(1.0);
                 }
-                AnimationType::MoveType(2) => {
+                AnimationType::WalkBackward => {
                     animation_player
                         .play(
                             animations
@@ -61,7 +74,7 @@ fn event_based_animations(
                         .repeat()
                         .set_speed(1.0);
                 }
-                AnimationType::MoveType(3) => {
+                AnimationType::WalkLeft => {
                     animation_player
                         .play(
                             animations
@@ -73,7 +86,7 @@ fn event_based_animations(
                         .repeat()
                         .set_speed(1.0);
                 }
-                AnimationType::MoveType(4) => {
+                AnimationType::WalkRight => {
                     animation_player
                         .play(
                             animations
@@ -85,12 +98,72 @@ fn event_based_animations(
                         .repeat()
                         .set_speed(1.0);
                 }
-                AnimationType::MoveType(5) => {
+                AnimationType::DashForward => {
                     animation_player
                         .play(
                             animations
                                 .0
                                 .get("t_pose")
+                                .expect("Run right animation to exist")
+                                .clone_weak(),
+                        )
+                        .repeat()
+                        .set_speed(1.0);
+                }
+                AnimationType::DashBackward => {
+                    animation_player
+                        .play(
+                            animations
+                                .0
+                                .get("t_pose")
+                                .expect("Run right animation to exist")
+                                .clone_weak(),
+                        )
+                        .repeat()
+                        .set_speed(1.0);
+                }
+                AnimationType::DashLeft => {
+                    animation_player
+                        .play(
+                            animations
+                                .0
+                                .get("t_pose")
+                                .expect("Run right animation to exist")
+                                .clone_weak(),
+                        )
+                        .repeat()
+                        .set_speed(1.0);
+                }
+                AnimationType::DashRight => {
+                    animation_player
+                        .play(
+                            animations
+                                .0
+                                .get("t_pose")
+                                .expect("Run right animation to exist")
+                                .clone_weak(),
+                        )
+                        .repeat()
+                        .set_speed(1.0);
+                }
+                AnimationType::Jump => {
+                    animation_player
+                        .play(
+                            animations
+                                .0
+                                .get("t_pose")
+                                .expect("Run right animation to exist")
+                                .clone_weak(),
+                        )
+                        .repeat()
+                        .set_speed(1.0);
+                }
+                AnimationType::Attack => {
+                    animation_player
+                        .play(
+                            animations
+                                .0
+                                .get("sword_slash")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )

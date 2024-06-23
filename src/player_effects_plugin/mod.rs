@@ -32,6 +32,7 @@ impl Plugin for PlayerEffectsPlugin {
                 keyboard_walk,
                 keyboard_dash,
                 keyboard_jump,
+                keyboard_attack,
                 // Event manager
             )
                 .chain()
@@ -45,9 +46,12 @@ impl Plugin for PlayerEffectsPlugin {
             FixedUpdate,
             player_look_at_camera.run_if(in_state(StatePlayerCreation::Done)),
         );
+        // Health associated mechanics
         app.add_systems(
             FixedUpdate,
             detect_hits.run_if(in_state(StatePlayerCreation::Done)),
         );
+        app.add_systems(Update,check_dead);
+
     }
 }

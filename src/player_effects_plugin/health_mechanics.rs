@@ -1,9 +1,8 @@
-use bevy:: prelude::*;
+use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
+use crate::form_hitbox_plugin::lib::{BaseSkeleton, Hitbox, WeaponCollider};
 use crate::player_effects_plugin::lib::Health;
-use crate::form_hitbox_plugin::lib::{Hitbox, WeaponCollider,BaseSkeleton};
-
 
 fn handle_collision(
     weapon_entity: Entity,
@@ -19,10 +18,7 @@ fn handle_collision(
             .get(weapon_entity)
             .expect("To be pointing to a skeleton")
             .0;
-        let player = parent
-            .get(skeleton)
-            .expect("Skeleton to have player")
-            .get();
+        let player = parent.get(skeleton).expect("Skeleton to have player").get();
         if let Ok(mut player_hp) = health.get_mut(player) {
             player_hp.0 -= 1;
             println!("HITTTOOO");
@@ -66,14 +62,37 @@ pub fn detect_hits(
                 }
 
                 // Handle collisions
-                handle_collision(entity1, entity2, &weapon_col, &body_col, &base_skeleton, &mut health, &parent);
-                handle_collision(entity2, entity1, &weapon_col, &body_col, &base_skeleton, &mut health, &parent);
+                handle_collision(
+                    entity1,
+                    entity2,
+                    &weapon_col,
+                    &body_col,
+                    &base_skeleton,
+                    &mut health,
+                    &parent,
+                );
+                handle_collision(
+                    entity2,
+                    entity1,
+                    &weapon_col,
+                    &body_col,
+                    &base_skeleton,
+                    &mut health,
+                    &parent,
+                );
             }
             CollisionEvent::Stopped(_, _, _) => {}
         }
     }
 }
 
+pub fn check_dead(hp_entities: Query<(Entity,&Health)>){
+
+    for (entity,&Health(hp)) in hp_entities.iter(){
+        if hp == 0{
+            println!("THIS DUDE IS DEAD {:?}", entity);
+        }
+    }
 
 
-
+}

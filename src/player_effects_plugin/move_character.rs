@@ -14,38 +14,38 @@ pub fn keyboard_walk(
     mut animation_type_writer: EventWriter<AnimationType>,
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
-    let Ok(cam) = q_1.get_single() else { return };
+    let cam = q_1.get_single().expect("To have camera");
 
     let mut direction = Vec2::ZERO;
 
-    let mut movetype: u8 = 0;
+    let mut movetype = AnimationType::None;
     //forward
     if keys.pressed(KeyCode::KeyW) {
         direction.x = cam.forward().x;
         direction.y = cam.forward().z;
-        movetype = 1;
+        movetype = AnimationType::WalkForward;
     }
     // back
     if keys.pressed(KeyCode::KeyS) {
         direction.x = cam.back().x;
         direction.y = cam.back().z;
-        movetype = 2;
+        movetype = AnimationType::WalkBackward;
     }
     // left
     if keys.pressed(KeyCode::KeyA) {
         direction.x = cam.left().x;
         direction.y = cam.left().z;
-        movetype = 3;
+        movetype = AnimationType::WalkLeft;
     }
     // right
     if keys.pressed(KeyCode::KeyD) {
         direction.x = cam.right().x;
         direction.y = cam.right().z;
-        movetype = 4;
+        movetype = AnimationType::WalkRight;
     }
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
-        animation_type_writer.send(AnimationType::MoveType(movetype));
+        animation_type_writer.send(movetype);
     }
 }
 
@@ -59,9 +59,10 @@ pub fn keyboard_dash(
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
     for (mut timers, player, has_dashed) in q.iter_mut() {
-        let mut movetype: u8 = 0;
+        let cam = q_1.get_single().expect("To have camera");
+
         let mut direction = Vec2::ZERO;
-        let cam = q_1.get_single().unwrap();
+        let mut movetype = AnimationType::None;
 
         timers
             .up
@@ -82,7 +83,7 @@ pub fn keyboard_dash(
         if timers.up.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyW) {
             direction.x = cam.forward().x;
             direction.y = cam.forward().z;
-            movetype = 1;
+            movetype = AnimationType::DashForward;
         }
         if keys.just_released(KeyCode::KeyS) {
             timers.down.reset();
@@ -90,7 +91,7 @@ pub fn keyboard_dash(
         if timers.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS) {
             direction.x = cam.back().x;
             direction.y = cam.back().z;
-            movetype = 2;
+            movetype = AnimationType::DashBackward;
         }
         if keys.just_released(KeyCode::KeyA) {
             timers.left.reset();
@@ -98,7 +99,7 @@ pub fn keyboard_dash(
         if timers.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA) {
             direction.x = cam.left().x;
             direction.y = cam.left().z;
-            movetype = 3;
+            movetype = AnimationType::DashLeft;
         }
         if keys.just_released(KeyCode::KeyD) {
             timers.right.reset();
@@ -106,7 +107,7 @@ pub fn keyboard_dash(
         if timers.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD) {
             direction.x = cam.right().x;
             direction.y = cam.right().z;
-            movetype = 4;
+            movetype = AnimationType::DashRight;
         }
 
         if direction != Vec2::ZERO && has_dashed == false {
@@ -118,8 +119,20 @@ pub fn keyboard_dash(
 
             // Sending events
             movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
-            animation_type_writer.send(AnimationType::MoveType(movetype));
+            animation_type_writer.send(movetype);
         }
+    }
+}
+
+pub fn keyboard_attack(
+    keys: Res<ButtonInput<MouseButton>>,
+    mut animation_type_writer: EventWriter<AnimationType>,
+)
+// TIMING AND BOUNCING IF YOU ATTACK A WALL YOU BOUNCE FROM IT AND RESET YOUR JUMP
+{
+    // Light attack
+    if keys.just_pressed(MouseButton::Left) {
+        animation_type_writer.send(AnimationType::Attack);
     }
 }
 
@@ -130,7 +143,6 @@ pub fn keyboard_jump(
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
 ) {
-    let movetype: u8 = 5;
     for is_grounded in q_1.iter() {
         for mut jumps in q_2.iter_mut() {
             if is_grounded {
@@ -142,7 +154,7 @@ pub fn keyboard_jump(
             if keys.just_pressed(KeyCode::Space) && jumps.jump_limit != 0 {
                 jumps.jump_limit -= 1;
                 movement_event_writer.send(MovementAction::Jump);
-                animation_type_writer.send(AnimationType::MoveType(movetype));
+                animation_type_writer.send(AnimationType::Jump);
             }
         }
     }
