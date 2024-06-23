@@ -59,7 +59,7 @@ fn spawn_floor(
     let collider = (
         Collider::cuboid(100.0, 0.5, 100.0),
         Ground,
-        CollisionGroups::new(Group::GROUP_10, Group::GROUP_10),
+        CollisionGroups::new(Group::GROUP_10, Group::ALL),
     );
 
     commands.spawn(floor).insert(collider);
@@ -68,12 +68,21 @@ fn spawn_floor(
 fn spawn_wall(mut commands: Commands) {
     let wall_collider = (
         Collider::cuboid(1.0, 10.0, 10.0),
-        CollisionGroups::new(Group::GROUP_10, Group::GROUP_10),
+        CollisionGroups::new(Group::GROUP_10, Group::ALL),
         Wall,
-        Name::new("Wall"),
+        ActiveEvents::COLLISION_EVENTS,
     );
 
-    commands.spawn(wall_collider);
+    commands
+        .spawn(RigidBody::Fixed)
+        .insert(SpatialBundle {
+            transform: Transform::from_xyz(0.0, 10.0, 10.0),
+            ..Default::default()
+        })
+        .insert(Name::new("Wall"))
+        .with_children(|children| {
+            children.spawn(wall_collider);
+        });
 }
 
 fn animate_light_direction(

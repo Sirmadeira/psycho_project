@@ -21,7 +21,6 @@ pub fn detect_hits_body_weapon(
     for mut event in collision_events.read() {
         match event.borrow_mut() {
             CollisionEvent::Started(entity1, entity2, _) => {
-
                 // Check if entity1 is a weapon and entity2 is a body, or vice versa
                 let weapon_body_pairs = [(entity1, entity2), (entity2, entity1)];
 
@@ -73,7 +72,6 @@ pub fn detect_hits_wall_weapon(
         match event.borrow_mut() {
             CollisionEvent::Started(entity1, entity2, _) => {
                 let pairs = [(entity1, entity2), (entity2, entity1)];
-                println!("HEY {:?}{:?}",entity1,entity2);
                 for &(weapon_entity, wall_entity) in &pairs {
                     if weapon.get(*weapon_entity).is_ok() && wall.get(*wall_entity).is_ok() {
                         let skeleton = base_skeleton

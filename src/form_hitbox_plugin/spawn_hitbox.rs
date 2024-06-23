@@ -22,7 +22,7 @@ pub fn spawn_simple_colliders(
         z += 0.0;
 
         // Creates dynamic specific groups according to the amount of players
-        let collision_groups = create_dynamic_collider_groups(&player_amount, number);
+        let collision_groups = create_dynamic_collider_groups(&player_amount, number,None);
 
         // Name of bones
         let bone_names = vec![
@@ -125,7 +125,7 @@ pub fn spawn_hitbox_weapon(
         for weapon in &attachments.weapons {
             // In case player doesnt have a weapon do nothing
             if let Some(weapon_entity) = weapon {
-                let collision_groups = create_dynamic_collider_groups(&player_amount, number);
+                let collision_groups = create_dynamic_collider_groups(&player_amount, number,Some(Group::GROUP_10));
                 let weapon_name = names.get(*weapon_entity).expect("Weapon to have a name");
                 let (collider, offset) = match weapon_name.as_str() {
                     weapon_name if weapon_name.contains("katana") => (
