@@ -9,6 +9,7 @@ pub fn create_dynamic_collider_groups(
 ) -> CollisionGroups {
     let membership_group =
         Group::from_bits(collision_number).expect("TO have at least a membership");
+    println!("{:?}", membership_group);
 
     let mut filter_group = Group::empty();
 
@@ -17,6 +18,7 @@ pub fn create_dynamic_collider_groups(
 
         if membership_group.ne(&to_be_group) {
             filter_group |= to_be_group;
+
         }
     }
 

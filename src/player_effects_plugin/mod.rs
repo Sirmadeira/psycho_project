@@ -19,6 +19,7 @@ impl Plugin for PlayerEffectsPlugin {
         app.register_type::<Limit>();
         app.register_type::<Health>();
         app.register_type::<StatusEffectDash>();
+        app.register_type::<StatusEffectWallBounce>();
         app.add_event::<MovementAction>();
         app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
         app.init_state::<StatePlayerCreation>();
@@ -55,7 +56,6 @@ impl Plugin for PlayerEffectsPlugin {
             FixedUpdate,
             detect_hits_wall_weapon.run_if(in_state(StatePlayerCreation::Done)),
         );
-        app.add_systems(Update,check_dead);
-
+        app.add_systems(Update, check_dead);
     }
 }

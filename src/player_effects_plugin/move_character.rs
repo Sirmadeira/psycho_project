@@ -113,7 +113,7 @@ pub fn keyboard_dash(
         if direction != Vec2::ZERO && has_dashed == false {
             // Add dash status effect
             let status_dash = StatusEffectDash {
-                dash_duration: Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once),
+                dash_cooldown: Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once),
             };
             commands.entity(player).insert(status_dash);
 
@@ -127,9 +127,7 @@ pub fn keyboard_dash(
 pub fn keyboard_attack(
     keys: Res<ButtonInput<MouseButton>>,
     mut animation_type_writer: EventWriter<AnimationType>,
-)
-// TIMING AND BOUNCING IF YOU ATTACK A WALL YOU BOUNCE FROM IT AND RESET YOUR JUMP
-{
+) {
     // Light attack
     if keys.just_pressed(MouseButton::Left) {
         animation_type_writer.send(AnimationType::Attack);

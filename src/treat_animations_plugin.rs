@@ -30,7 +30,7 @@ pub enum AnimationType {
     DashBackward,
     DashLeft,
     DashRight,
-    Dead
+    Dead,
 }
 
 // Turn this into a state machine later

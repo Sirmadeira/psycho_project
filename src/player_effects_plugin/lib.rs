@@ -37,11 +37,18 @@ pub enum MovementAction {
 #[component(storage = "SparseSet")]
 pub struct Grounded;
 
+// Checks if player
+#[derive(Reflect, Component, Debug)]
+#[component(storage = "SparseSet")]
+pub struct StatusEffectWallBounce {
+    pub bounce_duration: Timer,
+}
+
 // Check if has dashed
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct StatusEffectDash {
-    pub dash_duration: Timer,
+    pub dash_cooldown: Timer,
 }
 
 // Kind of a simple pid

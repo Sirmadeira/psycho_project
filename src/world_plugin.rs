@@ -6,7 +6,7 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_light, spawn_floor,spawn_wall))
+        app.add_systems(Startup, (spawn_light, spawn_floor, spawn_wall))
             .add_systems(Update, animate_light_direction);
     }
 }
@@ -17,7 +17,6 @@ pub struct Ground;
 // Marks wall entities
 #[derive(Component)]
 pub struct Wall;
-
 
 fn spawn_light(mut commands: Commands) {
     let sun_light = DirectionalLightBundle {
@@ -58,7 +57,7 @@ fn spawn_floor(
     );
     // He is group 10 because for now we can only have 10 players
     let collider = (
-        Collider::cuboid(100.0, 0.0, 100.0),
+        Collider::cuboid(100.0, 0.5, 100.0),
         Ground,
         CollisionGroups::new(Group::GROUP_10, Group::GROUP_10),
     );
@@ -66,16 +65,15 @@ fn spawn_floor(
     commands.spawn(floor).insert(collider);
 }
 
-fn spawn_wall(mut commands: Commands,){
-
+fn spawn_wall(mut commands: Commands) {
     let wall_collider = (
-        Collider::cuboid(1.0,100.0, 1.0),
+        Collider::cuboid(1.0, 10.0, 10.0),
         CollisionGroups::new(Group::GROUP_10, Group::GROUP_10),
-        Wall
+        Wall,
+        Name::new("Wall"),
     );
 
     commands.spawn(wall_collider);
-
 }
 
 fn animate_light_direction(

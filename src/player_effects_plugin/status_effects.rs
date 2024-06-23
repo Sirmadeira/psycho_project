@@ -13,9 +13,9 @@ pub fn check_status_effect(
     for (ent, status) in q_1.iter_mut() {
         if let Some(mut status) = status {
             status
-                .dash_duration
+                .dash_cooldown
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
-            if status.dash_duration.finished() {
+            if status.dash_cooldown.finished() {
                 commands.entity(ent).remove::<StatusEffectDash>();
             }
         } else {
@@ -46,3 +46,5 @@ pub fn check_status_grounded(
         }
     }
 }
+
+pub fn check_wall_bounce() {}
