@@ -19,9 +19,7 @@ impl Plugin for TreatAnimationsPlugin {
 #[derive(Event, Debug)]
 pub enum AnimationType {
     // If it is forward backwards and so on
-    MoveType(u8),
     None,
-    Idle,
     WalkForward,
     WalkBackward,
     WalkLeft,
@@ -32,6 +30,7 @@ pub enum AnimationType {
     DashBackward,
     DashLeft,
     DashRight,
+    Dead
 }
 
 // Turn this into a state machine later
@@ -164,6 +163,18 @@ fn event_based_animations(
                             animations
                                 .0
                                 .get("sword_slash")
+                                .expect("Run right animation to exist")
+                                .clone_weak(),
+                        )
+                        .repeat()
+                        .set_speed(1.0);
+                }
+                AnimationType::Dead => {
+                    animation_player
+                        .play(
+                            animations
+                                .0
+                                .get("t_pose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )

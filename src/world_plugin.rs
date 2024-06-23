@@ -6,13 +6,18 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_light, spawn_floor))
+        app.add_systems(Startup, (spawn_light, spawn_floor,spawn_wall))
             .add_systems(Update, animate_light_direction);
     }
 }
 
+// Marks ground entities
 #[derive(Component)]
 pub struct Ground;
+// Marks wall entities
+#[derive(Component)]
+pub struct Wall;
+
 
 fn spawn_light(mut commands: Commands) {
     let sun_light = DirectionalLightBundle {
@@ -59,6 +64,18 @@ fn spawn_floor(
     );
 
     commands.spawn(floor).insert(collider);
+}
+
+fn spawn_wall(mut commands: Commands,){
+
+    let wall_collider = (
+        Collider::cuboid(1.0,100.0, 1.0),
+        CollisionGroups::new(Group::GROUP_10, Group::GROUP_10),
+        Wall
+    );
+
+    commands.spawn(wall_collider);
+
 }
 
 fn animate_light_direction(

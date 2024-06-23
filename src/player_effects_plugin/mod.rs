@@ -49,7 +49,11 @@ impl Plugin for PlayerEffectsPlugin {
         // Health associated mechanics
         app.add_systems(
             FixedUpdate,
-            detect_hits.run_if(in_state(StatePlayerCreation::Done)),
+            detect_hits_body_weapon.run_if(in_state(StatePlayerCreation::Done)),
+        );
+        app.add_systems(
+            FixedUpdate,
+            detect_hits_wall_weapon.run_if(in_state(StatePlayerCreation::Done)),
         );
         app.add_systems(Update,check_dead);
 
