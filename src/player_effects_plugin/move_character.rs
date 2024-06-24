@@ -158,6 +158,7 @@ pub fn keyboard_jump(
     }
 }
 
+
 pub fn move_character(
     mut movement_event_reader: EventReader<MovementAction>,
     time: Res<Time>,
@@ -171,10 +172,10 @@ pub fn move_character(
                     vel.linvel.z += direction.y * 20.0 * time.delta_seconds();
                 }
                 MovementAction::Dash(direction) => {
-                    status.impulse.x = direction.x * 100.0;
-                    status.impulse.z = direction.y * 100.0;
+                    status.impulse.x = direction.x * 200.0;
+                    status.impulse.z = direction.y * 200.0;
                 }
-                MovementAction::Jump => vel.linvel.y += 15.0,
+                MovementAction::Jump => vel.linvel.y += 5.0,
             }
         }
     }

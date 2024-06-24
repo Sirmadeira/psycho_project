@@ -2,12 +2,11 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::form_hitbox_plugin::lib::{BaseSkeleton, Hitbox, WeaponCollider};
-use crate::player_effects_plugin::lib::Health;
-use crate::player_effects_plugin::StatusEffectWallBounce;
-use crate::treat_animations_plugin::AnimationType;
-use crate::world_plugin::Wall;
 use std::borrow::BorrowMut;
+use crate::world_plugin::Wall;
+use crate::form_hitbox_plugin::lib::{BaseSkeleton, Hitbox, WeaponCollider};
+use crate::player_effects_plugin::lib::{Health,StatusEffectWallBounce};
+
 
 // I only need this because CollidingEntities, is broken. And i dont need the collisions info. For now
 pub fn detect_hits_body_weapon(
@@ -82,7 +81,8 @@ pub fn detect_hits_wall_weapon(
                             .get(skeleton)
                             .expect("Skeleton to have player parented")
                             .get();
-
+                        
+                        // WHEN WALLBOUNCING YOU RESET JUMP AND DASH
                         commands.entity(player).insert(StatusEffectWallBounce {
                             bounce_duration: Timer::new(
                                 Duration::from_secs_f32(2.0),
@@ -90,7 +90,7 @@ pub fn detect_hits_wall_weapon(
                             ),
                         });
 
-                        println!("The sensor just collided with wall");
+                        println!("WALLBOUNCE");
                     }
                 }
             }
@@ -99,15 +99,4 @@ pub fn detect_hits_wall_weapon(
     }
 }
 
-// Check if entity is dead
-pub fn check_dead(
-    hp_entities: Query<(Entity, &Health)>,
-    mut animation_type_writer: EventWriter<AnimationType>,
-) {
-    for (entity, &Health(hp)) in hp_entities.iter() {
-        if hp == 0 {
-            println!("THIS DUDE IS DEAD {:?}", entity);
-            animation_type_writer.send(AnimationType::Dead);
-        }
-    }
-}
+

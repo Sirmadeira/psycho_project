@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use self::{health_mechanics::*, lib::*, move_character::*, spawn_objects::*, status_effects::*};
+use self::{detect_hits::*, lib::*, move_character::*, spawn_objects::*, status_effects::*};
 
-pub mod health_mechanics;
+pub mod detect_hits;
 pub mod lib;
 pub mod move_character;
 pub mod spawn_objects;
@@ -29,6 +29,7 @@ impl Plugin for PlayerEffectsPlugin {
                 // Check status effects on player
                 check_status_grounded,
                 check_status_effect,
+                check_status_wallbounce,
                 // Input handler
                 keyboard_walk,
                 keyboard_dash,
@@ -36,7 +37,6 @@ impl Plugin for PlayerEffectsPlugin {
                 keyboard_attack,
                 // Event manager
             )
-                .chain()
                 .run_if(in_state(StatePlayerCreation::Done)),
         );
         app.add_systems(

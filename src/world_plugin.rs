@@ -76,7 +76,7 @@ fn spawn_wall(mut commands: Commands) {
     commands
         .spawn(RigidBody::Fixed)
         .insert(SpatialBundle {
-            transform: Transform::from_xyz(0.0, 10.0, 10.0),
+            transform: Transform::from_xyz(10.0, 10.0, 10.0),
             ..Default::default()
         })
         .insert(Name::new("Wall"))

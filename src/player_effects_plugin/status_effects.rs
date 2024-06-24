@@ -2,8 +2,12 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::player_effects_plugin::{Grounded, Player, PlayerGroundCollider, StatusEffectDash};
 use crate::world_plugin::Ground;
+use crate::treat_animations_plugin::AnimationType;
+use crate::player_effects_plugin::{Grounded, Player, PlayerGroundCollider, StatusEffectDash,Limit,Health};
+
+
+use super::StatusEffectWallBounce;
 
 pub fn check_status_effect(
     time: Res<Time>,
@@ -17,6 +21,40 @@ pub fn check_status_effect(
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
             if status.dash_cooldown.finished() {
                 commands.entity(ent).remove::<StatusEffectDash>();
+            }
+        } else {
+            return;
+        }
+    }
+}
+
+pub fn check_status_wallbounce(
+    time: Res<Time>,
+    mut commands: Commands,
+    mut q_1: Query<(Entity, Option<&mut StatusEffectWallBounce>,Has<StatusEffectDash>), With<Player>>,
+    mut q_2: Query<&mut Limit>,
+) {
+    
+    for (ent, status,has_dashed) in q_1.iter_mut() {
+        let mut limit = q_2.get_mut(ent).expect("To have jump limit");
+        if let Some(mut status) = status {
+
+            // Resets jump
+            *limit = Limit {
+                ..Default::default()
+            };
+
+            // Reset status effect
+            if has_dashed{
+                commands.entity(ent).remove::<StatusEffectDash>();
+            }
+
+            //Tick cooldown
+            status
+                .bounce_duration
+                .tick(Duration::from_secs_f32(time.delta_seconds()));
+            if status.bounce_duration.finished() {
+                commands.entity(ent).remove::<StatusEffectWallBounce>();
             }
         } else {
             return;
@@ -47,4 +85,14 @@ pub fn check_status_grounded(
     }
 }
 
-// pub fn check_wall_bounce() {}
+pub fn check_dead(
+    hp_entities: Query<(Entity, &Health)>,
+    mut animation_type_writer: EventWriter<AnimationType>,
+) {
+    for (entity, &Health(hp)) in hp_entities.iter() {
+        if hp == 0 {
+            println!("THIS DUDE IS DEAD {:?}", entity);
+            animation_type_writer.send(AnimationType::Dead);
+        }
+    }
+}
