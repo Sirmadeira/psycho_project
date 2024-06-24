@@ -21,6 +21,7 @@ impl Plugin for PlayerEffectsPlugin {
         app.register_type::<StatusEffectDash>();
         app.register_type::<StatusEffectWallBounce>();
         app.add_event::<MovementAction>();
+        app.add_event::<TypeOfAttack>();
         app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
         app.init_state::<StatePlayerCreation>();
         app.add_systems(

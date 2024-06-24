@@ -8,10 +8,13 @@ use crate::player_effects_plugin::{
 };
 use crate::treat_animations_plugin::AnimationType;
 
+use super::TypeOfAttack;
+
 pub fn keyboard_walk(
     keys: Res<ButtonInput<KeyCode>>,
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
+    mut attack_writer: EventWriter<TypeOfAttack>,
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
     let cam = q_1.get_single().expect("To have camera");
@@ -19,33 +22,41 @@ pub fn keyboard_walk(
     let mut direction = Vec2::ZERO;
 
     let mut movetype = AnimationType::None;
+
+    let mut attacktype = TypeOfAttack::None;
+
     //forward
     if keys.pressed(KeyCode::KeyW) {
         direction.x = cam.forward().x;
         direction.y = cam.forward().z;
         movetype = AnimationType::WalkForward;
+        attacktype = TypeOfAttack::Forward;
     }
     // back
     if keys.pressed(KeyCode::KeyS) {
         direction.x = cam.back().x;
         direction.y = cam.back().z;
         movetype = AnimationType::WalkBackward;
+        attacktype = TypeOfAttack::Backward;
     }
     // left
     if keys.pressed(KeyCode::KeyA) {
         direction.x = cam.left().x;
         direction.y = cam.left().z;
         movetype = AnimationType::WalkLeft;
+        attacktype = TypeOfAttack::Left;
     }
     // right
     if keys.pressed(KeyCode::KeyD) {
         direction.x = cam.right().x;
         direction.y = cam.right().z;
         movetype = AnimationType::WalkRight;
+        attacktype = TypeOfAttack::Right;
     }
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
         animation_type_writer.send(movetype);
+        attack_writer.send(attacktype);
     }
 }
 
@@ -125,20 +136,41 @@ pub fn keyboard_dash(
 }
 
 pub fn keyboard_attack(
-    keys: Res<ButtonInput<MouseButton>>,
+    mouse: Res<ButtonInput<MouseButton>>,
     mut animation_type_writer: EventWriter<AnimationType>,
+    mut type_attack: EventReader<TypeOfAttack>,
 ) {
     // Light attack
-    if keys.just_pressed(MouseButton::Left) {
-        animation_type_writer.send(AnimationType::LeftAttack);
+    for event in type_attack.read() {
+        match event {
+            TypeOfAttack::Forward => {
+                if mouse.just_pressed(MouseButton::Left) {
+                    animation_type_writer.send(AnimationType::ForwardAttack);
+                }
+            }
+            TypeOfAttack::Backward => {
+                if mouse.just_pressed(MouseButton::Left) {
+                    animation_type_writer.send(AnimationType::BackwardAttack);
+                }
+            }
+            TypeOfAttack::Left => {
+                if mouse.just_pressed(MouseButton::Left) {
+                    animation_type_writer.send(AnimationType::LeftAttack);
+                }
+            }
+            TypeOfAttack::Right => {
+                if mouse.just_pressed(MouseButton::Left) {
+                    animation_type_writer.send(AnimationType::RightAttack);
+                }
+            }
+            TypeOfAttack::None => {
+                // Handle no attack state if necessary
+            }
+        }
     }
     // Defend
-    if keys.just_pressed(MouseButton::Middle){
+    if mouse.just_pressed(MouseButton::Right) {
         animation_type_writer.send(AnimationType::Defend);
-    }
-
-    if keys.just_pressed(MouseButton::Right){
-        animation_type_writer.send(AnimationType::RightAttack);
     }
 }
 

@@ -26,6 +26,8 @@ pub enum AnimationType {
     WalkRight,
     LeftAttack,
     RightAttack,
+    BackwardAttack,
+    ForwardAttack,
     Defend,
     Jump,
     DashForward,
