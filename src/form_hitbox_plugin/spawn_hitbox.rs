@@ -54,7 +54,7 @@ pub fn spawn_simple_colliders(
             let name = names.get(bone).expect("Bone name not found");
 
             let (collider, offset) = match name.as_str() {
-                name if name.contains("Spine") => (Collider::cylinder(0.2, 0.15), Vec3::ZERO),
+                name if name.contains("Spine") => (Collider::cylinder(0.2, 0.12), Vec3::ZERO),
                 name if name.contains("RightFoot") => {
                     (Collider::cuboid(0.05, 0.10, 0.05), Vec3::ZERO)
                 }

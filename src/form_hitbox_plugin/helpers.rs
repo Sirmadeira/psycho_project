@@ -13,6 +13,7 @@ pub fn create_dynamic_collider_groups(
     let membership_group;
     let mut  filter_group;
 
+    // Only for weapons, may extend later
     if let Some(base_group) = base_group{
         membership_group = Group::from_bits(player_amount.quantity +1).expect("TO have at least a membership");
         filter_group = base_group;
