@@ -30,6 +30,7 @@ impl Plugin for PlayerEffectsPlugin {
                 check_status_grounded,
                 check_status_effect,
                 check_status_wallbounce,
+                check_dead,
                 // Input handler
                 keyboard_walk,
                 keyboard_dash,
@@ -47,15 +48,10 @@ impl Plugin for PlayerEffectsPlugin {
             FixedUpdate,
             player_look_at_camera.run_if(in_state(StatePlayerCreation::Done)),
         );
-        // Health associated mechanics
+        // Detecting specific hits
         app.add_systems(
             FixedUpdate,
-            detect_hits_body_weapon.run_if(in_state(StatePlayerCreation::Done)),
+            (detect_hits_body_weapon,detect_hits_wall_weapon,detect_hits_weapon_weapon).run_if(in_state(StatePlayerCreation::Done)),
         );
-        app.add_systems(
-            FixedUpdate,
-            detect_hits_wall_weapon.run_if(in_state(StatePlayerCreation::Done)),
-        );
-        app.add_systems(Update, check_dead);
     }
 }

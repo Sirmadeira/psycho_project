@@ -130,7 +130,15 @@ pub fn keyboard_attack(
 ) {
     // Light attack
     if keys.just_pressed(MouseButton::Left) {
-        animation_type_writer.send(AnimationType::Attack);
+        animation_type_writer.send(AnimationType::LeftAttack);
+    }
+    // Defend
+    if keys.just_pressed(MouseButton::Middle){
+        animation_type_writer.send(AnimationType::Defend);
+    }
+
+    if keys.just_pressed(MouseButton::Right){
+        animation_type_writer.send(AnimationType::RightAttack);
     }
 }
 

@@ -24,7 +24,9 @@ pub enum AnimationType {
     WalkBackward,
     WalkLeft,
     WalkRight,
-    Attack,
+    LeftAttack,
+    RightAttack,
+    Defend,
     Jump,
     DashForward,
     DashBackward,
@@ -157,12 +159,36 @@ fn event_based_animations(
                         .repeat()
                         .set_speed(1.0);
                 }
-                AnimationType::Attack => {
+                AnimationType::LeftAttack => {
                     animation_player
                         .play(
                             animations
                                 .0
                                 .get("sword_slash")
+                                .expect("Run right animation to exist")
+                                .clone_weak(),
+                        )
+                        .repeat()
+                        .set_speed(1.0);
+                }
+                AnimationType::RightAttack => {
+                    animation_player
+                        .play(
+                            animations
+                                .0
+                                .get("t_pose")
+                                .expect("Run right animation to exist")
+                                .clone_weak(),
+                        )
+                        .repeat()
+                        .set_speed(1.0);
+                }
+                AnimationType::Defend => {
+                    animation_player
+                        .play(
+                            animations
+                                .0
+                                .get("t_pose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )

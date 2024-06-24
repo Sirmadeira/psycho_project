@@ -99,4 +99,22 @@ pub fn detect_hits_wall_weapon(
     }
 }
 
+// Parry mechanic
+pub fn detect_hits_weapon_weapon(weapon: Query<&WeaponCollider>,    
+    mut collision_events: EventReader<CollisionEvent>,){
+        for mut event in collision_events.read() {
+        match event.borrow_mut() {
+            CollisionEvent::Started(entity1, entity2, _) => {
+                let pairs = [(entity1, entity2), (entity2, entity1)];
+                for &(first_weapon,second_weapon) in &pairs{
+                    if weapon.get(*first_weapon).is_ok() && weapon.get(*second_weapon).is_ok(){
+                        println!("I collided with a gun");
+                    }
+                }
+            }
+            CollisionEvent::Stopped(_, _, _) => {}
+        }
+
+    }
+    }
 
