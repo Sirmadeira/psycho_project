@@ -53,105 +53,6 @@ fn event_based_animations(
 
         for event in animation_type_event_reader.read() {
             match event {
-                AnimationType::WalkForward => {
-                    animation_player
-                        .play(
-                            animations
-                                .0
-                                .get("TPose")
-                                .expect("Walk forward to exist")
-                                .clone_weak(),
-                        )
-                        .set_speed(1.0);
-                }
-                AnimationType::WalkBackward => {
-                    animation_player
-                        .play(
-                            animations
-                                .0
-                                .get("TPose")
-                                .expect("Run back animation to exist")
-                                .clone_weak(),
-                        )
-                        .set_speed(1.0);
-                }
-                AnimationType::WalkLeft => {
-                    animation_player
-                        .play(
-                            animations
-                                .0
-                                .get("TPose")
-                                .expect("Run left animation to exist")
-                                .clone_weak(),
-                        )
-                        .set_speed(1.0);
-                }
-                AnimationType::WalkRight => {
-                    animation_player
-                        .play(
-                            animations
-                                .0
-                                .get("TPose")
-                                .expect("Run right animation to exist")
-                                .clone_weak(),
-                        )
-                        .set_speed(1.0);
-                }
-                AnimationType::DashForward => {
-                    animation_player
-                        .play(
-                            animations
-                                .0
-                                .get("TPose")
-                                .expect("Run right animation to exist")
-                                .clone_weak(),
-                        )
-                        .set_speed(1.0);
-                }
-                AnimationType::DashBackward => {
-                    animation_player
-                        .play(
-                            animations
-                                .0
-                                .get("TPose")
-                                .expect("Run right animation to exist")
-                                .clone_weak(),
-                        )
-                        .set_speed(1.0);
-                }
-                AnimationType::DashLeft => {
-                    animation_player
-                        .play(
-                            animations
-                                .0
-                                .get("TPose")
-                                .expect("Run right animation to exist")
-                                .clone_weak(),
-                        )
-                        .set_speed(1.0);
-                }
-                AnimationType::DashRight => {
-                    animation_player
-                        .play(
-                            animations
-                                .0
-                                .get("TPose")
-                                .expect("Run right animation to exist")
-                                .clone_weak(),
-                        )
-                        .set_speed(1.0);
-                }
-                AnimationType::Jump => {
-                    animation_player
-                        .play(
-                            animations
-                                .0
-                                .get("TPose")
-                                .expect("Run right animation to exist")
-                                .clone_weak(),
-                        )
-                        .set_speed(1.0);
-                }
                 AnimationType::LeftAttack => {
                     animation_player
                         .play(
@@ -161,6 +62,7 @@ fn event_based_animations(
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
+                        .repeat()
                         .set_speed(1.0);
                 }
                 AnimationType::RightAttack => {
@@ -172,6 +74,7 @@ fn event_based_animations(
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
+                        .repeat()
                         .set_speed(1.0);
                 }
                 AnimationType::ForwardAttack => {
@@ -183,6 +86,7 @@ fn event_based_animations(
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
+                        .repeat()
                         .set_speed(1.0);
                 }
                 AnimationType::BackwardAttack => {
@@ -194,6 +98,7 @@ fn event_based_animations(
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
+                        .repeat()
                         .set_speed(1.0);
                 }
                 AnimationType::Defend => {
@@ -205,6 +110,7 @@ fn event_based_animations(
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
+                        .repeat()
                         .set_speed(1.0);
                 }
                 AnimationType::Dead => {
@@ -216,6 +122,7 @@ fn event_based_animations(
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
+                        .repeat()
                         .set_speed(1.0);
                 }
                 _ => {
@@ -223,10 +130,11 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("TPose")
+                                .get("BackwardAttack")
                                 .expect("Idle sword animation to exist")
                                 .clone_weak(),
                         )
+                        .repeat()
                         .set_speed(1.0);
                 }
             }
