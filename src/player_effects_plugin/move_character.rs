@@ -145,6 +145,7 @@ pub fn keyboard_attack(
         match event {
             TypeOfAttack::Forward => {
                 if mouse.just_pressed(MouseButton::Left) {
+                    println!("o");
                     animation_type_writer.send(AnimationType::ForwardAttack);
                 }
             }

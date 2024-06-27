@@ -58,7 +58,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Walk forward to exist")
                                 .clone_weak(),
                         )
@@ -70,7 +70,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run back animation to exist")
                                 .clone_weak(),
                         )
@@ -82,7 +82,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run left animation to exist")
                                 .clone_weak(),
                         )
@@ -94,7 +94,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
@@ -106,7 +106,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
@@ -118,7 +118,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
@@ -130,7 +130,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
@@ -142,7 +142,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
@@ -154,7 +154,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
@@ -178,7 +178,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
@@ -190,7 +190,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
@@ -202,7 +202,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Run right animation to exist")
                                 .clone_weak(),
                         )
@@ -214,7 +214,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("t_pose")
+                                .get("TPose")
                                 .expect("Idle sword animation to exist")
                                 .clone_weak(),
                         )
