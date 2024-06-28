@@ -11,6 +11,7 @@ mod mod_char_plugin;
 mod player_effects_plugin;
 mod resolution_plugin;
 mod treat_animations_plugin;
+mod ui_plugin;
 mod world_plugin;
 
 use asset_loader_plugin::AssetLoaderPlugin;
@@ -19,28 +20,40 @@ use mod_char_plugin::ModCharPlugin;
 use player_effects_plugin::PlayerEffectsPlugin;
 use resolution_plugin::ResolutionPlugin;
 use treat_animations_plugin::TreatAnimationsPlugin;
+use ui_plugin::UiPlugin;
 use world_plugin::WorldPlugin;
+
+
+// Set responsible for player movement and it is physics
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+enum MyPlayerSet{
+    HandleStatusEffects,
+    HandleInputs,
+    DetectCollisions,
+    SidePhysics
+}
+// Set responsible for formulating modcharacter
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+enum MyModCharSet{
+    SpawnEntities,
+    AttachToSkeleton,
+}
+
+// Set responsible for formulating modcharacter
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+enum MyHitboxSet{
+    SpawnEntities,
+    FollowAlongSkeleton
+}
+
+
 
 // Main running function
 fn main() {
     App::new()
-        // Resolution related resources
-        .insert_resource(ResolutionSettings {
-            r_large: Vec2::new(2490.0, 1376.0),
-            large: Vec2::new(1920.0, 1080.0),
-            medium: Vec2::new(800.0, 600.0),
-            small: Vec2::new(640.0, 360.0),
-        })
         // Run at the smae timestep as rapier
         .insert_resource(Time::<Fixed>::from_hz(60.0))
-        // Thing I may want  to change later
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                present_mode: bevy::window::PresentMode::Fifo,
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(UiPlugin)
         // A simple plugin to adjust screen size
         .add_plugins(ResolutionPlugin)
         // Bevy specific diagnostics for fps counter
@@ -71,10 +84,3 @@ fn main() {
         .run();
 }
 
-#[derive(Resource)]
-struct ResolutionSettings {
-    r_large: Vec2,
-    large: Vec2,
-    medium: Vec2,
-    small: Vec2,
-}

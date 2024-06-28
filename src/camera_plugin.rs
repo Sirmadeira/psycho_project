@@ -20,7 +20,7 @@ impl Plugin for CameraPlugin {
             Update,
             (
                 toggle_cursor,
-                orbit_mouse.run_if(orbit_condition),
+                orbit_mouse,
                 zoom_mouse.run_if(zoom_condition),
             )
                 .chain(),
@@ -176,15 +176,6 @@ fn sync_player_camera(
     let desired_translation = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius));
     // Update the camera translation
     cam_transform.translation = desired_translation + player.translation;
-}
-
-// Conditions
-// only run the orbit system if the cursor lock is disabled
-fn orbit_condition(cam_q: Query<&CamInfo>) -> bool {
-    let Ok(cam) = cam_q.get_single() else {
-        return true;
-    };
-    return cam.cursor_lock_active;
 }
 
 // only zoom if zoom is enabled & the cursor lock feature is enabled & active

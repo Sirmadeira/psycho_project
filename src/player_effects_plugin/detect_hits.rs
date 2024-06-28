@@ -2,11 +2,10 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use std::borrow::BorrowMut;
-use crate::world_plugin::Wall;
 use crate::form_hitbox_plugin::lib::{BaseSkeleton, Hitbox, WeaponCollider};
-use crate::player_effects_plugin::lib::{Health,StatusEffectWallBounce};
-
+use crate::player_effects_plugin::lib::{Health, StatusEffectWallBounce};
+use crate::world_plugin::Wall;
+use std::borrow::BorrowMut;
 
 // I only need this because CollidingEntities, is broken. And i dont need the collisions info. For now
 pub fn detect_hits_body_weapon(
@@ -81,7 +80,7 @@ pub fn detect_hits_wall_weapon(
                             .get(skeleton)
                             .expect("Skeleton to have player parented")
                             .get();
-                        
+
                         // WHEN WALLBOUNCING YOU RESET JUMP AND DASH
                         commands.entity(player).insert(StatusEffectWallBounce {
                             bounce_duration: Timer::new(
@@ -100,21 +99,21 @@ pub fn detect_hits_wall_weapon(
 }
 
 // Parry mechanic
-pub fn detect_hits_weapon_weapon(weapon: Query<&WeaponCollider>,    
-    mut collision_events: EventReader<CollisionEvent>,){
-        for mut event in collision_events.read() {
+pub fn detect_hits_weapon_weapon(
+    weapon: Query<&WeaponCollider>,
+    mut collision_events: EventReader<CollisionEvent>,
+) {
+    for mut event in collision_events.read() {
         match event.borrow_mut() {
             CollisionEvent::Started(entity1, entity2, _) => {
                 let pairs = [(entity1, entity2), (entity2, entity1)];
-                for &(first_weapon,second_weapon) in &pairs{
-                    if weapon.get(*first_weapon).is_ok() && weapon.get(*second_weapon).is_ok(){
+                for &(first_weapon, second_weapon) in &pairs {
+                    if weapon.get(*first_weapon).is_ok() && weapon.get(*second_weapon).is_ok() {
                         println!("I collided with a gun");
                     }
                 }
             }
             CollisionEvent::Stopped(_, _, _) => {}
         }
-
     }
-    }
-
+}

@@ -1,6 +1,6 @@
-use crate::mod_char_plugin::lib::{
+use crate::{mod_char_plugin::lib::{
     AmountPlayers, AnimationEntityLink, Attachments, ConfigModularCharacters,
-};
+}, MyModCharSet};
 use bevy::prelude::*;
 
 // Making thme public just in case i need to query a specific component or resource for future logic
@@ -31,15 +31,13 @@ impl Plugin for ModCharPlugin {
         // Loads scenes and spawn handles
         app.add_systems(
             OnEnter(AssetLoaderState::Done),
-            (spawn_skeleton_and_attachments, spawn_animation_handle).chain(),
+            (spawn_skeleton_and_attachments, spawn_animation_handle).in_set(MyModCharSet::SpawnEntities).chain(),
         );
         // Will only load after we finished loading the assets and formulating the skeletons
         app.init_state::<StateSpawnScene>();
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),
-            (attach_to_skeletons, link_animations),
+            (attach_to_skeletons, link_animations,disable_culling_for_skinned_meshes).in_set(MyModCharSet::AttachToSkeleton),
         );
-        // Avoid bug in skinned meshes
-        app.add_systems(Update, disable_culling_for_skinned_meshes);
     }
 }

@@ -1,10 +1,25 @@
-use crate::ResolutionSettings;
 use bevy::prelude::*;
+
+
+#[derive(Resource)]
+struct ResolutionSettings {
+    r_large: Vec2,
+    large: Vec2,
+    medium: Vec2,
+    small: Vec2,
+}
 
 pub struct ResolutionPlugin;
 
 impl Plugin for ResolutionPlugin {
     fn build(&self, app: &mut App) {
+        // Resolution related resources
+        app.insert_resource(ResolutionSettings {
+            r_large: Vec2::new(2490.0, 1376.0),
+            large: Vec2::new(1920.0, 1080.0),
+            medium: Vec2::new(800.0, 600.0),
+            small: Vec2::new(640.0, 360.0),
+        });
         app.add_systems(Startup, setup_ui);
         app.add_systems(Update, toggle_resolution);
     }

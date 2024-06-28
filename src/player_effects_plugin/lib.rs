@@ -32,15 +32,14 @@ pub enum MovementAction {
     Jump,
 }
 // Will tell me which type of attack I should do, I use this to avoid conflicts with animation
-#[derive(Event,Debug)]
-pub enum TypeOfAttack{
+#[derive(Event, Debug)]
+pub enum TypeOfAttack {
     None,
     Forward,
     Backward,
     Left,
-    Right
+    Right,
 }
-
 
 // Check if is on ground
 #[derive(Component)]

@@ -8,7 +8,7 @@ pub mod move_character;
 pub mod spawn_objects;
 pub mod status_effects;
 
-use crate::mod_char_plugin::lib::StateSpawnScene;
+use crate::{mod_char_plugin::lib::StateSpawnScene, MyPlayerSet};
 
 pub struct PlayerEffectsPlugin;
 
@@ -22,16 +22,23 @@ impl Plugin for PlayerEffectsPlugin {
         app.register_type::<StatusEffectWallBounce>();
         app.add_event::<MovementAction>();
         app.add_event::<TypeOfAttack>();
-        app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
         app.init_state::<StatePlayerCreation>();
+        app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
+
         app.add_systems(
             Update,
             (
-                // Check status effects on player
                 check_status_grounded,
                 check_status_effect,
                 check_status_wallbounce,
                 check_dead,
+            )
+                .in_set(MyPlayerSet::HandleStatusEffects)
+                .run_if(in_state(StatePlayerCreation::Done)),
+        );
+        app.add_systems(
+            Update,
+            (
                 // Input handler
                 keyboard_walk,
                 keyboard_dash,
@@ -39,20 +46,26 @@ impl Plugin for PlayerEffectsPlugin {
                 keyboard_attack,
                 // Event manager
             )
+                .in_set(MyPlayerSet::HandleInputs)
                 .run_if(in_state(StatePlayerCreation::Done)),
         );
+
         app.add_systems(
             FixedUpdate,
-            move_character.run_if(in_state(StatePlayerCreation::Done)),
-        );
-        app.add_systems(
-            FixedUpdate,
-            player_look_at_camera.run_if(in_state(StatePlayerCreation::Done)),
+            (move_character, player_look_at_camera)
+                .in_set(MyPlayerSet::SidePhysics)
+                .run_if(in_state(StatePlayerCreation::Done)),
         );
         // Detecting specific hits
         app.add_systems(
             FixedUpdate,
-            (detect_hits_body_weapon,detect_hits_wall_weapon,detect_hits_weapon_weapon).run_if(in_state(StatePlayerCreation::Done)),
+            (
+                detect_hits_body_weapon,
+                detect_hits_wall_weapon,
+                detect_hits_weapon_weapon,
+            )
+                .in_set(MyPlayerSet::DetectCollisions)
+                .run_if(in_state(StatePlayerCreation::Done)),
         );
     }
 }

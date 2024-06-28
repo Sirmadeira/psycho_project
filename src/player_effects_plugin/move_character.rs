@@ -199,7 +199,6 @@ pub fn keyboard_jump(
     }
 }
 
-
 pub fn move_character(
     mut movement_event_reader: EventReader<MovementAction>,
     time: Res<Time>,

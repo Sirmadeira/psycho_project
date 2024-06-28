@@ -2,10 +2,11 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::world_plugin::Ground;
+use crate::player_effects_plugin::{
+    Grounded, Health, Limit, Player, PlayerGroundCollider, StatusEffectDash,
+};
 use crate::treat_animations_plugin::AnimationType;
-use crate::player_effects_plugin::{Grounded, Player, PlayerGroundCollider, StatusEffectDash,Limit,Health};
-
+use crate::world_plugin::Ground;
 
 use super::StatusEffectWallBounce;
 
@@ -31,21 +32,26 @@ pub fn check_status_effect(
 pub fn check_status_wallbounce(
     time: Res<Time>,
     mut commands: Commands,
-    mut q_1: Query<(Entity, Option<&mut StatusEffectWallBounce>,Has<StatusEffectDash>), With<Player>>,
+    mut q_1: Query<
+        (
+            Entity,
+            Option<&mut StatusEffectWallBounce>,
+            Has<StatusEffectDash>,
+        ),
+        With<Player>,
+    >,
     mut q_2: Query<&mut Limit>,
 ) {
-    
-    for (ent, status,has_dashed) in q_1.iter_mut() {
+    for (ent, status, has_dashed) in q_1.iter_mut() {
         let mut limit = q_2.get_mut(ent).expect("To have jump limit");
         if let Some(mut status) = status {
-
             // Resets jump
             *limit = Limit {
                 ..Default::default()
             };
 
             // Reset status effect
-            if has_dashed{
+            if has_dashed {
                 commands.entity(ent).remove::<StatusEffectDash>();
             }
 
