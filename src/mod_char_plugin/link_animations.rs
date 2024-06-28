@@ -1,7 +1,6 @@
-use crate::mod_char_plugin::helpers::get_top_parent;
-use crate::mod_char_plugin::lib::AnimationEntityLink;
-use crate::mod_char_plugin::lib::StateSpawnScene;
 use bevy::prelude::*;
+use crate::mod_char_plugin::helpers::get_top_parent;
+use crate::mod_char_plugin::lib::{AnimationEntityLink,StateSpawnScene};
 
 // Put animation link in parent, that way avoid too many animation players query
 pub fn link_animations(
@@ -31,6 +30,5 @@ pub fn link_animations(
                 .insert(AnimationEntityLink(entity_with_animation_player.clone()));
         }
     }
-    // Notice that the spawn scene will be done only after we add the animation to it
-    next_state.set(StateSpawnScene::Done)
+    next_state.set(StateSpawnScene::Done);
 }

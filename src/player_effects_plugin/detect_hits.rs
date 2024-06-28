@@ -37,7 +37,6 @@ pub fn detect_hits_body_weapon(
 
                         // Skip self-collision
                         if skeleton_1 == skeleton_2 {
-                            println!("WHY YOU HITTING YOURSELF");
                             continue;
                         }
                         let player = parent

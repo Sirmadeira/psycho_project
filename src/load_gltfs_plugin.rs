@@ -4,19 +4,19 @@ use bevy_asset_loader::prelude::*;
 
 // State - That tell us when we are loading our character
 #[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub enum AssetLoaderState {
+pub enum LoadingGltfsState {
     #[default]
     Loading,
     Done,
 }
 
-pub struct AssetLoaderPlugin;
+pub struct LoadingGltfsPlugin;
 
-impl Plugin for AssetLoaderPlugin {
+impl Plugin for LoadingGltfsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<AssetLoaderState>().add_loading_state(
-            LoadingState::new(AssetLoaderState::Loading)
-                .continue_to_state(AssetLoaderState::Done)
+        app.init_state::<LoadingGltfsState>().add_loading_state(
+            LoadingState::new(LoadingGltfsState::Loading)
+                .continue_to_state(LoadingGltfsState::Done)
                 .load_collection::<MyAssets>(),
         );
     }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
+use crate::player_effects_plugin::player_exists;
 use crate::mod_char_plugin::lib::{AnimationEntityLink, Animations};
-use crate::player_effects_plugin::lib::StatePlayerCreation;
 
 pub struct TreatAnimationsPlugin;
 
@@ -10,7 +10,7 @@ impl Plugin for TreatAnimationsPlugin {
         app.add_event::<AnimationType>();
         app.add_systems(
             Update,
-            event_based_animations.run_if(in_state(StatePlayerCreation::Done)),
+            event_based_animations.run_if(player_exists),
         );
     }
 }
@@ -130,7 +130,7 @@ fn event_based_animations(
                         .play(
                             animations
                                 .0
-                                .get("BackwardAttack")
+                                .get("LeftAttack")
                                 .expect("Idle sword animation to exist")
                                 .clone_weak(),
                         )

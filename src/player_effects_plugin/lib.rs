@@ -3,13 +3,6 @@ use bevy::{
     time::{Stopwatch, Timer},
 };
 
-#[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub enum StatePlayerCreation {
-    #[default]
-    Spawning,
-    Done,
-}
-
 // Marker component - Basically the rigid body that will move the player
 #[derive(Component)]
 pub struct Player;

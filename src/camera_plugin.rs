@@ -1,12 +1,12 @@
-use crate::player_effects_plugin::lib::{Player, StatePlayerCreation};
+use std::f32::consts::PI;
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
 use bevy_rapier3d::plugin::PhysicsSet;
-use iyes_perf_ui::prelude::*;
-use std::f32::consts::PI;
+use crate::player_effects_plugin::lib::Player;
+use crate::player_effects_plugin::player_exists;
 
 pub struct CameraPlugin;
 
@@ -20,7 +20,7 @@ impl Plugin for CameraPlugin {
             Update,
             (
                 toggle_cursor,
-                orbit_mouse,
+                orbit_mouse.run_if(orbit_condition),
                 zoom_mouse.run_if(zoom_condition),
             )
                 .chain(),
@@ -28,7 +28,7 @@ impl Plugin for CameraPlugin {
         app.add_systems(
             PostUpdate,
             sync_player_camera
-                .run_if(in_state(StatePlayerCreation::Done))
+                .run_if(player_exists)
                 .after(PhysicsSet::StepSimulation),
         );
     }
@@ -80,7 +80,6 @@ fn spawn_camera(mut commands: Commands) {
     );
 
     commands.spawn(camera);
-    commands.spawn(PerfUiCompleteBundle::default());
 }
 
 // Turns on the ability to control the camera
@@ -176,6 +175,15 @@ fn sync_player_camera(
     let desired_translation = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius));
     // Update the camera translation
     cam_transform.translation = desired_translation + player.translation;
+}
+
+// Conditions
+// only run the orbit system if the cursor lock is disabled
+fn orbit_condition(cam_q: Query<&CamInfo>) -> bool {
+    let Ok(cam) = cam_q.get_single() else {
+        return true;
+    };
+    return cam.cursor_lock_active;
 }
 
 // only zoom if zoom is enabled & the cursor lock feature is enabled & active

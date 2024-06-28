@@ -4,7 +4,7 @@ use bevy_rapier3d::prelude::*;
 
 use crate::mod_char_plugin::lib::Skeleton;
 use crate::player_effects_plugin::{
-    Health, Limit, PdInfo, Player, PlayerGroundCollider, SidePlayer, StatePlayerCreation, Timers,
+    Health, Limit, PdInfo, Player, PlayerGroundCollider, SidePlayer, Timers,
 };
 
 // Adding physical body that will move our modular character dynamically move
@@ -12,7 +12,6 @@ use crate::player_effects_plugin::{
 pub fn spawn_main_rigidbody(
     mut commands: Commands,
     mod_characters: Query<(Entity, &Name), With<Skeleton>>,
-    mut next_state: ResMut<NextState<StatePlayerCreation>>,
 ) {
     for ((player_character, scene_name), player_count) in mod_characters.iter().zip(1..) {
         // Spawning main physical body
@@ -108,6 +107,4 @@ pub fn spawn_main_rigidbody(
             commands.entity(player_character).set_parent(other_details);
         }
     }
-
-    next_state.set(StatePlayerCreation::Done)
 }

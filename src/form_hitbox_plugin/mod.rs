@@ -7,7 +7,10 @@ pub mod lib;
 pub mod spawn_hitbox;
 
 use self::{follow_along::*, lib::*, spawn_hitbox::*};
-use crate::{player_effects_plugin::lib::StatePlayerCreation, MyHitboxSet};
+use crate::mod_char_plugin::lib::StateSpawnScene;
+use crate::MyHitboxSet;
+use crate::mod_char_plugin::all_chars_created;
+use crate::player_effects_plugin::player_exists;
 
 pub struct FormHitboxPlugin;
 
@@ -18,14 +21,16 @@ impl Plugin for FormHitboxPlugin {
         app.register_type::<PidInfo>();
         app.register_type::<Offset>();
         app.add_systems(
-            OnEnter(StatePlayerCreation::Done),
+            OnEnter(StateSpawnScene::Done),
             (spawn_simple_colliders, spawn_hitbox_weapon).in_set(MyHitboxSet::SpawnEntities),
         );
         app.add_systems(
             FixedPostUpdate,
             colliders_look_at.in_set(MyHitboxSet::FollowAlongSkeleton)
-                .run_if(in_state(StatePlayerCreation::Done))
                 .after(TransformSystem::TransformPropagate),
         );
+        app.configure_sets(OnEnter(StateSpawnScene::Done), MyHitboxSet::SpawnEntities.run_if(all_chars_created));
+        app.configure_sets(FixedPostUpdate,MyHitboxSet::FollowAlongSkeleton.run_if(player_exists));
+
     }
 }
