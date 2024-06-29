@@ -9,7 +9,7 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(WinitSettings::desktop_app());
-        app.add_systems(PreStartup, (spawn_entities_and_ui_camera,spawn_debug));
+        app.add_systems(PreStartup, (spawn_entities_and_ui_camera, spawn_debug));
         app.add_systems(Update, start_button);
     }
 }

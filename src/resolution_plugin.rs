@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-
 #[derive(Resource)]
 struct ResolutionSettings {
     r_large: Vec2,

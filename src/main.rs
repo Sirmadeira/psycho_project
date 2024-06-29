@@ -4,9 +4,9 @@ use bevy_rapier3d::prelude::*;
 use form_hitbox_plugin::FormHitboxPlugin;
 use iyes_perf_ui::prelude::*;
 
-mod load_gltfs_plugin;
-mod camera_plugin;
+mod ingame_camera_plugin;
 mod form_hitbox_plugin;
+mod load_gltfs_plugin;
 mod mod_char_plugin;
 mod player_effects_plugin;
 mod resolution_plugin;
@@ -14,8 +14,8 @@ mod treat_animations_plugin;
 mod ui_plugin;
 mod world_plugin;
 
+use ingame_camera_plugin::IngameCameraPlugin;
 use load_gltfs_plugin::LoadingGltfsPlugin;
-use camera_plugin::CameraPlugin;
 use mod_char_plugin::ModCharPlugin;
 use player_effects_plugin::PlayerEffectsPlugin;
 use resolution_plugin::ResolutionPlugin;
@@ -24,28 +24,36 @@ use ui_plugin::UiPlugin;
 use world_plugin::WorldPlugin;
 
 
-// Set responsible for player movement and it is physics
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+enum MyAppState {
+    MainMenu,
+    InGame,
+}
+
+
+// Set responsbile to handle player related configs
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
-enum MyPlayerSet{
+enum MyPlayerSet {
     SpawnEntities,
     HandleStatusEffects,
     HandleInputs,
     DetectCollisions,
-    SidePhysics
+    SidePhysics,
 }
-// Set responsible for formulating modcharacter
+// Set responsible for handling modular characters
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
-enum MyModCharSet{
+enum MyModCharSet {
     SpawnEntities,
     AttachToSkeleton,
 }
 
-// Set responsible for formulating modcharacter
+// Set responsible for handling hitboxes and their existences
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
-enum MyHitboxSet{
+enum MyHitboxSet {
     SpawnEntities,
-    FollowAlongSkeleton
+    FollowAlongSkeleton,
 }
+
 
 
 
@@ -82,7 +90,6 @@ fn main() {
         // Reads animations according to events and make they smooth
         .add_plugins(TreatAnimationsPlugin)
         // Camera Plugin
-        .add_plugins(CameraPlugin)
+        .add_plugins(IngameCameraPlugin)
         .run();
 }
-

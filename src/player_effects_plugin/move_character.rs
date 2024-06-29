@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::camera_plugin::CamInfo;
+use crate::ingame_camera_plugin::lib::CamInfo;
 use crate::player_effects_plugin::{
     Grounded, Limit, MovementAction, PdInfo, Player, PlayerGroundCollider, StatusEffectDash, Timers,
 };

@@ -31,7 +31,7 @@ pub fn spawn_skeleton_and_attachments(
             modular_config.weapons_to_be_attached.len(),
             modular_config.visuals_to_be_attached.len(),
         );
-        
+
         for i in 0..max_len {
             for (file_name, gltf_handle) in &asset_pack.gltf_files {
                 let gltf = assets_gltf.get(gltf_handle).expect("GLTF to have GLTF");

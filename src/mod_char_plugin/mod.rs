@@ -1,6 +1,9 @@
-use crate::{mod_char_plugin::lib::{
-    AmountPlayers, AnimationEntityLink, Attachments, ConfigModularCharacters,
-}, MyModCharSet};
+use crate::{
+    mod_char_plugin::lib::{
+        AmountPlayers, AnimationEntityLink, Attachments, ConfigModularCharacters,
+    },
+    MyModCharSet,
+};
 
 use bevy::prelude::*;
 
@@ -33,29 +36,43 @@ impl Plugin for ModCharPlugin {
         // Loads scenes and spawn handles
         app.add_systems(
             OnEnter(LoadingGltfsState::Done),
-            (spawn_skeleton_and_attachments, spawn_animation_handle).chain().in_set(MyModCharSet::SpawnEntities).chain(),
+            (spawn_skeleton_and_attachments, spawn_animation_handle)
+                .chain()
+                .in_set(MyModCharSet::SpawnEntities)
+                .chain(),
         );
         // Will only load after we finished loading the assets and formulating the skeletons
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),
-            (attach_to_skeletons, link_animations,disable_culling_for_skinned_meshes).chain().in_set(MyModCharSet::AttachToSkeleton),
+            (
+                attach_to_skeletons,
+                link_animations,
+                disable_culling_for_skinned_meshes,
+            )
+                .chain()
+                .in_set(MyModCharSet::AttachToSkeleton),
         );
-        app.configure_sets(OnEnter(LoadingGltfsState::Done),MyModCharSet::SpawnEntities);
-        app.configure_sets(OnEnter(StateSpawnScene::Spawned), MyModCharSet::AttachToSkeleton.run_if(all_chars_created));
-
-
+        app.configure_sets(
+            OnEnter(LoadingGltfsState::Done),
+            MyModCharSet::SpawnEntities,
+        );
+        app.configure_sets(
+            OnEnter(StateSpawnScene::Spawned),
+            MyModCharSet::AttachToSkeleton.run_if(all_chars_created),
+        );
     }
 }
 
-
-pub fn all_chars_created(skeleton_query: Query<Entity,With<Skeleton>>,amount_players: Res<AmountPlayers>) -> bool{
-    let mut  count = 1;
-    for _ in skeleton_query.iter(){
-        count +=1;
-        if count >= amount_players.quantity{
-            return true
+pub fn all_chars_created(
+    skeleton_query: Query<Entity, With<Skeleton>>,
+    amount_players: Res<AmountPlayers>,
+) -> bool {
+    let mut count = 1;
+    for _ in skeleton_query.iter() {
+        count += 1;
+        if count >= amount_players.quantity {
+            return true;
         }
     }
-    return false
-
+    return false;
 }

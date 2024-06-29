@@ -1,17 +1,16 @@
 use bevy::prelude::*;
 
-use crate::player_effects_plugin::player_exists;
+use crate::MyAppState;
 use crate::mod_char_plugin::lib::{AnimationEntityLink, Animations};
+use crate::player_effects_plugin::player_exists;
+
 
 pub struct TreatAnimationsPlugin;
 
 impl Plugin for TreatAnimationsPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<AnimationType>();
-        app.add_systems(
-            Update,
-            event_based_animations.run_if(player_exists),
-        );
+        app.add_systems(Update, event_based_animations.run_if(player_exists).run_if(in_state(MyAppState::InGame)));
     }
 }
 

@@ -1,6 +1,6 @@
-use bevy::prelude::*;
 use crate::mod_char_plugin::helpers::get_top_parent;
-use crate::mod_char_plugin::lib::{AnimationEntityLink,StateSpawnScene};
+use crate::mod_char_plugin::lib::{AnimationEntityLink, StateSpawnScene};
+use bevy::prelude::*;
 
 // Put animation link in parent, that way avoid too many animation players query
 pub fn link_animations(
