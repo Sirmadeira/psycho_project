@@ -13,13 +13,29 @@ I aspire for this game to become both competitive and immensely enjoyable.
   * Extremely dynamic movement - Dashes, parry gun play and sword play 
 
 ## CURRENT DESIGN ORDER
-  1. We start with asset_loader_plugin. He loads all of our assets. He will run in parallel with the ui_plugin.
-  2. Than we run the mod_char_plugin. He basically structures the base skeleton for our modular characters.
-  3. After that we create our main physical rigidbody he controls movement and so on and after that we create the 
-  Player in the player_effects_plugin. Basically an entity with a bunch of details
-  4. Than we run the whole form_hitbox_plugin, the one who will handle the ragdoll state and the hitboxes. That well controls it.
-  5. Thant we run the camera_plugin basically the guy who will follow our player. 
-  6. All the other plugins are stateless meaning the run, right in the first frame.
+1. **Asset Loader Plugin**
+   - This plugin is responsible for loading all of our assets.
+
+2. **Ui Plugin**
+   - Initializes the main menu.
+
+3. **Modular Character Plugin**
+   - Structures the base skeleton for our modular characters.
+
+4. **Main Physical Rigidbody Plugin**
+   - Creates our main physical rigidbody which controls movement.
+
+5. **Player Effects Plugin**
+   - Creates the Player entity, incorporating various details and properties.
+
+6. **Form Hitbox Plugin**
+   - Handles the ragdoll state and manages hitboxes.
+
+7. **Camera ingame Plugin**
+   - Ensures the camera follows our player.
+
+8. **Other Stateless Plugins**
+   - Plugins that have not put too much work on
 
 Cheerios,
 Sirmadeira!

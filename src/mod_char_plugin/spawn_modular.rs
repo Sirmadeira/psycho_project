@@ -8,7 +8,7 @@ use regex::Regex;
 
 use super::{assemble_parts::get_main_skeleton_bones_and_armature, Attachments};
 
-use crate::load_gltfs_plugin::MyAssets;
+use crate::load_assets_plugin::MyAssets;
 use crate::mod_char_plugin::{
     assemble_parts::attach_part_to_main_skeleton, lib::ConfigModularCharacters, AmountPlayers,
     Animations, Skeleton, StateSpawnScene,

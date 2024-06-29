@@ -1,5 +1,7 @@
 use bevy::{prelude::*, winit::WinitSettings};
 
+use crate::MyAppState;
+
 use self::debug_ui::*;
 
 mod debug_ui;
@@ -9,7 +11,7 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(WinitSettings::desktop_app());
-        app.add_systems(PreStartup, (spawn_entities_and_ui_camera, spawn_debug));
+        app.add_systems(OnEnter(MyAppState::MainMenu), (spawn_entities_and_ui_camera, spawn_debug));
         app.add_systems(Update, start_button);
     }
 }

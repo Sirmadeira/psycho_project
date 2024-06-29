@@ -2,7 +2,7 @@ use crate::{
     mod_char_plugin::lib::{
         AmountPlayers, AnimationEntityLink, Attachments, ConfigModularCharacters,
     },
-    MyAppState, MyModCharSet,
+    MyModCharSet,
 };
 
 use bevy::prelude::*;
@@ -16,7 +16,7 @@ pub mod spawn_modular;
 
 use self::{lib::*, link_animations::link_animations, spawn_modular::*};
 
-use crate::load_gltfs_plugin::LoadingGltfsState;
+use crate::MyAppState;
 
 // This plugin creates the character
 pub struct ModCharPlugin;
@@ -35,11 +35,10 @@ impl Plugin for ModCharPlugin {
         });
         // Loads scenes and spawn handles
         app.add_systems(
-            OnEnter(LoadingGltfsState::Done),
+            OnEnter(MyAppState::InGame),
             (spawn_skeleton_and_attachments, spawn_animation_handle)
                 .chain()
                 .in_set(MyModCharSet::SpawnEntities)
-                .chain(),
         );
         // Will only load after we finished loading the assets and formulating the skeletons
         app.add_systems(
@@ -53,8 +52,8 @@ impl Plugin for ModCharPlugin {
                 .in_set(MyModCharSet::AttachToSkeleton),
         );
         app.configure_sets(
-            OnEnter(LoadingGltfsState::Done),
-            MyModCharSet::SpawnEntities.run_if(in_state(MyAppState::InGame)),
+            OnEnter(MyAppState::InGame),
+            MyModCharSet::SpawnEntities,
         );
         app.configure_sets(
             OnEnter(StateSpawnScene::Spawned),

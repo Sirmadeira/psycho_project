@@ -6,7 +6,7 @@ use iyes_perf_ui::prelude::*;
 
 mod form_hitbox_plugin;
 mod ingame_camera_plugin;
-mod load_gltfs_plugin;
+mod load_assets_plugin;
 mod mod_char_plugin;
 mod player_effects_plugin;
 mod resolution_plugin;
@@ -15,7 +15,7 @@ mod ui_plugin;
 mod world_plugin;
 
 use ingame_camera_plugin::IngameCameraPlugin;
-use load_gltfs_plugin::LoadingGltfsPlugin;
+use load_assets_plugin::LoadingAssetsPlugin;
 use mod_char_plugin::ModCharPlugin;
 use player_effects_plugin::PlayerEffectsPlugin;
 use resolution_plugin::ResolutionPlugin;
@@ -23,8 +23,10 @@ use treat_animations_plugin::TreatAnimationsPlugin;
 use ui_plugin::UiPlugin;
 use world_plugin::WorldPlugin;
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
-enum MyAppState {
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash,Default)]
+pub enum MyAppState {
+    #[default]
+    Loading,
     MainMenu,
     InGame,
 }
@@ -58,7 +60,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         // Run at the smae timestep as rapier
         .insert_resource(Time::<Fixed>::from_hz(60.0))
-        // .add_plugins(UiPlugin)
         // A simple plugin to adjust screen size
         .add_plugins(ResolutionPlugin)
         // Bevy specific diagnostics for fps counter
@@ -70,12 +71,14 @@ fn main() {
         // Physics plugin
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
-        // Bevy debugger
+        // Main menu and debugger
+        .add_plugins(UiPlugin)
+        // Bevy egui debugger
         .add_plugins(WorldInspectorPlugin::new())
+        // Loads our assets with handles
+        .add_plugins(LoadingAssetsPlugin)
         // Starting the scene and lighting
         .add_plugins(WorldPlugin)
-        // Loads our assets with handles
-        .add_plugins(LoadingGltfsPlugin)
         // Loads our modular character
         .add_plugins(ModCharPlugin)
         // Forms physical dynamic colliders that will folllow along the transform of the player

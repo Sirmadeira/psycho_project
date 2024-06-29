@@ -2,21 +2,17 @@ use bevy::gltf::Gltf;
 use bevy::{prelude::*, utils::HashMap};
 use bevy_asset_loader::prelude::*;
 
-// State - That tell us when we are loading our character
-#[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub enum LoadingGltfsState {
-    #[default]
-    Loading,
-    Done,
-}
+use crate::MyAppState;
 
-pub struct LoadingGltfsPlugin;
 
-impl Plugin for LoadingGltfsPlugin {
+pub struct LoadingAssetsPlugin;
+
+// After loading the assets we go to the main menu
+impl Plugin for LoadingAssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<LoadingGltfsState>().add_loading_state(
-            LoadingState::new(LoadingGltfsState::Loading)
-                .continue_to_state(LoadingGltfsState::Done)
+        app.init_state::<MyAppState>().add_loading_state(
+            LoadingState::new(MyAppState::Loading)
+                .continue_to_state(MyAppState::MainMenu)
                 .load_collection::<MyAssets>(),
         );
     }
