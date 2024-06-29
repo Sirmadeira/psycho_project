@@ -2,12 +2,17 @@ use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
+use crate::MyAppState;
+
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_light, spawn_floor, spawn_wall))
-            .add_systems(Update, animate_light_direction);
+        app.add_systems(
+            OnEnter(MyAppState::InGame),
+            (spawn_light, spawn_floor, spawn_wall),
+        )
+        .add_systems(Update, animate_light_direction);
     }
 }
 

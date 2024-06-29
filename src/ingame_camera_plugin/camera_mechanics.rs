@@ -1,12 +1,10 @@
-use bevy::prelude::*;
-use bevy::input::mouse::MouseWheel;
 use bevy::input::mouse::MouseMotion;
-use bevy::window::{PrimaryWindow,CursorGrabMode};
+use bevy::input::mouse::MouseWheel;
+use bevy::prelude::*;
+use bevy::window::{CursorGrabMode, PrimaryWindow};
 
-use core::f32::consts::PI;
 use crate::ingame_camera_plugin::CamInfo;
-
-
+use core::f32::consts::PI;
 
 // Turns on the ability to control the camera
 pub fn toggle_cursor(

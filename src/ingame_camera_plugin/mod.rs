@@ -1,17 +1,13 @@
-
+use crate::{player_effects_plugin::player_exists, MyAppState};
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::PhysicsSet;
-use crate::player_effects_plugin::player_exists;
 
-
+pub mod camera_mechanics;
 pub mod lib;
 pub mod spawn_entities;
 pub mod sync_camera;
-pub mod camera_mechanics;
 
-
-use self::{lib::*,camera_mechanics::*,spawn_entities::*,sync_camera::*};
-
+use self::{camera_mechanics::*, lib::*, spawn_entities::*, sync_camera::*};
 
 pub struct IngameCameraPlugin;
 
@@ -19,7 +15,7 @@ impl Plugin for IngameCameraPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<CamInfo>();
         app.register_type::<Zoom>();
-        app.add_systems(Startup, spawn_camera);
+        app.add_systems(OnEnter(MyAppState::InGame), spawn_camera);
         app.add_systems(
             Update,
             (
@@ -37,7 +33,6 @@ impl Plugin for IngameCameraPlugin {
         );
     }
 }
-
 
 // Conditions
 // only run the orbit system if the cursor lock is disabled

@@ -4,8 +4,8 @@ use bevy_rapier3d::prelude::*;
 use form_hitbox_plugin::FormHitboxPlugin;
 use iyes_perf_ui::prelude::*;
 
-mod ingame_camera_plugin;
 mod form_hitbox_plugin;
+mod ingame_camera_plugin;
 mod load_gltfs_plugin;
 mod mod_char_plugin;
 mod player_effects_plugin;
@@ -23,13 +23,11 @@ use treat_animations_plugin::TreatAnimationsPlugin;
 use ui_plugin::UiPlugin;
 use world_plugin::WorldPlugin;
 
-
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 enum MyAppState {
     MainMenu,
     InGame,
 }
-
 
 // Set responsbile to handle player related configs
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
@@ -53,9 +51,6 @@ enum MyHitboxSet {
     SpawnEntities,
     FollowAlongSkeleton,
 }
-
-
-
 
 // Main running function
 fn main() {

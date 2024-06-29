@@ -2,7 +2,7 @@ use crate::{
     mod_char_plugin::lib::{
         AmountPlayers, AnimationEntityLink, Attachments, ConfigModularCharacters,
     },
-    MyModCharSet,
+    MyAppState, MyModCharSet,
 };
 
 use bevy::prelude::*;
@@ -54,7 +54,7 @@ impl Plugin for ModCharPlugin {
         );
         app.configure_sets(
             OnEnter(LoadingGltfsState::Done),
-            MyModCharSet::SpawnEntities,
+            MyModCharSet::SpawnEntities.run_if(in_state(MyAppState::InGame)),
         );
         app.configure_sets(
             OnEnter(StateSpawnScene::Spawned),

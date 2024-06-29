@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-
 // Setting of my camera
 #[derive(Reflect, Component, Debug)]
 pub struct CamInfo {

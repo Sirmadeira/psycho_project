@@ -1,7 +1,6 @@
-use bevy::prelude::*;
 use crate::ingame_camera_plugin::lib::CamInfo;
 use crate::player_effects_plugin::lib::Player;
-
+use bevy::prelude::*;
 
 pub fn sync_player_camera(
     player_q: Query<&Transform, With<Player>>,
