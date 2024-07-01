@@ -4,7 +4,6 @@ use bevy_asset_loader::prelude::*;
 
 use crate::MyAppState;
 
-
 pub struct LoadingAssetsPlugin;
 
 // After loading the assets we go to the main menu

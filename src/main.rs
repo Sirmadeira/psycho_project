@@ -23,7 +23,7 @@ use treat_animations_plugin::TreatAnimationsPlugin;
 use ui_plugin::UiPlugin;
 use world_plugin::WorldPlugin;
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash,Default)]
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub enum MyAppState {
     #[default]
     Loading,

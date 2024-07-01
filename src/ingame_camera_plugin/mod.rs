@@ -22,7 +22,8 @@ impl Plugin for IngameCameraPlugin {
                 toggle_cursor,
                 orbit_mouse.run_if(orbit_condition),
                 zoom_mouse.run_if(zoom_condition),
-            ).run_if(player_exists)
+            )
+                .run_if(player_exists)
                 .chain(),
         );
         app.add_systems(

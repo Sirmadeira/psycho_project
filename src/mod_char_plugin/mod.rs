@@ -38,7 +38,7 @@ impl Plugin for ModCharPlugin {
             OnEnter(MyAppState::InGame),
             (spawn_skeleton_and_attachments, spawn_animation_handle)
                 .chain()
-                .in_set(MyModCharSet::SpawnEntities)
+                .in_set(MyModCharSet::SpawnEntities),
         );
         // Will only load after we finished loading the assets and formulating the skeletons
         app.add_systems(
@@ -51,10 +51,7 @@ impl Plugin for ModCharPlugin {
                 .chain()
                 .in_set(MyModCharSet::AttachToSkeleton),
         );
-        app.configure_sets(
-            OnEnter(MyAppState::InGame),
-            MyModCharSet::SpawnEntities,
-        );
+        app.configure_sets(OnEnter(MyAppState::InGame), MyModCharSet::SpawnEntities);
         app.configure_sets(
             OnEnter(StateSpawnScene::Spawned),
             MyModCharSet::AttachToSkeleton.run_if(all_chars_created),
