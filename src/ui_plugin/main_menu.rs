@@ -10,9 +10,9 @@ const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
 pub fn spawn_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     let button_style = Style {
-        width: Val::Px(200.0),
+        width: Val::Px(250.0),
         height: Val::Px(75.0),
-        border: UiRect::all(Val::Px(10.0)),
+        border: UiRect::all(Val::Px(15.0)),
         margin: UiRect::all(Val::Px(20.0)),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
