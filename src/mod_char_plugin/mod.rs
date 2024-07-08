@@ -46,7 +46,6 @@ impl Plugin for ModCharPlugin {
             (
                 attach_to_skeletons,
                 link_animations,
-                disable_culling_for_skinned_meshes,
             )
                 .chain()
                 .in_set(MyModCharSet::AttachToSkeleton),

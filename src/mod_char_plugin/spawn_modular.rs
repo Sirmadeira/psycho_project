@@ -34,8 +34,8 @@ pub fn spawn_skeleton_and_attachments(
 
         for i in 0..max_len {
             for (file_name, gltf_handle) in &asset_pack.gltf_files {
-                let gltf = assets_gltf.get(gltf_handle).expect("GLTF to have GLTF");
 
+                let gltf = assets_gltf.get(gltf_handle).expect("GLTF to have GLTF");
                 // Check and spawn the skeleton
                 if skeleton_entity_id.is_none() {
                     if Regex::new(r"(?i)skeleton").unwrap().is_match(file_name) {
@@ -153,11 +153,11 @@ pub fn attach_to_skeletons(
     }
 }
 
-pub fn disable_culling_for_skinned_meshes(
-    mut commands: Commands,
-    skinned: Query<Entity, Added<SkinnedMesh>>,
-) {
-    for entity in &skinned {
-        commands.entity(entity).insert(NoFrustumCulling);
-    }
-}
+// pub fn disable_culling_for_skinned_meshes(
+//     mut commands: Commands,
+//     skinned: Query<Entity, Added<SkinnedMesh>>,
+// ) {
+//     for entity in &skinned {
+//         commands.entity(entity).insert(NoFrustumCulling);
+//     }
+// }

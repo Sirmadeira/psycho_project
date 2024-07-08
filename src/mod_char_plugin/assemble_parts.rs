@@ -16,8 +16,6 @@ pub fn get_main_skeleton_bones_and_armature(
 
     collect_bones(children_entities, &names, &root_bone, &mut main_bones);
 
-    println!("Bones in main skeleton: {:#?}", main_bones);
-
     return main_bones;
 }
 
@@ -43,6 +41,4 @@ pub fn attach_part_to_main_skeleton(
             }
         }
     }
-    // Despawn the gltfs we sucked dry
-    commands.entity(*part_scene_entity).despawn();
 }
