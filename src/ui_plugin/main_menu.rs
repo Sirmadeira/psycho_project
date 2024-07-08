@@ -4,9 +4,9 @@ use bevy::prelude::*;
 
 use super::DuelButton;
 
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
+const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
+const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 pub fn spawn_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     let button_style = Style {
@@ -22,7 +22,7 @@ pub fn spawn_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     let button_text_style = TextStyle {
         font: asset_server.load("grafitti.ttf"),
         font_size: 40.0,
-        color: Color::rgb(0.9, 0.9, 0.9),
+        color: Color::srgb(0.9, 0.9, 0.9),
     };
 
     commands
@@ -55,7 +55,7 @@ pub fn spawn_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         TextStyle {
                             font: asset_server.load("grafitti.ttf"),
                             font_size: 80.0,
-                            color: Color::rgb(0.9, 0.9, 0.9),
+                            color: Color::srgb(0.9, 0.9, 0.9),
                         },
                     ));
                     
@@ -131,7 +131,7 @@ pub fn start_button(
             Interaction::Pressed => {
                 text.sections[0].value = "LETS DUEL!".to_string();
                 *color = PRESSED_BUTTON.into();
-                border_color.0 = Color::RED;
+                border_color.0 = Color::srgb(255.0, 0.0, 0.0);
                 my_app_state.set(MyAppState::InGame);
                 let cam = ui_camera.get_single_mut().unwrap();
                 let menu = on_main_menu.get_single_mut().unwrap();

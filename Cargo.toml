@@ -7,8 +7,8 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.14"
-bevy_rapier3d = "*"
-bevy_asset_loader = "0.20"
-bevy-inspector-egui = "0.23"
-iyes_perf_ui = "0.2"
+bevy_rapier3d = "0.27"
+bevy_asset_loader = "0.21"
+bevy-inspector-egui = "0.25"
+iyes_perf_ui = "0.3"
 regex = "*"

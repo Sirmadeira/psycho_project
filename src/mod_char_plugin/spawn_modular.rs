@@ -1,4 +1,3 @@
-use bevy::utils::HashMap;
 use bevy::{
     gltf::Gltf,
     prelude::*,
@@ -10,8 +9,7 @@ use super::{assemble_parts::get_main_skeleton_bones_and_armature, Attachments};
 
 use crate::load_assets_plugin::MyAssets;
 use crate::mod_char_plugin::{
-    assemble_parts::attach_part_to_main_skeleton, lib::ConfigModularCharacters, AmountPlayers,
-    Animations, Skeleton, StateSpawnScene,
+    assemble_parts::attach_part_to_main_skeleton, lib::ConfigModularCharacters, AmountPlayers,Skeleton, StateSpawnScene,
 };
 
 //
@@ -21,6 +19,8 @@ pub fn spawn_skeleton_and_attachments(
     assets_gltf: Res<Assets<Gltf>>,
     amount_players: Res<AmountPlayers>,
     modular_config: Res<ConfigModularCharacters>,
+    mut next_state: ResMut<NextState<StateSpawnScene>>,
+    
 ) {
     for number_of_player in 1..=amount_players.quantity {
         let mut skeleton_entity_id: Option<Entity> = None;
@@ -119,30 +119,6 @@ pub fn spawn_skeleton_and_attachments(
             });
         }
     }
-}
-
-// Forming the handle for meshes morph data
-pub fn spawn_animation_handle(
-    mut commands: Commands,
-    asset_pack: Res<MyAssets>,
-    assets_gltf: Res<Assets<Gltf>>,
-    mut next_state: ResMut<NextState<StateSpawnScene>>,
-) {
-    let mut animations = HashMap::new();
-
-    for gltf_handle in asset_pack.gltf_files.values() {
-        if let Some(gltf) = assets_gltf.get(gltf_handle) {
-            // Forming the handle for animations
-            for named_animation in gltf.named_animations.iter() {
-                println!("Insert anim {}", named_animation.0);
-                animations.insert(
-                    named_animation.0.clone(),
-                    gltf.named_animations[named_animation.0].clone(),
-                );
-            }
-        }
-    }
-    commands.insert_resource(Animations(animations));
     next_state.set(StateSpawnScene::Spawned);
 }
 

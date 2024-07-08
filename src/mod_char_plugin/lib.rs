@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::utils::HashMap;
 
 // Struct that will give me precious informating when assembling my character
 // Leave it like this them we separate quantity
@@ -40,6 +39,3 @@ pub enum StateSpawnScene {
     Done,
 }
 
-// Quick way of acessing animation data. I know  there is gltf animation but i dont want to call my asset pack all the time
-#[derive(Resource)]
-pub struct Animations(pub HashMap<String, Handle<AnimationClip>>);

@@ -36,7 +36,7 @@ impl Plugin for ModCharPlugin {
         // Loads scenes and spawn handles
         app.add_systems(
             OnEnter(MyAppState::InGame),
-            (spawn_skeleton_and_attachments, spawn_animation_handle)
+            spawn_skeleton_and_attachments
                 .chain()
                 .in_set(MyModCharSet::SpawnEntities),
         );
