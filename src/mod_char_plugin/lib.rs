@@ -23,7 +23,7 @@ pub struct Attachments {
 }
 
 // This is a resource, that I am gonna use to have easy acess to the info of my animation graphs
-#[derive(Resource)]
+#[derive(Resource,Reflect)]
 pub struct Animations{
     pub named_nodes: HashMap<String,AnimationNodeIndex>,
     pub animation_graph: Handle<AnimationGraph>

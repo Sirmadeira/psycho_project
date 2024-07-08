@@ -24,6 +24,8 @@ impl Plugin for ModCharPlugin {
     fn build(&self, app: &mut App) {
         // Debuging
         app.register_type::<Attachments>();
+        app.register_type::<ConfigModularCharacters>();
+        app.register_type::<Animations>();
         app.insert_state(StateSpawnScene::Spawning);
         // Config resources
         app.insert_resource(AmountPlayers { quantity: 2 });
