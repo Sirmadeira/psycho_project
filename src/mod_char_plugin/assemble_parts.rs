@@ -10,9 +10,7 @@ pub fn get_main_skeleton_bones_and_armature(
 ) -> HashMap<String, Entity> {
     let mut main_bones = HashMap::new();
 
-    let root_bone =
-        find_child_with_name_containing(children_entities, &names, &skeleton_entity_id, "Hips")
-            .expect("the skeleton to have a bone called 'Root'");
+    let root_bone = find_child_with_name_containing(children_entities, &names, &skeleton_entity_id, "Hips").expect("the skeleton to have a bone called 'Root'");
 
     collect_bones(children_entities, &names, &root_bone, &mut main_bones);
 

@@ -1,6 +1,6 @@
 use crate::{
     mod_char_plugin::lib::{
-        AmountPlayers, AnimationEntityLink, Attachments, ConfigModularCharacters,
+        AmountPlayers, Attachments, ConfigModularCharacters,
     },
     MyModCharSet,
 };
@@ -11,10 +11,9 @@ use bevy::prelude::*;
 pub mod assemble_parts;
 pub mod helpers;
 pub mod lib;
-pub mod link_animations;
 pub mod spawn_modular;
 
-use self::{lib::*, link_animations::link_animations, spawn_modular::*};
+use self::{lib::*, spawn_modular::*};
 
 use crate::MyAppState;
 
@@ -24,7 +23,6 @@ pub struct ModCharPlugin;
 impl Plugin for ModCharPlugin {
     fn build(&self, app: &mut App) {
         // Debuging
-        app.register_type::<AnimationEntityLink>();
         app.register_type::<Attachments>();
         app.insert_state(StateSpawnScene::Spawning);
         // Config resources
@@ -36,7 +34,7 @@ impl Plugin for ModCharPlugin {
         // Loads scenes and spawn handles
         app.add_systems(
             OnEnter(MyAppState::InGame),
-            spawn_skeleton_and_attachments
+            (spawn_skeleton_and_attachments,spawn_animations_graphs)
                 .chain()
                 .in_set(MyModCharSet::SpawnEntities),
         );
@@ -45,11 +43,13 @@ impl Plugin for ModCharPlugin {
             OnEnter(StateSpawnScene::Spawned),
             (
                 attach_to_skeletons,
-                link_animations,
+                disable_culling_for_skinned_meshes,
+                test_animations
             )
                 .chain()
                 .in_set(MyModCharSet::AttachToSkeleton),
         );
+        app.add_systems(Update, test_animations.run_if(in_state(StateSpawnScene::Done)));
         app.configure_sets(OnEnter(MyAppState::InGame), MyModCharSet::SpawnEntities);
         app.configure_sets(
             OnEnter(StateSpawnScene::Spawned),

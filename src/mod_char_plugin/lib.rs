@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use std::collections::HashMap;
 
 // Struct that will give me precious informating when assembling my character
 // Leave it like this them we separate quantity
@@ -21,14 +22,19 @@ pub struct Attachments {
     pub weapons: Vec<Option<Entity>>,
 }
 
+// This is a resource, that I am gonna use to have easy acess to the info of my animation graphs
+#[derive(Resource)]
+pub struct Animations{
+    pub named_nodes: HashMap<String,AnimationNodeIndex>,
+    pub animation_graph: Handle<AnimationGraph>
+}
+
+
+
 // Simple marker components that points out entities that can become the player
 #[derive(Component)]
 pub struct Skeleton;
 
-// Marker component that points out the entity that has and animation player
-// This is handy to know who is the parent of the animation entity
-#[derive(Reflect, Component, Debug)]
-pub struct AnimationEntityLink(pub Entity);
 
 // Tell me in which state the scene is
 #[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]

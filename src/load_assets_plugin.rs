@@ -17,10 +17,10 @@ impl Plugin for LoadingAssetsPlugin {
     }
 }
 
+// A way of acessing my gltfs via their file names, and them handle to their gltfs
+// This exist because assets needs to be acessed via handles so this guy can be pretty handy it avoid having to acess and interact through a bunch of unecessary assets
 #[derive(AssetCollection, Resource)]
 pub struct MyAssets {
-    // Insert in this path which asset you want to load
-    // He will be loaded with multiple handles and a usefull hashmap to identify it in our code
     #[asset(
         paths("skeleton.glb", "rigge_female.glb", "katana.glb"),
         collection(typed, mapped)

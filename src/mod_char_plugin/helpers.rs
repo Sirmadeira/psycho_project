@@ -20,21 +20,6 @@ pub fn collect_bones(
     }
 }
 
-// Recursive function interacts through the hierarchy and grab the "first" parent of the scene
-pub fn get_top_parent(
-    mut curr_entity: Entity,
-    all_entities_with_parents_query: &Query<&Parent>,
-) -> Entity {
-    loop {
-        if let Ok(ref_to_parent) = all_entities_with_parents_query.get(curr_entity) {
-            curr_entity = ref_to_parent.get();
-        } else {
-            break;
-        }
-    }
-    curr_entity
-}
-
 // Finds a bone with a certain name
 pub fn find_child_with_name_containing(
     children_entities: &Query<&Children>,
