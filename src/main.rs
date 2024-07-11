@@ -1,25 +1,25 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
-use form_hitbox_plugin::FormHitboxPlugin;
+use form_hitbox::FormHitbox;
 use iyes_perf_ui::prelude::*;
 
-mod form_hitbox_plugin;
-mod ingame_camera_plugin;
+mod form_hitbox;
+mod ingame_camera;
 mod load_assets_plugin;
 mod mod_char_plugin;
-mod player_effects_plugin;
+mod player_effects;
 mod resolution_plugin;
-mod treat_animations_plugin;
+mod treat_animations;
 mod ui_plugin;
 mod world_plugin;
 
-use ingame_camera_plugin::IngameCameraPlugin;
+use ingame_camera::IngameCamera;
 use load_assets_plugin::LoadingAssetsPlugin;
 use mod_char_plugin::ModCharPlugin;
-use player_effects_plugin::PlayerEffectsPlugin;
+use player_effects::PlayerEffects;
 use resolution_plugin::ResolutionPlugin;
-use treat_animations_plugin::TreatAnimationsPlugin;
+use treat_animations::TreatAnimations;
 use ui_plugin::UiPlugin;
 use world_plugin::WorldPlugin;
 
@@ -82,12 +82,12 @@ fn main() {
         // Loads our modular character
         .add_plugins(ModCharPlugin)
         // Forms physical dynamic colliders that will folllow along the transform of the player
-        // .add_plugins(FormHitboxPlugin)
+        .add_plugins(FormHitbox)
         // Player movement plugin
-        .add_plugins(PlayerEffectsPlugin)
+        .add_plugins(PlayerEffects)
         // Reads animations according to events and make they smooth
-        .add_plugins(TreatAnimationsPlugin)
+        .add_plugins(TreatAnimations)
         // Camera Plugin
-        .add_plugins(IngameCameraPlugin)
+        .add_plugins(IngameCamera)
         .run();
 }

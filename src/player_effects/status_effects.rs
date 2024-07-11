@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::player_effects_plugin::{
+use crate::player_effects::{
     Grounded, Health, Limit, Player, PlayerGroundCollider, StatusEffectDash,
 };
-use crate::treat_animations_plugin::AnimationType;
 use crate::world_plugin::Ground;
+use crate::treat_animations::lib::AnimationType;
 
 use super::StatusEffectWallBounce;
 

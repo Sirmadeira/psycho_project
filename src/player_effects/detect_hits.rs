@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::form_hitbox_plugin::lib::{BaseSkeleton, Hitbox, WeaponCollider};
-use crate::player_effects_plugin::lib::{Health, StatusEffectWallBounce};
+use crate::form_hitbox::lib::{BaseSkeleton, Hitbox, WeaponCollider};
+use crate::player_effects::lib::{Health, StatusEffectWallBounce};
 use crate::world_plugin::Wall;
 use std::borrow::BorrowMut;
 

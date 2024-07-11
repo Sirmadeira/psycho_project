@@ -13,9 +13,9 @@ pub mod status_effects;
 use crate::mod_char_plugin::lib::StateSpawnScene;
 use crate::MyPlayerSet;
 
-pub struct PlayerEffectsPlugin;
+pub struct PlayerEffects;
 
-impl Plugin for PlayerEffectsPlugin {
+impl Plugin for PlayerEffects {
     fn build(&self, app: &mut App) {
         app.register_type::<PdInfo>();
         app.register_type::<Timers>();

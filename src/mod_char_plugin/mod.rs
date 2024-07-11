@@ -1,7 +1,5 @@
 use crate::{
-    mod_char_plugin::lib::{
-        AmountPlayers, Attachments, ConfigModularCharacters,
-    },
+    mod_char_plugin::lib::{AmountPlayers, Attachments, ConfigModularCharacters},
     MyModCharSet,
 };
 
@@ -33,25 +31,25 @@ impl Plugin for ModCharPlugin {
             visuals_to_be_attached: vec![String::from("rigge_female")],
             weapons_to_be_attached: vec![String::from("katana")],
         });
-        // Loads scenes and spawn handles
+        // Make skeleton and creates usefull component for animations
         app.add_systems(
             OnEnter(MyAppState::InGame),
-            (spawn_skeleton_and_attachments,spawn_animations_graphs)
+            (spawn_skeleton_and_attachments, spawn_animations_graphs)
                 .chain()
                 .in_set(MyModCharSet::SpawnEntities),
         );
-        // Will only load after we finished loading the assets and formulating the skeletons
+        // Transfer old bones animations to new bones and spit out character to be player
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),
             (
                 transfer_animation,
+                make_end_entity,
                 disable_culling_for_skinned_meshes,
-                test_animations
             )
                 .chain()
                 .in_set(MyModCharSet::AttachToSkeleton),
         );
-        app.add_systems(Update, test_animations.run_if(in_state(StateSpawnScene::Done)));
+        // Sets
         app.configure_sets(OnEnter(MyAppState::InGame), MyModCharSet::SpawnEntities);
         app.configure_sets(
             OnEnter(StateSpawnScene::Spawned),

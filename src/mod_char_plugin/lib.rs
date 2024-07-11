@@ -23,13 +23,11 @@ pub struct Attachments {
 }
 
 // This is a resource, that I am gonna use to have easy acess to the info of my animation graphs
-#[derive(Resource,Reflect)]
-pub struct Animations{
-    pub named_nodes: HashMap<String,AnimationNodeIndex>,
-    pub animation_graph: Handle<AnimationGraph>
+#[derive(Resource, Reflect)]
+pub struct Animations {
+    pub named_nodes: HashMap<String, AnimationNodeIndex>,
+    pub animation_graph: Handle<AnimationGraph>,
 }
-
-
 
 // Simple marker components that points out entities that can become the player
 #[derive(Component)]
@@ -37,8 +35,6 @@ pub struct Skeleton;
 
 #[derive(Component)]
 pub struct Visual;
-
-
 
 // Tell me in which state the scene is
 #[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]
@@ -48,4 +44,3 @@ pub enum StateSpawnScene {
     Spawned,
     Done,
 }
-

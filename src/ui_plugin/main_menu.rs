@@ -58,7 +58,7 @@ pub fn spawn_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                             color: Color::srgb(0.9, 0.9, 0.9),
                         },
                     ));
-                    
+
                     parent
                         .spawn((
                             ButtonBundle {
@@ -98,15 +98,12 @@ pub fn spawn_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                             ..default()
                         })
                         .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section(
-                                "QUIT",
-                                button_text_style.clone(),
-                            ));
+                            parent
+                                .spawn(TextBundle::from_section("QUIT", button_text_style.clone()));
                         });
                 });
         });
 }
-
 
 pub fn start_button(
     mut interaction_query: Query<

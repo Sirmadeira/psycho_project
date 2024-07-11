@@ -1,4 +1,4 @@
-use crate::ingame_camera_plugin::lib::{CamInfo, Zoom};
+use crate::ingame_camera::lib::{CamInfo, Zoom};
 use bevy::prelude::*;
 
 pub fn spawn_camera(mut commands: Commands) {

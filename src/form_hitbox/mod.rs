@@ -9,12 +9,12 @@ pub mod spawn_hitbox;
 use self::{follow_along::*, lib::*, spawn_hitbox::*};
 use crate::mod_char_plugin::all_chars_created;
 use crate::mod_char_plugin::lib::StateSpawnScene;
-use crate::player_effects_plugin::player_exists;
+use crate::player_effects::player_exists;
 use crate::MyHitboxSet;
 
-pub struct FormHitboxPlugin;
+pub struct FormHitbox;
 
-impl Plugin for FormHitboxPlugin {
+impl Plugin for FormHitbox {
     fn build(&self, app: &mut App) {
         app.register_type::<Hitbox>();
         app.register_type::<BaseEntities>();

@@ -3,7 +3,7 @@ use bevy::time::Stopwatch;
 use bevy_rapier3d::prelude::*;
 
 use crate::mod_char_plugin::lib::Skeleton;
-use crate::player_effects_plugin::{
+use crate::player_effects::{
     Health, Limit, PdInfo, Player, PlayerGroundCollider, SidePlayer, Timers,
 };
 
