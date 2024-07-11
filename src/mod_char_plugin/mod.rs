@@ -8,7 +8,7 @@ use crate::{
 use bevy::prelude::*;
 
 // Making thme public just in case i need to query a specific component or resource for future logic
-pub mod assemble_parts;
+
 pub mod helpers;
 pub mod lib;
 pub mod spawn_modular;
@@ -44,7 +44,7 @@ impl Plugin for ModCharPlugin {
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),
             (
-                attach_to_skeletons,
+                transfer_animation,
                 disable_culling_for_skinned_meshes,
                 test_animations
             )

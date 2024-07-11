@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use std::collections::HashMap;
+use bevy::utils::HashMap;
 
 // Struct that will give me precious informating when assembling my character
 // Leave it like this them we separate quantity
@@ -34,6 +34,10 @@ pub struct Animations{
 // Simple marker components that points out entities that can become the player
 #[derive(Component)]
 pub struct Skeleton;
+
+#[derive(Component)]
+pub struct Visual;
+
 
 
 // Tell me in which state the scene is

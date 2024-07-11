@@ -1,14 +1,13 @@
-use std::collections::HashMap;
+use bevy::utils::HashMap;
 use bevy::{
-    prelude::*,
-    gltf::Gltf,
-    utils::Duration,
-    render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling}};
+    animation::AnimationTarget, gltf::Gltf, prelude::*, render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling}, utils::Duration};
 use regex::Regex;
 
-use super::{assemble_parts::get_main_skeleton_bones_and_armature, Attachments};
+
 use crate::load_assets_plugin::MyAssets;
-use crate::mod_char_plugin::{assemble_parts::attach_part_to_main_skeleton, lib::ConfigModularCharacters, AmountPlayers,Skeleton, StateSpawnScene,Animations};
+use crate::mod_char_plugin::{ lib::*, AmountPlayers,Skeleton, StateSpawnScene,Animations};
+
+use super::helpers::{collect_bones, find_child_with_name_containing};
 
 //
 pub fn spawn_skeleton_and_attachments(
@@ -98,6 +97,7 @@ pub fn spawn_skeleton_and_attachments(
                                         &file_name[0..file_name.len() - 4],
                                         number_of_player
                                     )),
+                                    Visual
                                 ))
                                 .id(),
                         ));
@@ -162,36 +162,55 @@ pub fn spawn_animations_graphs(amount_players: Res<AmountPlayers>,
 }
 
 
-pub fn attach_to_skeletons(
-    q_1: Query<(Entity, &Attachments), With<Attachments>>,
+pub fn transfer_animation(skeletons: Query<Entity,With<Skeleton>>,
+    visuals: Query<Entity,With<Visual>>,
+    animation_player: Query<&AnimationPlayer>,
+    animation_target: Query<&AnimationTarget>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
-    mut commands: Commands,
-    mut next_state: ResMut<NextState<StateSpawnScene>>,
-) {
-    for (skeleton_entity_id, attachment) in q_1.iter() {
-        // Get sub children
-        let skeleton_bones =
-            get_main_skeleton_bones_and_armature(&children_entities, &names, &skeleton_entity_id);
+    mut commands:Commands,
+    mut next_state: ResMut<NextState<StateSpawnScene>>,){
 
-        // Get primary weapon
-        let primary_weapon = attachment.weapons[0].expect("TO have at least one weapon");
-        let handle_bone = skeleton_bones
-            .get("mixamorig:Handle")
-            .expect("Skellie to have bone");
+    for skeleton in skeletons.iter(){
+        
+        let old_entity = find_child_with_name_containing(&children_entities,&names, &skeleton, "Armature").expect("Armature 1");
 
-        commands.entity(primary_weapon).set_parent(*handle_bone);
-        // Attach visual according to the bone
-        let visual_to_insert = attachment.visual[0].expect("TO have at least one visual");
-        attach_part_to_main_skeleton(
-            &mut commands,
-            &children_entities,
-            &names,
-            &visual_to_insert,
-            &skeleton_bones,
-        );
+
+        let old_player = animation_player.get(old_entity).expect("Player");
+
+        let mut old_bones = HashMap::new();
+        collect_bones(&children_entities, &names, &old_entity, &mut old_bones);
+        
+        for visual in visuals.iter(){
+
+            let new_entity = find_child_with_name_containing(&children_entities,&names, &visual, "Armature").expect("Armature 2");
+
+            commands.entity(new_entity).insert(old_player.clone());
+
+            let mut new_bones = HashMap::new();
+            collect_bones(&children_entities, &names, &new_entity, &mut new_bones);
+
+           for (name,entity) in old_bones.iter(){
+
+                let old_animation_target = animation_target.get(*entity).expect("To have target");
+
+                let new_match_entity = new_bones.get(name).expect("To have matching bone");
+
+                commands.entity(*new_match_entity).insert(old_animation_target.clone());
+
+
+        
+           }
+
+        }   
+
     }
-    next_state.set(StateSpawnScene::Done)
+    
+    next_state.set(StateSpawnScene::Done);
+
+
+
+
 }
 
 pub fn disable_culling_for_skinned_meshes(
@@ -202,8 +221,6 @@ pub fn disable_culling_for_skinned_meshes(
         commands.entity(entity).insert(NoFrustumCulling);
     }
 }
-
-
 
 pub fn test_animations(    mut commands: Commands,
     animations: Res<Animations>,   

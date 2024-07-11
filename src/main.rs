@@ -82,7 +82,7 @@ fn main() {
         // Loads our modular character
         .add_plugins(ModCharPlugin)
         // Forms physical dynamic colliders that will folllow along the transform of the player
-        .add_plugins(FormHitboxPlugin)
+        // .add_plugins(FormHitboxPlugin)
         // Player movement plugin
         .add_plugins(PlayerEffectsPlugin)
         // Reads animations according to events and make they smooth
