@@ -7,8 +7,8 @@ pub mod lib;
 pub mod spawn_hitbox;
 
 use self::{follow_along::*, lib::*, spawn_hitbox::*};
-use crate::mod_char_plugin::all_chars_created;
-use crate::mod_char_plugin::lib::StateSpawnScene;
+use crate::mod_char::all_chars_created;
+use crate::mod_char::lib::StateSpawnScene;
 use crate::player_effects::player_exists;
 use crate::MyHitboxSet;
 

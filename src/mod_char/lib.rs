@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::utils::HashMap;
 
 // Struct that will give me precious informating when assembling my character
 // Leave it like this them we separate quantity
@@ -20,13 +19,6 @@ pub struct ConfigModularCharacters {
 pub struct Attachments {
     pub visual: Vec<Option<Entity>>,
     pub weapons: Vec<Option<Entity>>,
-}
-
-// This is a resource, that I am gonna use to have easy acess to the info of my animation graphs
-#[derive(Resource, Reflect)]
-pub struct Animations {
-    pub named_nodes: HashMap<String, AnimationNodeIndex>,
-    pub animation_graph: Handle<AnimationGraph>,
 }
 
 // Simple marker components that points out entities that can become the player

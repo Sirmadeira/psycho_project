@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use self::{detect_hits::*, lib::*, move_character::*, spawn_objects::*, status_effects::*};
 
-use crate::mod_char_plugin::all_chars_created;
+use crate::mod_char::all_chars_created;
 
 pub mod detect_hits;
 pub mod lib;
@@ -10,7 +10,7 @@ pub mod move_character;
 pub mod spawn_objects;
 pub mod status_effects;
 
-use crate::mod_char_plugin::lib::StateSpawnScene;
+use crate::mod_char::lib::StateSpawnScene;
 use crate::MyPlayerSet;
 
 pub struct PlayerEffects;

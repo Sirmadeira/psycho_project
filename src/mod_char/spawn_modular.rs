@@ -9,7 +9,7 @@ use bevy::{
 use regex::Regex;
 
 use crate::load_assets_plugin::MyAssets;
-use crate::mod_char_plugin::{lib::*, AmountPlayers, Animations, Skeleton, StateSpawnScene};
+use crate::mod_char::{lib::*, AmountPlayers, Skeleton, StateSpawnScene};
 
 use super::helpers::{collect_bones, find_child_with_name_containing};
 
@@ -20,6 +20,7 @@ pub fn spawn_skeleton_and_attachments(
     assets_gltf: Res<Assets<Gltf>>,
     amount_players: Res<AmountPlayers>,
     modular_config: Res<ConfigModularCharacters>,
+    mut next_state: ResMut<NextState<StateSpawnScene>>,
 ) {
     for number_of_player in 1..=amount_players.quantity {
         let mut skeleton_entity_id: Option<Entity> = None;
@@ -119,60 +120,14 @@ pub fn spawn_skeleton_and_attachments(
             });
         }
     }
-}
-
-// Creates animation graph for each player and add it is clips to it
-pub fn spawn_animations_graphs(
-    amount_players: Res<AmountPlayers>,
-    asset_pack: Res<MyAssets>,
-    assets_gltf: Res<Assets<Gltf>>,
-    mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
-    mut commands: Commands,
-    mut next_state: ResMut<NextState<StateSpawnScene>>,
-) {
-    for number_of_player in 1..=amount_players.quantity {
-        // Creating graphs according to amount of player
-        let mut graph = AnimationGraph::new();
-
-        // Node with a string name
-        let mut named_nodes = HashMap::new();
-
-        // Using bevy asset loader to easily acess my assets
-        for (_, gltf_handle) in &asset_pack.gltf_files {
-            let gltf = assets_gltf
-                .get(gltf_handle)
-                .expect("My asset pack to have GLTF");
-
-            // Creating named nodes
-            for (name_animation, animation_clip) in gltf.named_animations.iter() {
-                // Returns animations node
-                let node = graph.add_clip(animation_clip.clone(), 1.0, graph.root);
-                // Creating named node
-                named_nodes.insert(name_animation.to_string(), node);
-                println!(
-                    "Current available animations are {} for player {}",
-                    name_animation, number_of_player
-                );
-            }
-        }
-
-        // Adding animation graph to assets
-        let anim_graph = assets_animation_graph.add(graph);
-
-        // Formulating resource that tells me what is the name of the animation in a node and it is animation graph
-        commands.insert_resource(Animations {
-            named_nodes: named_nodes,
-            animation_graph: anim_graph.clone(),
-        });
-    }
     next_state.set(StateSpawnScene::Spawned);
 }
+
 
 // Transfer the animations to all the visual bones
 pub fn transfer_animation(
     skeletons: Query<Entity, With<Skeleton>>,
     visuals: Query<Entity, With<Visual>>,
-    animation_player: Query<&AnimationPlayer>,
     animation_target: Query<&AnimationTarget>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
@@ -183,8 +138,6 @@ pub fn transfer_animation(
             find_child_with_name_containing(&children_entities, &names, &skeleton, "Armature")
                 .expect("Armature 1");
 
-        let old_player = animation_player.get(old_entity).expect("Player");
-
         let mut old_bones = HashMap::new();
         collect_bones(&children_entities, &names, &old_entity, &mut old_bones);
 
@@ -193,7 +146,7 @@ pub fn transfer_animation(
                 find_child_with_name_containing(&children_entities, &names, &visual, "Armature")
                     .expect("Armature 2");
 
-            commands.entity(new_entity).insert(old_player.clone());
+            commands.entity(new_entity).insert(AnimationPlayer::default());
 
             let mut new_bones = HashMap::new();
             collect_bones(&children_entities, &names, &new_entity, &mut new_bones);
@@ -205,7 +158,7 @@ pub fn transfer_animation(
 
                 commands
                     .entity(*new_match_entity)
-                    .insert(old_animation_target.clone());
+                    .insert(AnimationTarget{id: old_animation_target.id,player:new_entity});
             }
         }
     }
@@ -231,7 +184,7 @@ pub fn make_end_entity(
             if let Some(visual_attachment) = attachment {
                 commands
                     .entity(*visual_attachment)
-                    .add_child(*visual_attachment);
+                    .set_parent(skeleton);
 
                 for attachment in attachments.weapons.iter() {
                     if let Some(weapon_attachment) = attachment {
@@ -241,7 +194,7 @@ pub fn make_end_entity(
                             &visual_attachment,
                             "Handle",
                         ) {
-                            commands.entity(*weapon_attachment).add_child(handle_gun);
+                            commands.entity(*weapon_attachment).set_parent(handle_gun);
                         } else {
                             println!("The visual bone {} didn't have a handle", visual_attachment);
                         }

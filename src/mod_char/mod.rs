@@ -1,5 +1,5 @@
 use crate::{
-    mod_char_plugin::lib::{AmountPlayers, Attachments, ConfigModularCharacters},
+    mod_char::lib::{AmountPlayers, Attachments, ConfigModularCharacters},
     MyModCharSet,
 };
 
@@ -16,14 +16,13 @@ use self::{lib::*, spawn_modular::*};
 use crate::MyAppState;
 
 // This plugin creates the character
-pub struct ModCharPlugin;
+pub struct ModChar;
 
-impl Plugin for ModCharPlugin {
+impl Plugin for ModChar {
     fn build(&self, app: &mut App) {
         // Debuging
         app.register_type::<Attachments>();
         app.register_type::<ConfigModularCharacters>();
-        app.register_type::<Animations>();
         app.insert_state(StateSpawnScene::Spawning);
         // Config resources
         app.insert_resource(AmountPlayers { quantity: 2 });
@@ -34,7 +33,7 @@ impl Plugin for ModCharPlugin {
         // Make skeleton and creates usefull component for animations
         app.add_systems(
             OnEnter(MyAppState::InGame),
-            (spawn_skeleton_and_attachments, spawn_animations_graphs)
+            spawn_skeleton_and_attachments
                 .chain()
                 .in_set(MyModCharSet::SpawnEntities),
         );

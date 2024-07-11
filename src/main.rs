@@ -7,7 +7,7 @@ use iyes_perf_ui::prelude::*;
 mod form_hitbox;
 mod ingame_camera;
 mod load_assets_plugin;
-mod mod_char_plugin;
+mod mod_char;
 mod player_effects;
 mod resolution_plugin;
 mod treat_animations;
@@ -16,7 +16,7 @@ mod world_plugin;
 
 use ingame_camera::IngameCamera;
 use load_assets_plugin::LoadingAssetsPlugin;
-use mod_char_plugin::ModCharPlugin;
+use mod_char::ModChar;
 use player_effects::PlayerEffects;
 use resolution_plugin::ResolutionPlugin;
 use treat_animations::TreatAnimations;
@@ -80,7 +80,7 @@ fn main() {
         // Starting the scene and lighting
         .add_plugins(WorldPlugin)
         // Loads our modular character
-        .add_plugins(ModCharPlugin)
+        .add_plugins(ModChar)
         // Forms physical dynamic colliders that will folllow along the transform of the player
         .add_plugins(FormHitbox)
         // Player movement plugin

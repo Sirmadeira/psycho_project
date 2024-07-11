@@ -1,6 +1,6 @@
-use crate::player_effects::player_exists;
-use crate::MyAppState;
 use bevy::prelude::*;
+use crate::MyAppState;
+use crate:: player_effects::player_exists;
 
 pub struct TreatAnimations;
 
@@ -12,6 +12,8 @@ use self::{lib::*,treat_animations::*};
 impl Plugin for TreatAnimations {
     fn build(&self, app: &mut App) {
         app.add_event::<AnimationType>();
+        app.register_type::<Animations>();
+        app.add_systems(OnEnter(MyAppState::InGame), spawn_animations_graphs);
         app.add_systems(
             Update,
             test_animations
