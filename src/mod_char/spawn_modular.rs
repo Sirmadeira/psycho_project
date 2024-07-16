@@ -1,3 +1,4 @@
+
 use bevy::utils::HashMap;
 use bevy::{
     animation::AnimationTarget,
@@ -169,6 +170,7 @@ pub fn make_end_entity(
     skeleton: Query<(Entity, &Attachments), With<Skeleton>>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
+    mut transforms: Query<&mut Transform>,
     mut commands: Commands,
     mut next_state: ResMut<NextState<StateSpawnScene>>,
 ) {
@@ -184,7 +186,7 @@ pub fn make_end_entity(
             if let Some(visual_attachment) = attachment {
                 commands
                     .entity(*visual_attachment)
-                    .set_parent(skeleton);
+                    .set_parent_in_place(skeleton);
 
                 for attachment in attachments.weapons.iter() {
                     if let Some(weapon_attachment) = attachment {
@@ -193,8 +195,16 @@ pub fn make_end_entity(
                             &names,
                             &visual_attachment,
                             "Handle",
-                        ) {
+                        ) { 
+
+                            // Adjusting transform
                             commands.entity(*weapon_attachment).set_parent(handle_gun);
+
+                            let mut transform = transforms.get_mut(*weapon_attachment).expect("Transform to apply offset");
+
+                            transform.rotation = Quat::from_axis_angle(Vec3::X, 180.0);
+        
+
                         } else {
                             println!("The visual bone {} didn't have a handle", visual_attachment);
                         }
@@ -205,6 +215,7 @@ pub fn make_end_entity(
     }
     next_state.set(StateSpawnScene::Done);
 }
+
 
 // Debugger function in animations
 pub fn disable_culling_for_skinned_meshes(

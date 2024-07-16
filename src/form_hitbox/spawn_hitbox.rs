@@ -28,11 +28,11 @@ pub fn spawn_simple_colliders(
         // Name of bones
         let bone_names = vec![
             "Spine",
-            "RightFoot",
-            "LeftFoot",
+            "Feet_1.R",
+            "Feet_1.L",
             "Head",
-            "RightHand",
-            "LeftHand",
+            "Hand.R",
+            "Hand.L",
         ];
 
         let mut special_bones = Vec::new();
@@ -56,21 +56,21 @@ pub fn spawn_simple_colliders(
 
             let (collider, offset) = match name.as_str() {
                 name if name.contains("Spine") => (Collider::cylinder(0.2, 0.12), Vec3::ZERO),
-                name if name.contains("RightFoot") => {
+                name if name.contains("Feet_1.R") => {
                     (Collider::cuboid(0.05, 0.10, 0.05), Vec3::ZERO)
                 }
-                name if name.contains("LeftFoot") => {
+                name if name.contains("Feet_1.L") => {
                     (Collider::cuboid(0.05, 0.10, 0.05), Vec3::ZERO)
                 }
                 name if name.contains("Head") => (
                     Collider::cuboid(0.15, 0.15, 0.1),
                     Vec3::new(0.0, 0.10, 0.00),
                 ),
-                name if name.contains("RightHand") => (
+                name if name.contains("Hand.R") => (
                     Collider::cuboid(0.05, 0.10, 0.10),
                     Vec3::new(0.00, -0.1, 0.0),
                 ),
-                name if name.contains("LeftHand") => (
+                name if name.contains("Hand.L") => (
                     Collider::cuboid(0.05, 0.10, 0.10),
                     Vec3::new(0.00, -0.1, 0.0),
                 ),

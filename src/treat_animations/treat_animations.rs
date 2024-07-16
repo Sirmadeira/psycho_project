@@ -62,7 +62,7 @@ pub fn test_animations(
         transitions
             .play(
                 &mut player,
-                animations.named_nodes["RightAttack"],
+                animations.named_nodes["TPose"],
                 Duration::ZERO,
             )
             .repeat();

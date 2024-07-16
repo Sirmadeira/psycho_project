@@ -25,6 +25,8 @@ pub struct Attachments {
 #[derive(Component)]
 pub struct Skeleton;
 
+// Transform utilized to offset visuals, usefull to reflect helpfull functions in  blender
+
 #[derive(Component)]
 pub struct Visual;
 
