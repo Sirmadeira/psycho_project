@@ -19,6 +19,7 @@ pub fn spawn_simple_colliders(
     let mut z = 0.0;
     // Main bone entity to search in
     for (main_skeleton, number) in skeleton_entities.iter().zip(1u32..) {
+        
         z += 0.0;
 
         // Creates dynamic specific groups according to the amount of players
