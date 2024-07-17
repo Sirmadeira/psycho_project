@@ -5,11 +5,11 @@ use bevy::{
 
 // Marker component - Basically the rigid body that will move the player points to it is skeleton
 #[derive(Component)]
-pub struct Player(pub Entity);
+pub struct Player;
 
 // Skeletons that are yet to have a player point to it is skeleton 
 #[derive(Component)]
-pub struct SidePlayer(pub Entity);
+pub struct SidePlayer;
 
 // Marker component -
 #[derive(Component)]

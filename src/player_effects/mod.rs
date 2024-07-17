@@ -35,6 +35,7 @@ impl Plugin for PlayerEffects {
                 check_status_grounded,
                 check_status_effect,
                 check_status_wallbounce,
+                check_dead,
             )
                 .in_set(MyPlayerSet::HandleStatusEffects),
         );

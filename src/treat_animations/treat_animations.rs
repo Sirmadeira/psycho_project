@@ -5,6 +5,7 @@ use bevy::utils::{Duration,HashMap};
 use crate::treat_animations::lib::*;
 use crate::load_assets_plugin::MyAssets;
 use crate::mod_char::lib::AmountPlayers;
+use crate::mod_char::helpers::find_child_with_name_containing;
 use crate::player_effects::lib::Player;
 
 
@@ -72,18 +73,22 @@ pub fn add_animation_graph(
 
 // This will handle animation according to input events given by player_effects or other plugins
 pub fn state_machine(
-    player_skeleton: Query<&Player, With<Player>>,
-    mut animation_to_play: EventReader<AnimationType>,
-
+    player_skeleton: Query<Entity, With<Player>>,
     mut components: Query<(&mut AnimationPlayer, Option< &mut AnimationTransitions>)>,
+    children_entities: Query<&Children>,
+    names: Query<&Name>,
     animations: Res<Animations>,
+    mut animation_to_play: EventReader<AnimationType>,
     mut commands: Commands
 ) {
 
+    // Ensuring that is the player animation
+    let player_entity = player_skeleton.get_single().expect("To have player");
 
-    let entity = player_skeleton.get_single().expect("To have skeleton").0;
+    let animated_entity = find_child_with_name_containing(&children_entities, &names, &player_entity, "Armature")
+    .expect("Armature 1");
 
-    let (mut animation_player,active_transitions)  = components.get_mut(entity).expect("Skeleton components");
+    let (mut animation_player,active_transitions)  = components.get_mut(animated_entity).expect("Skeleton components");
 
     if let Some(mut active_transition) = active_transitions{
         for event in animation_to_play.read(){
@@ -110,7 +115,7 @@ pub fn state_machine(
 
         transitions.play(&mut animation_player, animations.named_nodes["Idle"], Duration::ZERO).repeat();
         
-        commands.entity(entity).insert(transitions);
+        commands.entity(animated_entity).insert(transitions);
 
 
     }

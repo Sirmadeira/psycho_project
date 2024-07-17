@@ -82,7 +82,7 @@ pub fn spawn_main_rigidbody(
         if scene_name.to_string() == "skeleton_1" {
             let player_details = commands
                 .spawn(main_rigidbody)
-                .insert(Player(player_character))
+                .insert(Player)
                 .insert(timers)
                 .insert(limit)
                 .insert(health)
@@ -95,7 +95,7 @@ pub fn spawn_main_rigidbody(
         } else {
             let other_details = commands
                 .spawn(second_rigidbody)
-                .insert(SidePlayer(player_character))
+                .insert(SidePlayer)
                 .insert(timers)
                 .insert(limit)
                 .insert(health)

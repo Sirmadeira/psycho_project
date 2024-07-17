@@ -62,7 +62,7 @@ pub fn keyboard_dash(
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut movement_event_writer: EventWriter<MovementAction>,
-    mut animation_type_writer: EventWriter<AnimationType>,
+    // mut animation_type_writer: EventWriter<AnimationType>,
     mut q: Query<(&mut Timers, Entity, Has<StatusEffectDash>), With<Player>>,
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
@@ -70,7 +70,7 @@ pub fn keyboard_dash(
         let cam = q_1.get_single().expect("To have camera");
 
         let mut direction = Vec2::ZERO;
-        let mut movetype = AnimationType::None;
+        // let mut movetype = AnimationType::None;
 
         timers
             .up
@@ -123,7 +123,7 @@ pub fn keyboard_dash(
 
             // Sending events
             movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
-            animation_type_writer.send(movetype);
+            // animation_type_writer.send(movetype);
         }
     }
 }
@@ -167,7 +167,7 @@ pub fn keyboard_jump(
     q_1: Query<Has<Grounded>, With<PlayerGroundCollider>>,
     mut q_2: Query<&mut Limit>,
     mut movement_event_writer: EventWriter<MovementAction>,
-    mut animation_type_writer: EventWriter<AnimationType>,
+    // mut animation_type_writer: EventWriter<AnimationType>,
 ) {
     for is_grounded in q_1.iter() {
         for mut jumps in q_2.iter_mut() {
