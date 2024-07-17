@@ -16,7 +16,7 @@ impl Plugin for TreatAnimations {
         app.add_systems(OnEnter(MyAppState::InGame), spawn_animations_graphs);
         app.add_systems(
             Update,
-            test_animations
+            add_animation_graph
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );

@@ -35,13 +35,12 @@ impl Plugin for PlayerEffects {
                 check_status_grounded,
                 check_status_effect,
                 check_status_wallbounce,
-                check_dead,
             )
                 .in_set(MyPlayerSet::HandleStatusEffects),
         );
         app.add_systems(
             Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump, keyboard_attack)
+            (keyboard_walk, keyboard_dash, keyboard_jump)
                 .in_set(MyPlayerSet::HandleInputs),
         );
         // Side physics

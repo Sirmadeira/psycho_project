@@ -91,14 +91,14 @@ pub fn check_status_grounded(
     }
 }
 
-pub fn check_dead(
-    hp_entities: Query<(Entity, &Health)>,
-    mut animation_type_writer: EventWriter<AnimationType>,
-) {
-    for (entity, &Health(hp)) in hp_entities.iter() {
-        if hp == 0 {
-            println!("THIS DUDE IS DEAD {:?}", entity);
-            animation_type_writer.send(AnimationType::Dead);
-        }
-    }
-}
+// pub fn check_dead(
+//     hp_entities: Query<(Entity, &Health)>,
+//     mut animation_type_writer: EventWriter<AnimationType>,
+// ) {
+//     for (entity, &Health(hp)) in hp_entities.iter() {
+//         if hp == 0 {
+//             println!("THIS DUDE IS DEAD {:?}", entity);
+//             animation_type_writer.send(AnimationType::Dead);
+//         }
+//     }
+// }

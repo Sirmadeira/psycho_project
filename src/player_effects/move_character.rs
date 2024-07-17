@@ -29,28 +29,25 @@ pub fn keyboard_walk(
     if keys.pressed(KeyCode::KeyW) {
         direction.x = cam.forward().x;
         direction.y = cam.forward().z;
-        movetype = AnimationType::WalkForward;
+        movetype = AnimationType::FrontWalk;
         attacktype = TypeOfAttack::Forward;
     }
     // back
     if keys.pressed(KeyCode::KeyS) {
         direction.x = cam.back().x;
         direction.y = cam.back().z;
-        movetype = AnimationType::WalkBackward;
         attacktype = TypeOfAttack::Backward;
     }
     // left
     if keys.pressed(KeyCode::KeyA) {
         direction.x = cam.left().x;
         direction.y = cam.left().z;
-        movetype = AnimationType::WalkLeft;
         attacktype = TypeOfAttack::Left;
     }
     // right
     if keys.pressed(KeyCode::KeyD) {
         direction.x = cam.right().x;
         direction.y = cam.right().z;
-        movetype = AnimationType::WalkRight;
         attacktype = TypeOfAttack::Right;
     }
     if direction != Vec2::ZERO {
@@ -94,7 +91,6 @@ pub fn keyboard_dash(
         if timers.up.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyW) {
             direction.x = cam.forward().x;
             direction.y = cam.forward().z;
-            movetype = AnimationType::DashForward;
         }
         if keys.just_released(KeyCode::KeyS) {
             timers.down.reset();
@@ -102,7 +98,6 @@ pub fn keyboard_dash(
         if timers.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS) {
             direction.x = cam.back().x;
             direction.y = cam.back().z;
-            movetype = AnimationType::DashBackward;
         }
         if keys.just_released(KeyCode::KeyA) {
             timers.left.reset();
@@ -110,7 +105,6 @@ pub fn keyboard_dash(
         if timers.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA) {
             direction.x = cam.left().x;
             direction.y = cam.left().z;
-            movetype = AnimationType::DashLeft;
         }
         if keys.just_released(KeyCode::KeyD) {
             timers.right.reset();
@@ -118,7 +112,6 @@ pub fn keyboard_dash(
         if timers.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD) {
             direction.x = cam.right().x;
             direction.y = cam.right().z;
-            movetype = AnimationType::DashRight;
         }
 
         if direction != Vec2::ZERO && has_dashed == false {
@@ -135,45 +128,39 @@ pub fn keyboard_dash(
     }
 }
 
-pub fn keyboard_attack(
-    mouse: Res<ButtonInput<MouseButton>>,
-    mut animation_type_writer: EventWriter<AnimationType>,
-    mut type_attack: EventReader<TypeOfAttack>,
-) {
-    // Light attack
-    for event in type_attack.read() {
-        match event {
-            TypeOfAttack::Forward => {
-                if mouse.just_pressed(MouseButton::Left) {
-                    println!("o");
-                    animation_type_writer.send(AnimationType::ForwardAttack);
-                }
-            }
-            TypeOfAttack::Backward => {
-                if mouse.just_pressed(MouseButton::Left) {
-                    animation_type_writer.send(AnimationType::BackwardAttack);
-                }
-            }
-            TypeOfAttack::Left => {
-                if mouse.just_pressed(MouseButton::Left) {
-                    animation_type_writer.send(AnimationType::LeftAttack);
-                }
-            }
-            TypeOfAttack::Right => {
-                if mouse.just_pressed(MouseButton::Left) {
-                    animation_type_writer.send(AnimationType::RightAttack);
-                }
-            }
-            TypeOfAttack::None => {
-                // Handle no attack state if necessary
-            }
-        }
-    }
-    // Defend
-    if mouse.just_pressed(MouseButton::Right) {
-        animation_type_writer.send(AnimationType::Defend);
-    }
-}
+// pub fn keyboard_attack(
+//     mouse: Res<ButtonInput<MouseButton>>,
+//     mut animation_type_writer: EventWriter<AnimationType>,
+//     mut type_attack: EventReader<TypeOfAttack>,
+// ) {
+//     // Light attack
+//     for event in type_attack.read() {
+//         match event {
+//             TypeOfAttack::Forward => {
+//                 if mouse.just_pressed(MouseButton::Left) {
+//                 }
+//             }
+//             TypeOfAttack::Backward => {
+//                 if mouse.just_pressed(MouseButton::Left) {
+//                 }
+//             }
+//             TypeOfAttack::Left => {
+//                 if mouse.just_pressed(MouseButton::Left) {
+//                 }
+//             }
+//             TypeOfAttack::Right => {
+//                 if mouse.just_pressed(MouseButton::Left) {
+//                 }
+//             }
+//             TypeOfAttack::None => {
+//                 // Handle no attack state if necessary
+//             }
+//         }
+//     }
+//     // Defend
+//     if mouse.just_pressed(MouseButton::Right) {
+//     }
+// }
 
 pub fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,
@@ -193,7 +180,6 @@ pub fn keyboard_jump(
             if keys.just_pressed(KeyCode::Space) && jumps.jump_limit != 0 {
                 jumps.jump_limit -= 1;
                 movement_event_writer.send(MovementAction::Jump);
-                animation_type_writer.send(AnimationType::Jump);
             }
         }
     }

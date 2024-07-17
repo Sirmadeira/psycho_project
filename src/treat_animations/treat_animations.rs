@@ -5,6 +5,9 @@ use bevy::utils::{Duration,HashMap};
 use crate::treat_animations::lib::*;
 use crate::load_assets_plugin::MyAssets;
 use crate::mod_char::lib::AmountPlayers;
+use crate::player_effects::lib::Player;
+
+
 // Creates animation graph for each player and add it is clips to it
 pub fn spawn_animations_graphs(
     amount_players: Res<AmountPlayers>,
@@ -51,28 +54,66 @@ pub fn spawn_animations_graphs(
 }
 
 
-pub fn test_animations(
+
+// Loads from assets and put into our animations players must have for animation playing
+pub fn add_animation_graph(
     mut commands: Commands,
     animations: Res<Animations>,
-    mut players: Query<(Entity, &mut AnimationPlayer), Added<AnimationPlayer>>,
+    mut players: Query<Entity, Added<AnimationPlayer>>,
 ) {
     // Each skinned mesh already  comes with a prespawned animation player struct
-    for (entity, mut player) in &mut players {
-        let mut transitions = AnimationTransitions::new();
-        transitions
-            .play(
-                &mut player,
-                animations.named_nodes["TPose"],
-                Duration::ZERO,
-            )
-            .repeat();
-        // Display the transitions of the current entity
+    for entity  in &mut players {
         commands
             .entity(entity)
-            .insert(animations.animation_graph.clone())
-            .insert(transitions);
+            .insert(animations.animation_graph.clone());
     }
 }
 
 
-pub fn state_machine() {}
+// This will handle animation according to input events given by player_effects or other plugins
+pub fn state_machine(
+    player_skeleton: Query<&Player, With<Player>>,
+    mut animation_to_play: EventReader<AnimationType>,
+
+    mut components: Query<(&mut AnimationPlayer, Option< &mut AnimationTransitions>)>,
+    animations: Res<Animations>,
+    mut commands: Commands
+) {
+
+
+    let entity = player_skeleton.get_single().expect("To have skeleton").0;
+
+    let (mut animation_player,active_transitions)  = components.get_mut(entity).expect("Skeleton components");
+
+    if let Some(mut active_transition) = active_transitions{
+        for event in animation_to_play.read(){
+
+            match event {
+                AnimationType::FrontWalk =>{
+                    let animation = animations.named_nodes["FrontWalk"];
+                    active_transition.play(&mut animation_player,animation , Duration::from_secs(1));
+                }
+                AnimationType::LeftWalk =>{
+    
+                }
+                AnimationType::None =>{
+                    // let animation = animations.named_nodes["Idle"];
+                    // active_transition.play(&mut animation_player,animation , Duration::from_secs(10));
+                }
+    
+            }
+        }
+    }
+    // Treats the scenario where the  is no animation transition in main player
+    else{
+        let mut  transitions = AnimationTransitions::new();
+
+        transitions.play(&mut animation_player, animations.named_nodes["Idle"], Duration::ZERO).repeat();
+        
+        commands.entity(entity).insert(transitions);
+
+
+    }
+
+
+}

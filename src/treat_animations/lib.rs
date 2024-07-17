@@ -15,20 +15,7 @@ pub struct Animations {
 pub enum AnimationType {
     // If it is forward backwards and so on
     None,
-    WalkForward,
-    WalkBackward,
-    WalkLeft,
-    WalkRight,
-    LeftAttack,
-    RightAttack,
-    BackwardAttack,
-    ForwardAttack,
-    Defend,
-    Jump,
-    DashForward,
-    DashBackward,
-    DashLeft,
-    DashRight,
-    Dead,
+    FrontWalk,
+    LeftWalk
 }
 

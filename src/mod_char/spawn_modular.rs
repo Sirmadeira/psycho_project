@@ -202,7 +202,7 @@ pub fn make_end_entity(
 
                             let mut transform = transforms.get_mut(*weapon_attachment).expect("Transform to apply offset");
 
-                            let amount:f32 = -177.0;
+                            let amount:f32 = -180.0;
                             transform.rotation = Quat::from_axis_angle(Vec3::X, amount.to_radians() );
 
                         } else {

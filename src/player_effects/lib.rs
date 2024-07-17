@@ -3,13 +3,13 @@ use bevy::{
     time::{Stopwatch, Timer},
 };
 
-// Marker component - Basically the rigid body that will move the player
+// Marker component - Basically the rigid body that will move the player points to it is skeleton
 #[derive(Component)]
-pub struct Player;
+pub struct Player(pub Entity);
 
-// Skeletons that are yet to have a player
+// Skeletons that are yet to have a player point to it is skeleton 
 #[derive(Component)]
-pub struct SidePlayer;
+pub struct SidePlayer(pub Entity);
 
 // Marker component -
 #[derive(Component)]
