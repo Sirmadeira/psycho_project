@@ -33,7 +33,7 @@ pub fn spawn_animations_graphs(
             // Creating named nodes
             for (name_animation, animation_clip) in gltf.named_animations.iter() {
                 // Returns animations node
-                let node = graph.add_clip(animation_clip.clone(), 1.0, graph.root);
+                let node = graph.add_clip(animation_clip.clone(),1.0, graph.root);
                 // Creating named node
                 named_nodes.insert(name_animation.to_string(), node);
                 println!(
@@ -91,12 +91,20 @@ pub fn state_machine(
     let (mut animation_player,active_transitions)  = components.get_mut(animated_entity).expect("Skeleton components");
 
     if let Some(mut active_transition) = active_transitions{
+
+        let current_animation = active_transition.get_main_animation().expect("To always have active animation");
+
         for event in animation_to_play.read(){
 
             match event {
                 AnimationType::FrontWalk =>{
                     let animation = animations.named_nodes["FrontWalk"];
-                    active_transition.play(&mut animation_player,animation , Duration::from_secs(1));
+                    if current_animation.eq(&animation){
+                        println!("CEASE")
+                    }
+                    else {
+                        active_transition.play(&mut animation_player,animation , Duration::from_secs(2)).repeat();                     
+                    }
                 }
                 AnimationType::LeftWalk =>{
     
@@ -116,9 +124,13 @@ pub fn state_machine(
         transitions.play(&mut animation_player, animations.named_nodes["Idle"], Duration::ZERO).repeat();
         
         commands.entity(animated_entity).insert(transitions);
+        println!("No animation")
 
 
     }
 
 
 }
+
+//New approach do it via weights directly in animation player, as more and more events are sended out the animation player
+//  increases the weight of that animation and diminishes from the idle one. 
