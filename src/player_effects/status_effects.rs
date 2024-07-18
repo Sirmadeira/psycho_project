@@ -93,23 +93,23 @@ pub fn check_status_grounded(
 }
 
 // Check if player is idle if so it send animation type and adds a component
-// pub fn check_status_idle(
-//     q_1: Query<(Entity, &Velocity), With<Player>>,
-//     mut commands: Commands,
-//     mut animation_writer: EventWriter<AnimationType>,
-// ) {
-//     const STOPPED_THRESHOLD: f32 = 0.1; // Define a small threshold for stopping
+pub fn check_status_idle(
+    q_1: Query<(Entity, &Velocity), With<Player>>,
+    mut commands: Commands,
+    mut animation_writer: EventWriter<AnimationType>,
+) {
+    const STOPPED_THRESHOLD: f32 = 0.02; // Define a small threshold for stopping
 
-//     for (entity, vel) in q_1.iter() {
-//         if vel.linvel.length_squared() < STOPPED_THRESHOLD * STOPPED_THRESHOLD {
-//             // If the linear velocity is below the threshold, consider the player stopped
-//             animation_writer.send(AnimationType::Idle);
-//             commands.entity(entity).insert(StatusIdle); // Insert a marker component or handle the idle state
-//         } else {
-//             commands.entity(entity).remove::<StatusIdle>(); // Remove the idle marker if the player is moving
-//         }
-//     }
-// }
+    for (entity, vel) in q_1.iter() {
+        if vel.linvel.length_squared() < STOPPED_THRESHOLD * STOPPED_THRESHOLD {
+            // If the linear velocity is below the threshold, consider the player stopped
+            animation_writer.send(AnimationType::Idle);
+            commands.entity(entity).insert(StatusIdle); // Insert a marker component or handle the idle state
+        } else {
+            commands.entity(entity).remove::<StatusIdle>(); // Remove the idle marker if the player is moving
+        }
+    }
+}
 
 pub fn check_dead(
     hp_entities: Query<(Entity, &Health)>,
