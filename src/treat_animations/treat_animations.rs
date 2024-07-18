@@ -74,63 +74,54 @@ pub fn add_animation_graph(
 // This will handle animation according to input events given by player_effects or other plugins
 pub fn state_machine(
     player_skeleton: Query<Entity, With<Player>>,
-    mut components: Query<(&mut AnimationPlayer, Option< &mut AnimationTransitions>)>,
+    mut components: Query<(&mut AnimationPlayer, Option<&mut AnimationTransitions>)>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
     animations: Res<Animations>,
     mut animation_to_play: EventReader<AnimationType>,
-    mut commands: Commands
+    mut commands: Commands,
 ) {
-
-    // Ensuring that is the player animation
-    let player_entity = player_skeleton.get_single().expect("To have player");
+    // Ensuring that this is the player animation
+    let player_entity = player_skeleton.get_single().expect("Expected to have exactly one player entity");
 
     let animated_entity = find_child_with_name_containing(&children_entities, &names, &player_entity, "Armature")
-    .expect("Armature 1");
+        .expect("Expected to find an Armature child");
 
-    let (mut animation_player,active_transitions)  = components.get_mut(animated_entity).expect("Skeleton components");
+    let (mut animation_player, active_transitions) = components.get_mut(animated_entity)
+        .expect("Expected to find skeleton components");
 
-    if let Some(mut active_transition) = active_transitions{
+    if let Some(mut active_transition) = active_transitions {
+        let current_animation = active_transition.get_main_animation()
+            .expect("Expected to always have an active transition");
 
-        let current_animation = active_transition.get_main_animation().expect("To always have active animation");
+        for event in animation_to_play.read() {
+            let (animation_name, duration, repeat) = match event {
+                AnimationType::Idle => ("Idle", Duration::from_millis(400), false),
+                AnimationType::FrontWalk => ("FrontWalk", Duration::from_millis(400), true),
+                AnimationType::BackWalk => ("BackWalk", Duration::from_millis(400), true),
+                AnimationType::LeftWalk => ("LeftWalk", Duration::from_millis(400), true),
+                AnimationType::RightWalk => ("RightWalk", Duration::from_millis(400), true),
+                AnimationType::None => continue, // Skip if no animation
+            };
 
-        for event in animation_to_play.read(){
-
-            match event {
-                AnimationType::FrontWalk =>{
-                    let animation = animations.named_nodes["FrontWalk"];
-                    if current_animation.eq(&animation){
-                        println!("CEASE")
-                    }
-                    else {
-                        active_transition.play(&mut animation_player,animation , Duration::from_secs(2)).repeat();                     
-                    }
+            let animation = &animations.named_nodes[animation_name];
+            if current_animation != *animation {
+                if repeat{
+                    active_transition.play(&mut animation_player, *animation, duration).repeat();
                 }
-                AnimationType::LeftWalk =>{
-    
+                else {
+                    active_transition.play(&mut animation_player, *animation, duration);
                 }
-                AnimationType::None =>{
-                    // let animation = animations.named_nodes["Idle"];
-                    // active_transition.play(&mut animation_player,animation , Duration::from_secs(10));
-                }
-    
+            } else {
             }
         }
-    }
-    // Treats the scenario where the  is no animation transition in main player
-    else{
-        let mut  transitions = AnimationTransitions::new();
-
-        transitions.play(&mut animation_player, animations.named_nodes["Idle"], Duration::ZERO).repeat();
-        
+    } else {
+        let mut transitions = AnimationTransitions::new();
+        transitions.play(&mut animation_player, animations.named_nodes["Idle"], Duration::ZERO);
         commands.entity(animated_entity).insert(transitions);
-        println!("No animation")
-
-
     }
-
-
 }
+
 
 //New approach do it via weights directly in animation player, as more and more events are sended out the animation player
 //  increases the weight of that animation and diminishes from the idle one. 

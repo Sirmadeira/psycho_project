@@ -36,18 +36,21 @@ pub fn keyboard_walk(
     if keys.pressed(KeyCode::KeyS) {
         direction.x = cam.back().x;
         direction.y = cam.back().z;
+        movetype = AnimationType::BackWalk;
         attacktype = TypeOfAttack::Backward;
     }
     // left
     if keys.pressed(KeyCode::KeyA) {
         direction.x = cam.left().x;
         direction.y = cam.left().z;
+        movetype = AnimationType::LeftWalk;
         attacktype = TypeOfAttack::Left;
     }
     // right
     if keys.pressed(KeyCode::KeyD) {
         direction.x = cam.right().x;
         direction.y = cam.right().z;
+        movetype = AnimationType::RightWalk;
         attacktype = TypeOfAttack::Right;
     }
     if direction != Vec2::ZERO {

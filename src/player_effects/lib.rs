@@ -60,6 +60,13 @@ pub struct StatusEffectDefend {
     pub dash_cooldown: Timer,
 }
 
+
+
+// Check if has stopped
+#[derive(Reflect, Component, Debug)]
+#[component(storage = "SparseSet")]
+pub struct StatusIdle;
+
 // Kind of a simple pid
 #[derive(Reflect, Component, Debug)]
 pub struct PdInfo {
@@ -89,5 +96,4 @@ impl Default for Limit {
 }
 
 #[derive(Component, Reflect, Debug)]
-
 pub struct Health(pub i8);

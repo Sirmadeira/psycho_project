@@ -15,7 +15,10 @@ pub struct Animations {
 pub enum AnimationType {
     // If it is forward backwards and so on
     None,
+    Idle,
     FrontWalk,
-    LeftWalk
+    BackWalk,
+    LeftWalk,
+    RightWalk
 }
 

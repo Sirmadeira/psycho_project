@@ -2,10 +2,11 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::player_effects::{
-    Grounded, Health, Limit, Player, PlayerGroundCollider, StatusEffectDash,
-};
 use crate::world_plugin::Ground;
+use crate::player_effects::{
+    Grounded, Health, Limit, Player, PlayerGroundCollider, StatusEffectDash, StatusIdle,
+};
+use crate::treat_animations::lib::AnimationType;
 // use crate::treat_animations::lib::AnimationType;
 
 use super::StatusEffectWallBounce;
@@ -87,6 +88,26 @@ pub fn check_status_grounded(
             }
         } else {
             commands.entity(entity1).remove::<Grounded>();
+        }
+    }
+}
+
+
+// Check if player is idle if so it send animation type and adds a component
+pub fn check_status_idle(
+    q_1: Query<(Entity, &Velocity), With<Player>>,
+    mut commands: Commands,
+    mut animation_writer: EventWriter<AnimationType>,
+) {
+    const STOPPED_THRESHOLD: f32 = 0.1; // Define a small threshold for stopping
+
+    for (entity, vel) in q_1.iter() {
+        if vel.linvel.length_squared() < STOPPED_THRESHOLD * STOPPED_THRESHOLD {
+            // If the linear velocity is below the threshold, consider the player stopped
+            animation_writer.send(AnimationType::Idle);
+            commands.entity(entity).insert(StatusIdle); // Insert a marker component or handle the idle state
+        } else {
+            commands.entity(entity).remove::<StatusIdle>(); // Remove the idle marker if the player is moving
         }
     }
 }
