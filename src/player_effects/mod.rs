@@ -66,7 +66,7 @@ impl Plugin for PlayerEffects {
         );
         app.configure_sets(
             Update,
-            (MyPlayerSet::HandleInputs, MyPlayerSet::HandleInputs).run_if(player_exists),
+            MyPlayerSet::HandleInputs.run_if(player_exists),
         );
         app.configure_sets(
             FixedUpdate,

@@ -1,5 +1,3 @@
-
-
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 
@@ -19,6 +17,5 @@ pub enum AnimationType {
     FrontWalk,
     BackWalk,
     LeftWalk,
-    RightWalk
+    RightWalk,
 }
-

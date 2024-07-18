@@ -19,21 +19,13 @@ pub fn spawn_simple_colliders(
     let mut z = 0.0;
     // Main bone entity to search in
     for (main_skeleton, number) in skeleton_entities.iter().zip(1u32..) {
-        
         z += 0.0;
 
         // Creates dynamic specific groups according to the amount of players
         let collision_groups = create_dynamic_collider_groups(&player_amount, number, None);
 
         // Name of bones
-        let bone_names = vec![
-            "Spine",
-            "Feet_1.R",
-            "Feet_1.L",
-            "Head",
-            "Hand.R",
-            "Hand.L",
-        ];
+        let bone_names = vec!["Spine", "Feet_1.R", "Feet_1.L", "Head", "Hand.R", "Hand.L"];
 
         let mut special_bones = Vec::new();
 

@@ -1,11 +1,9 @@
-
 use bevy::utils::HashMap;
 use bevy::{
     animation::AnimationTarget,
     gltf::Gltf,
     prelude::*,
     render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling},
-
 };
 use regex::Regex;
 
@@ -124,7 +122,6 @@ pub fn spawn_skeleton_and_attachments(
     next_state.set(StateSpawnScene::Spawned);
 }
 
-
 // Transfer the animations to all the visual bones
 pub fn transfer_animation(
     skeletons: Query<Entity, With<Skeleton>>,
@@ -147,7 +144,9 @@ pub fn transfer_animation(
                 find_child_with_name_containing(&children_entities, &names, &visual, "Armature")
                     .expect("Armature 2");
 
-            commands.entity(new_entity).insert(AnimationPlayer::default());
+            commands
+                .entity(new_entity)
+                .insert(AnimationPlayer::default());
 
             let mut new_bones = HashMap::new();
             collect_bones(&children_entities, &names, &new_entity, &mut new_bones);
@@ -157,9 +156,10 @@ pub fn transfer_animation(
 
                 let new_match_entity = new_bones.get(name).expect("To have matching bone");
 
-                commands
-                    .entity(*new_match_entity)
-                    .insert(AnimationTarget{id: old_animation_target.id,player:new_entity});
+                commands.entity(*new_match_entity).insert(AnimationTarget {
+                    id: old_animation_target.id,
+                    player: new_entity,
+                });
             }
         }
     }
@@ -195,16 +195,17 @@ pub fn make_end_entity(
                             &names,
                             &visual_attachment,
                             "Handle",
-                        ) { 
-
+                        ) {
                             // Adjusting transform
                             commands.entity(*weapon_attachment).set_parent(handle_gun);
 
-                            let mut transform = transforms.get_mut(*weapon_attachment).expect("Transform to apply offset");
+                            let mut transform = transforms
+                                .get_mut(*weapon_attachment)
+                                .expect("Transform to apply offset");
 
-                            let amount:f32 = -180.0;
-                            transform.rotation = Quat::from_axis_angle(Vec3::X, amount.to_radians() );
-
+                            let amount: f32 = -180.0;
+                            transform.rotation =
+                                Quat::from_axis_angle(Vec3::X, amount.to_radians());
                         } else {
                             println!("The visual bone {} didn't have a handle", visual_attachment);
                         }
@@ -215,7 +216,6 @@ pub fn make_end_entity(
     }
     next_state.set(StateSpawnScene::Done);
 }
-
 
 // Debugger function in animations
 pub fn disable_culling_for_skinned_meshes(

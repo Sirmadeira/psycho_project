@@ -1,13 +1,11 @@
-
 use bevy::prelude::*;
 
-use bevy::utils::{Duration,HashMap};
-use crate::treat_animations::lib::*;
 use crate::load_assets_plugin::MyAssets;
-use crate::mod_char::lib::AmountPlayers;
 use crate::mod_char::helpers::find_child_with_name_containing;
+use crate::mod_char::lib::AmountPlayers;
 use crate::player_effects::lib::Player;
-
+use crate::treat_animations::lib::*;
+use bevy::utils::{Duration, HashMap};
 
 // Creates animation graph for each player and add it is clips to it
 pub fn spawn_animations_graphs(
@@ -33,7 +31,7 @@ pub fn spawn_animations_graphs(
             // Creating named nodes
             for (name_animation, animation_clip) in gltf.named_animations.iter() {
                 // Returns animations node
-                let node = graph.add_clip(animation_clip.clone(),1.0, graph.root);
+                let node = graph.add_clip(animation_clip.clone(), 1.0, graph.root);
                 // Creating named node
                 named_nodes.insert(name_animation.to_string(), node);
                 println!(
@@ -54,8 +52,6 @@ pub fn spawn_animations_graphs(
     }
 }
 
-
-
 // Loads from assets and put into our animations players must have for animation playing
 pub fn add_animation_graph(
     mut commands: Commands,
@@ -63,13 +59,12 @@ pub fn add_animation_graph(
     mut players: Query<Entity, Added<AnimationPlayer>>,
 ) {
     // Each skinned mesh already  comes with a prespawned animation player struct
-    for entity  in &mut players {
+    for entity in &mut players {
         commands
             .entity(entity)
             .insert(animations.animation_graph.clone());
     }
 }
-
 
 // This will handle animation according to input events given by player_effects or other plugins
 pub fn state_machine(
@@ -82,16 +77,21 @@ pub fn state_machine(
     mut commands: Commands,
 ) {
     // Ensuring that this is the player animation
-    let player_entity = player_skeleton.get_single().expect("Expected to have exactly one player entity");
+    let player_entity = player_skeleton
+        .get_single()
+        .expect("Expected to have exactly one player entity");
 
-    let animated_entity = find_child_with_name_containing(&children_entities, &names, &player_entity, "Armature")
-        .expect("Expected to find an Armature child");
+    let animated_entity =
+        find_child_with_name_containing(&children_entities, &names, &player_entity, "Armature")
+            .expect("Expected to find an Armature child");
 
-    let (mut animation_player, active_transitions) = components.get_mut(animated_entity)
+    let (mut animation_player, active_transitions) = components
+        .get_mut(animated_entity)
         .expect("Expected to find skeleton components");
 
     if let Some(mut active_transition) = active_transitions {
-        let current_animation = active_transition.get_main_animation()
+        let current_animation = active_transition
+            .get_main_animation()
             .expect("Expected to always have an active transition");
 
         for event in animation_to_play.read() {
@@ -106,10 +106,12 @@ pub fn state_machine(
 
             let animation = &animations.named_nodes[animation_name];
             if current_animation != *animation {
-                if repeat{
-                    active_transition.play(&mut animation_player, *animation, duration).repeat();
-                }
-                else {
+                println!("That animation was different");
+                if repeat {
+                    active_transition
+                        .play(&mut animation_player, *animation, duration)
+                        .repeat();
+                } else {
                     active_transition.play(&mut animation_player, *animation, duration);
                 }
             } else {
@@ -117,11 +119,14 @@ pub fn state_machine(
         }
     } else {
         let mut transitions = AnimationTransitions::new();
-        transitions.play(&mut animation_player, animations.named_nodes["Idle"], Duration::ZERO);
+        transitions.play(
+            &mut animation_player,
+            animations.named_nodes["Idle"],
+            Duration::ZERO,
+        );
         commands.entity(animated_entity).insert(transitions);
     }
 }
 
-
 //New approach do it via weights directly in animation player, as more and more events are sended out the animation player
-//  increases the weight of that animation and diminishes from the idle one. 
+//  increases the weight of that animation and diminishes from the idle one.

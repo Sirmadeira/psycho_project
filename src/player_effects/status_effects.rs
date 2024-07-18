@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::world_plugin::Ground;
 use crate::player_effects::{
     Grounded, Health, Limit, Player, PlayerGroundCollider, StatusEffectDash, StatusIdle,
 };
 use crate::treat_animations::lib::AnimationType;
+use crate::world_plugin::Ground;
 // use crate::treat_animations::lib::AnimationType;
 
 use super::StatusEffectWallBounce;
@@ -91,7 +91,6 @@ pub fn check_status_grounded(
         }
     }
 }
-
 
 // Check if player is idle if so it send animation type and adds a component
 pub fn check_status_idle(

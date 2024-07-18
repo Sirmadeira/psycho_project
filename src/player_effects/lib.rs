@@ -7,7 +7,7 @@ use bevy::{
 #[derive(Component)]
 pub struct Player;
 
-// Skeletons that are yet to have a player point to it is skeleton 
+// Skeletons that are yet to have a player point to it is skeleton
 #[derive(Component)]
 pub struct SidePlayer;
 
@@ -59,8 +59,6 @@ pub struct StatusEffectDash {
 pub struct StatusEffectDefend {
     pub dash_cooldown: Timer,
 }
-
-
 
 // Check if has stopped
 #[derive(Reflect, Component, Debug)]
