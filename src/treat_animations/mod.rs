@@ -14,8 +14,9 @@ impl Plugin for TreatAnimations {
         app.add_event::<AnimationType>();
         app.register_type::<Animations>();
         app.add_systems(OnEnter(MyAppState::InGame), spawn_animations_graphs);
+        //Weird i know but u need to do this all the time
         app.add_systems(
-            OnEnter(MyAppState::InGame),
+            Update,
             add_animation_graph
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
@@ -24,7 +25,8 @@ impl Plugin for TreatAnimations {
             Update,
             state_machine
                 .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)),
+                .run_if(in_state(MyAppState::InGame))
+                .after(add_animation_graph),
         );
     }
 }

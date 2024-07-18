@@ -106,7 +106,7 @@ pub fn state_machine(
 
             let animation = &animations.named_nodes[animation_name];
             if current_animation != *animation {
-                println!("That animation was different");
+                println!("That animation was different{}",animation_name);
                 if repeat {
                     active_transition
                         .play(&mut animation_player, *animation, duration)
