@@ -1,8 +1,11 @@
+use std::f32::consts::PI;
+use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
 use crate::ingame_camera::lib::CamInfo;
+use crate::mod_char::helpers::find_child_with_name_containing;
 use crate::player_effects::{
     Grounded, Limit, MovementAction, PdInfo, Player, PlayerGroundCollider, StatusEffectDash, Timers,
 };
@@ -208,6 +211,66 @@ pub fn move_character(
             }
         }
     }
+}
+
+
+pub fn head_look_at(
+    q_1: Query<&Transform, With<CamInfo>>, 
+    q_2: Query<Entity, With<Player>>,
+    children_entities: Query<&Children>,
+    names: Query<&Name>,
+    mut transform: Query<&mut Transform, Without<CamInfo>>,
+    mut commands: Commands
+) {
+    let target_transform = q_1.get_single().expect("Failed to find camera transform");
+    let player = q_2.get_single().expect("Failed to find player entity");
+    
+    let head = find_child_with_name_containing(&children_entities, &names, &player, "Head")
+        .expect("Failed to find head bone");
+
+    // Remove animation target
+    commands.entity(head).remove::<AnimationTarget>();
+
+    let mut current_transform = transform.get_mut(head).expect("Failed to get head transform");
+
+    // Compute the direction to look at, using the camera's forward direction
+    let target_direction = target_transform.forward();
+    
+    // Create a new direction vector with the reversed y component
+    let direction = Vec3::new(target_direction.x, -target_direction.y, target_direction.z).normalize();
+
+    // Left and right
+    let yaw = direction.x.atan2(direction.z);
+
+
+    // Up and down
+    let pitch = direction.y.asin();
+    
+
+    // Clip the pitch to a certain range, e.g., -45 to 45 degrees
+    let pitch_limit = PI / 4.0; // 45 degrees
+    let clipped_pitch = pitch.clamp(-pitch_limit,pitch_limit );
+
+    //Yaw need to be clipped according to radian quadrants. Meaning it needs to stay between 2 quadrant and 4 quadrant
+    let yaw_limits = (PI/2.0,PI);
+    let clipped_yaw = if yaw > 0.0 {
+        yaw.clamp(yaw_limits.0, yaw_limits.1)
+    } else {
+        yaw.clamp(-yaw_limits.1, -yaw_limits.0)
+    };
+
+    // Convert the clipped yaw and pitch back to a direction vector
+    let clipped_direction = Vec3::new(
+        clipped_pitch.cos() * clipped_yaw.sin(),
+        clipped_pitch.sin(),
+        clipped_pitch.cos() * clipped_yaw.cos()
+    );
+
+    // Set the up vector (typically this is the world's up vector, e.g., Vec3::Y)
+    let up = Vec3::Y;
+
+    // Update the head transform to look in the adjusted direction
+    *current_transform = current_transform.looking_at( clipped_direction, up);
 }
 
 pub fn player_look_at_camera(

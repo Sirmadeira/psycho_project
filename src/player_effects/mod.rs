@@ -48,7 +48,7 @@ impl Plugin for PlayerEffects {
         // Side physics
         app.add_systems(
             FixedUpdate,
-            (move_character, player_look_at_camera).in_set(MyPlayerSet::SidePhysics),
+            (move_character, head_look_at).in_set(MyPlayerSet::SidePhysics),
         );
         // Detecting specific hits
         app.add_systems(

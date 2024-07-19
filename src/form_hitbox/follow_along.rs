@@ -63,7 +63,6 @@ pub fn colliders_look_at(
 
         vel.linvel = output;
 
-        // Angvel is fucked until 14 animation update
         let desired_rotation = target_transform.rotation * current_transform.rotation.inverse();
 
         let (axis, angle) = desired_rotation.to_axis_angle();

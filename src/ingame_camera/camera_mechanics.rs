@@ -61,7 +61,7 @@ pub fn orbit_mouse(
         // Calculate the new rotation without applying it to the camera yet
         let new_rotation = cam_transform.rotation * pitch;
 
-        // check if new rotation will cause camera to go beyond the 180 degree vertical bounds
+        // check if new rotation will cause camera to go beyond the 180 degree vertical boundse
         let up_vector = new_rotation * Vec3::Y;
         if up_vector.y > 0.0 {
             cam_transform.rotation = new_rotation;

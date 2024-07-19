@@ -18,7 +18,7 @@ pub fn spawn_main_rigidbody(
         let main_rigidbody = (
             RigidBody::Dynamic,
             SpatialBundle {
-                transform: Transform::from_xyz(-2.0, 0.25, -3.0),
+                transform: Transform::from_xyz(-4.0, 0.25, -3.0),
                 ..Default::default()
             },
             Velocity::zero(),
@@ -34,6 +34,7 @@ pub fn spawn_main_rigidbody(
             Name::new(format!("Player_{}", player_count)),
             GravityScale(1.0),
             AdditionalMassProperties::Mass(10.0),
+            LockedAxes::ROTATION_LOCKED
         );
         // Testing
         let second_rigidbody = (
@@ -55,6 +56,7 @@ pub fn spawn_main_rigidbody(
             Name::new(format!("Player_{}", player_count)),
             GravityScale(1.0),
             AdditionalMassProperties::Mass(10.0),
+            LockedAxes::ROTATION_LOCKED
         );
 
         // Spawning the collider that moves and tells things
