@@ -56,6 +56,22 @@ pub fn keyboard_walk(
         movetype = AnimationType::RightWalk;
         attacktype = TypeOfAttack::Right;
     }
+    // Dig right movement
+    if keys.pressed(KeyCode::KeyD) && keys.pressed(KeyCode::KeyW) {
+        direction.x = cam.right().x;
+        direction.y = cam.right().z;
+        movetype = AnimationType::RightDigWalk;
+        attacktype = TypeOfAttack::Right;
+    }
+    // Dig back right movement
+    if keys.pressed(KeyCode::KeyD) && keys.pressed(KeyCode::KeyS) {
+        direction.x = cam.right().x;
+        direction.y = cam.right().z;
+        movetype = AnimationType::BRightDigWalk;
+        attacktype = TypeOfAttack::Right;
+    }
+
+
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
         animation_type_writer.send(movetype);
@@ -225,7 +241,7 @@ pub fn head_look_at(
     let target_transform = q_1.get_single().expect("Failed to find camera transform");
     let player = q_2.get_single().expect("Failed to find player entity");
     
-    let head = find_child_with_name_containing(&children_entities, &names, &player, "Head")
+    let head = find_child_with_name_containing(&children_entities, &names, &player, "Spine_2")
         .expect("Failed to find head bone");
 
     // Remove animation target
@@ -252,7 +268,7 @@ pub fn head_look_at(
     let clipped_pitch = pitch.clamp(-pitch_limit,pitch_limit );
 
     //Yaw need to be clipped according to radian quadrants. Meaning it needs to stay between 2 quadrant and 4 quadrant
-    let yaw_limits = (PI/2.0,PI);
+    let yaw_limits = (PI/4.0,PI);
     let clipped_yaw = if yaw > 0.0 {
         yaw.clamp(yaw_limits.0, yaw_limits.1)
     } else {
@@ -269,7 +285,7 @@ pub fn head_look_at(
     // Set the up vector (typically this is the world's up vector, e.g., Vec3::Y)
     let up = Vec3::Y;
 
-    // Update the head transform to look in the adjusted direction
+
     *current_transform = current_transform.looking_at( clipped_direction, up);
 }
 

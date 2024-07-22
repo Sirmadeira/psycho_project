@@ -101,6 +101,8 @@ pub fn state_machine(
                 AnimationType::BackWalk => ("BackWalk", Duration::from_millis(400), true),
                 AnimationType::LeftWalk => ("LeftWalk", Duration::from_millis(400), true),
                 AnimationType::RightWalk => ("RightWalk", Duration::from_millis(400), true),
+                AnimationType::RightDigWalk => ("RightDigWalk", Duration::from_millis(400), false),
+                AnimationType::BRightDigWalk => ("BRightDigWalk", Duration::from_millis(400), false),
                 AnimationType::None => continue, // Skip if no animation
             };
 

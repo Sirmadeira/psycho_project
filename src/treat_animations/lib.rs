@@ -18,4 +18,6 @@ pub enum AnimationType {
     BackWalk,
     LeftWalk,
     RightWalk,
+    RightDigWalk,
+    BRightDigWalk
 }
