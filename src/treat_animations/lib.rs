@@ -11,7 +11,6 @@ pub struct Animations {
 // Tells me which type of movement i should pass, to avoid multiple arguments or enums
 #[derive(Event, Debug)]
 pub enum AnimationType {
-    // If it is forward backwards and so on
     None,
     Idle,
     FrontWalk,
@@ -19,5 +18,7 @@ pub enum AnimationType {
     LeftWalk,
     RightWalk,
     RightDigWalk,
-    BRightDigWalk
+    BackRightDigWalk,
+    LeftDigWalk,
+    BackLeftDigWalk
 }

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 
 use crate::load_assets_plugin::MyAssets;
 use crate::mod_char::helpers::find_child_with_name_containing;
@@ -67,6 +68,7 @@ pub fn add_animation_graph(
 }
 
 // This will handle animation according to input events given by player_effects or other plugins
+
 pub fn state_machine(
     player_skeleton: Query<Entity, With<Player>>,
     mut components: Query<(&mut AnimationPlayer, Option<&mut AnimationTransitions>)>,
@@ -81,9 +83,8 @@ pub fn state_machine(
         .get_single()
         .expect("Expected to have exactly one player entity");
 
-    let animated_entity =
-        find_child_with_name_containing(&children_entities, &names, &player_entity, "Armature")
-            .expect("Expected to find an Armature child");
+    let animated_entity = find_child_with_name_containing(&children_entities, &names, &player_entity, "Armature")
+        .expect("Expected to find an Armature child");
 
     let (mut animation_player, active_transitions) = components
         .get_mut(animated_entity)
@@ -96,19 +97,23 @@ pub fn state_machine(
 
         for event in animation_to_play.read() {
             let (animation_name, duration, repeat) = match event {
-                AnimationType::Idle => ("Idle", Duration::from_millis(400), false),
-                AnimationType::FrontWalk => ("FrontWalk", Duration::from_millis(400), true),
-                AnimationType::BackWalk => ("BackWalk", Duration::from_millis(400), true),
-                AnimationType::LeftWalk => ("LeftWalk", Duration::from_millis(400), true),
-                AnimationType::RightWalk => ("RightWalk", Duration::from_millis(400), true),
-                AnimationType::RightDigWalk => ("RightDigWalk", Duration::from_millis(400), false),
-                AnimationType::BRightDigWalk => ("BRightDigWalk", Duration::from_millis(400), false),
+                AnimationType::Idle => ("Idle", Duration::from_millis(200), false),
+                AnimationType::FrontWalk => ("FrontWalk", Duration::from_millis(200), true),
+                AnimationType::BackWalk => ("BackWalk", Duration::from_millis(200), true),
+                AnimationType::LeftWalk => ("LeftWalk", Duration::from_millis(200), true),
+                AnimationType::RightWalk => ("RightWalk", Duration::from_millis(200), true),
+                AnimationType::RightDigWalk => ("RightDigWalk", Duration::from_millis(200), false),
+                AnimationType::BackRightDigWalk => ("BackRightDigWalk", Duration::from_millis(200), false),
+                AnimationType::LeftDigWalk => ("LeftDigWalk", Duration::from_millis(200), false),
+                AnimationType::BackLeftDigWalk => ("BackLeftDigWalk", Duration::from_millis(200), false),
                 AnimationType::None => continue, // Skip if no animation
             };
 
             let animation = &animations.named_nodes[animation_name];
             if current_animation != *animation {
-                println!("That animation was different{}",animation_name);
+                println!("That animation was different: {}", animation_name);
+
+
                 if repeat {
                     active_transition
                         .play(&mut animation_player, *animation, duration)
@@ -116,7 +121,6 @@ pub fn state_machine(
                 } else {
                     active_transition.play(&mut animation_player, *animation, duration);
                 }
-            } else {
             }
         }
     } else {
@@ -130,5 +134,3 @@ pub fn state_machine(
     }
 }
 
-//New approach do it via weights directly in animation player, as more and more events are sended out the animation player
-//  increases the weight of that animation and diminishes from the idle one.

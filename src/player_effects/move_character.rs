@@ -58,17 +58,31 @@ pub fn keyboard_walk(
     }
     // Dig right movement
     if keys.pressed(KeyCode::KeyD) && keys.pressed(KeyCode::KeyW) {
-        direction.x = cam.right().x;
-        direction.y = cam.right().z;
+        direction.x = cam.right().x + cam.forward().x/2.0;
+        direction.y = cam.right().z + cam.forward().z/2.0;
         movetype = AnimationType::RightDigWalk;
         attacktype = TypeOfAttack::Right;
     }
     // Dig back right movement
     if keys.pressed(KeyCode::KeyD) && keys.pressed(KeyCode::KeyS) {
-        direction.x = cam.right().x;
-        direction.y = cam.right().z;
-        movetype = AnimationType::BRightDigWalk;
+        direction.x = cam.right().x + cam.back().x/2.0;
+        direction.y = cam.right().z + cam.back().z /2.0;
+        movetype = AnimationType::BackRightDigWalk;
         attacktype = TypeOfAttack::Right;
+    }
+    // Dig left movement
+    if keys.pressed(KeyCode::KeyA) && keys.pressed(KeyCode::KeyW) {
+        direction.x = cam.left().x + cam.forward().x/2.0;
+        direction.y = cam.left().z + cam.forward().z/2.0;
+        movetype = AnimationType::LeftDigWalk;
+        attacktype = TypeOfAttack::Left;
+    }
+    // Dig back left movement
+    if keys.pressed(KeyCode::KeyA) && keys.pressed(KeyCode::KeyS) {
+        direction.x = cam.left().x + cam.back().x/2.0;
+        direction.y = cam.left().z + cam.back().x/2.0;
+        movetype = AnimationType::BackLeftDigWalk;
+        attacktype = TypeOfAttack::Left;
     }
 
 
