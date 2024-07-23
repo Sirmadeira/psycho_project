@@ -282,12 +282,17 @@ pub fn head_look_at(
     let clipped_pitch = pitch.clamp(-pitch_limit,pitch_limit );
 
     //Yaw need to be clipped according to radian quadrants. Meaning it needs to stay between 2 quadrant and 4 quadrant
-    let yaw_limits = (PI/4.0,PI);
+    // Just think that first limit is inversed
+    let yaw_limits = (PI/1.25,PI);
+    println!("{}",yaw);
+
     let clipped_yaw = if yaw > 0.0 {
+
         yaw.clamp(yaw_limits.0, yaw_limits.1)
     } else {
         yaw.clamp(-yaw_limits.1, -yaw_limits.0)
     };
+    println!("{}",clipped_yaw);
 
     // Convert the clipped yaw and pitch back to a direction vector
     let clipped_direction = Vec3::new(
