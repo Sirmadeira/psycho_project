@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
 
 use crate::load_assets_plugin::MyAssets;
 use crate::mod_char::helpers::find_child_with_name_containing;
@@ -95,32 +94,33 @@ pub fn state_machine(
             .get_main_animation()
             .expect("Expected to always have an active transition");
 
-        for event in animation_to_play.read() {
-            let (animation_name, duration, repeat) = match event {
-                AnimationType::Idle => ("Idle", Duration::from_millis(200), false),
-                AnimationType::FrontWalk => ("FrontWalk", Duration::from_millis(200), true),
-                AnimationType::BackWalk => ("BackWalk", Duration::from_millis(200), true),
-                AnimationType::LeftWalk => ("LeftWalk", Duration::from_millis(200), true),
-                AnimationType::RightWalk => ("RightWalk", Duration::from_millis(200), true),
-                AnimationType::RightDigWalk => ("RightDigWalk", Duration::from_millis(200), false),
-                AnimationType::BackRightDigWalk => ("BackRightDigWalk", Duration::from_millis(200), false),
-                AnimationType::LeftDigWalk => ("LeftDigWalk", Duration::from_millis(200), false),
-                AnimationType::BackLeftDigWalk => ("BackLeftDigWalk", Duration::from_millis(200), false),
-                AnimationType::None => continue, // Skip if no animation
-            };
-
-            let animation = &animations.named_nodes[animation_name];
-            if current_animation != *animation {
-                println!("That animation was different: {}", animation_name);
-                if repeat {
-                    active_transition
-                        .play(&mut animation_player, *animation, duration)
-                        .repeat();
-                } else {
-                    active_transition.play(&mut animation_player, *animation, duration);
+            for event in animation_to_play.read() {
+                let (animation_name, duration, repeat, cooldown) = match event {
+                    AnimationType::Idle => ("Idle", Duration::from_millis(200), false, Duration::from_secs(1)),
+                    AnimationType::FrontWalk => ("FrontWalk", Duration::from_millis(200), true, Duration::from_secs(0)),
+                    AnimationType::BackWalk => ("BackWalk", Duration::from_millis(200), true, Duration::from_secs(0)),
+                    AnimationType::LeftWalk => ("LeftWalk", Duration::from_millis(200), true, Duration::from_millis(250)),
+                    AnimationType::RightWalk => ("RightWalk", Duration::from_millis(200), true, Duration::from_millis(250)),
+                    AnimationType::RightDigWalk => ("RightDigWalk", Duration::from_millis(200), false, Duration::from_secs(0)),
+                    AnimationType::BackRightDigWalk => ("BackRightDigWalk", Duration::from_millis(200), false, Duration::from_secs(0)),
+                    AnimationType::LeftDigWalk => ("LeftDigWalk", Duration::from_millis(200), false, Duration::from_secs(0)),
+                    AnimationType::BackLeftDigWalk => ("BackLeftDigWalk", Duration::from_millis(200), false, Duration::from_secs(0)),
+                    AnimationType::None => continue, // Skip if no animation
+                };
+        
+                let animation = &animations.named_nodes[animation_name];
+                if current_animation != *animation {
+                    println!("That animation was different: {}", animation_name);
+                    if repeat {
+                        active_transition
+                            .play(&mut animation_player, *animation, duration)
+                            .repeat();
+                    } else {
+                        active_transition.play(&mut animation_player, *animation, duration);
+                    }
+                    commands.entity(player_entity).insert(AnimationCooldown(Timer::new(cooldown, TimerMode::Once)));
                 }
             }
-        }
     } else {
         let mut transitions = AnimationTransitions::new();
         transitions.play(
@@ -131,4 +131,5 @@ pub fn state_machine(
         commands.entity(animated_entity).insert(transitions);
     }
 }
+
 

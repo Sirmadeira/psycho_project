@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::time::Timer;
 use bevy::utils::HashMap;
 
 // This is a resource, that I am gonna use to have easy acess to the info of my animation graphs
@@ -22,3 +23,7 @@ pub enum AnimationType {
     LeftDigWalk,
     BackLeftDigWalk
 }
+
+#[derive(Reflect, Component, Debug)]
+#[component(storage = "SparseSet")]
+pub struct AnimationCooldown(pub Timer);

@@ -2,11 +2,12 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
+use crate::world_plugin::Ground;
 use crate::player_effects::{
     Grounded, Health, Limit, Player, PlayerGroundCollider, StatusEffectDash, StatusIdle,
 };
-use crate::treat_animations::lib::AnimationType;
-use crate::world_plugin::Ground;
+use crate::treat_animations::lib::{AnimationCooldown,AnimationType};
+
 // use crate::treat_animations::lib::AnimationType;
 
 use super::StatusEffectWallBounce;
@@ -14,22 +15,28 @@ use super::StatusEffectWallBounce;
 pub fn check_status_effect(
     time: Res<Time>,
     mut commands: Commands,
-    mut q_1: Query<(Entity, Option<&mut StatusEffectDash>), With<Player>>,
+    mut q_1: Query<(Entity, Option<&mut StatusEffectDash>, Option<&mut AnimationCooldown>), With<Player>>,
 ) {
-    for (ent, status) in q_1.iter_mut() {
-        if let Some(mut status) = status {
+    for (ent, status_effect_dash, animation_cd) in q_1.iter_mut() {
+        if let Some(mut status) = status_effect_dash {
             status
                 .dash_cooldown
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
             if status.dash_cooldown.finished() {
                 commands.entity(ent).remove::<StatusEffectDash>();
             }
-        } else {
-            return;
+        }
+
+        if let Some(mut cooldown) = animation_cd {
+            cooldown
+                .0
+                .tick(Duration::from_secs_f32(time.delta_seconds()));
+            if cooldown.0.finished() {
+                commands.entity(ent).remove::<AnimationCooldown>();
+            }
         }
     }
 }
-
 pub fn check_status_wallbounce(
     time: Res<Time>,
     mut commands: Commands,
