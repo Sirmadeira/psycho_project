@@ -1,13 +1,13 @@
-use bevy::prelude::*;
+use crate::player_effects::player_exists;
 use crate::MyAppState;
-use crate:: player_effects::player_exists;
+use bevy::prelude::*;
 
 pub struct TreatAnimations;
 
+pub mod lib;
 pub mod treat_animations;
-pub mod  lib;
 
-use self::{lib::*,treat_animations::*};
+use self::{lib::*, treat_animations::*};
 
 impl Plugin for TreatAnimations {
     fn build(&self, app: &mut App) {

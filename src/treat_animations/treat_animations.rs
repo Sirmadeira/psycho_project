@@ -69,7 +69,7 @@ pub fn add_animation_graph(
 // This will handle animation according to input events given by player_effects or other plugins
 
 pub fn state_machine(
-    player_skeleton: Query<Entity, With<Player>>,
+    player_skeleton: Query<(Entity, Has<AnimationCooldown>), With<Player>>,
     mut components: Query<(&mut AnimationPlayer, Option<&mut AnimationTransitions>)>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
@@ -78,12 +78,13 @@ pub fn state_machine(
     mut commands: Commands,
 ) {
     // Ensuring that this is the player animation
-    let player_entity = player_skeleton
+    let (player_entity, has_cooldown) = player_skeleton
         .get_single()
         .expect("Expected to have exactly one player entity");
 
-    let animated_entity = find_child_with_name_containing(&children_entities, &names, &player_entity, "Armature")
-        .expect("Expected to find an Armature child");
+    let animated_entity =
+        find_child_with_name_containing(&children_entities, &names, &player_entity, "Armature")
+            .expect("Expected to find an Armature child");
 
     let (mut animation_player, active_transitions) = components
         .get_mut(animated_entity)
@@ -94,33 +95,36 @@ pub fn state_machine(
             .get_main_animation()
             .expect("Expected to always have an active transition");
 
-            for event in animation_to_play.read() {
-                let (animation_name, duration, repeat, cooldown) = match event {
-                    AnimationType::Idle => ("Idle", Duration::from_millis(200), false, Duration::from_secs(1)),
-                    AnimationType::FrontWalk => ("FrontWalk", Duration::from_millis(200), true, Duration::from_secs(0)),
-                    AnimationType::BackWalk => ("BackWalk", Duration::from_millis(200), true, Duration::from_secs(0)),
-                    AnimationType::LeftWalk => ("LeftWalk", Duration::from_millis(200), true, Duration::from_millis(250)),
-                    AnimationType::RightWalk => ("RightWalk", Duration::from_millis(200), true, Duration::from_millis(250)),
-                    AnimationType::RightDigWalk => ("RightDigWalk", Duration::from_millis(200), false, Duration::from_secs(0)),
-                    AnimationType::BackRightDigWalk => ("BackRightDigWalk", Duration::from_millis(200), false, Duration::from_secs(0)),
-                    AnimationType::LeftDigWalk => ("LeftDigWalk", Duration::from_millis(200), false, Duration::from_secs(0)),
-                    AnimationType::BackLeftDigWalk => ("BackLeftDigWalk", Duration::from_millis(200), false, Duration::from_secs(0)),
-                    AnimationType::None => continue, // Skip if no animation
-                };
-        
-                let animation = &animations.named_nodes[animation_name];
+        for event in animation_to_play.read() {
+            // Just a bunch of info
+            let properties = event.properties();
+
+            // Adds animation if there is
+            if let Some(animation) = animations.named_nodes.get(properties.name) {
                 if current_animation != *animation {
-                    println!("That animation was different: {}", animation_name);
-                    if repeat {
+                    // If has cooldown can transition
+                    if has_cooldown {
+                        continue;
+                    } else if properties.repeat {
                         active_transition
-                            .play(&mut animation_player, *animation, duration)
+                            .play(&mut animation_player, *animation, properties.duration)
                             .repeat();
                     } else {
-                        active_transition.play(&mut animation_player, *animation, duration);
+                        active_transition.play(
+                            &mut animation_player,
+                            *animation,
+                            properties.duration,
+                        );
                     }
-                    commands.entity(player_entity).insert(AnimationCooldown(Timer::new(cooldown, TimerMode::Once)));
                 }
             }
+            // Adds cooldown if there is
+            if let Some(cooldown) = properties.cooldown {
+                commands
+                    .entity(player_entity)
+                    .insert(AnimationCooldown(Timer::new(cooldown, TimerMode::Once)));
+            }
+        }
     } else {
         let mut transitions = AnimationTransitions::new();
         transitions.play(
@@ -131,5 +135,3 @@ pub fn state_machine(
         commands.entity(animated_entity).insert(transitions);
     }
 }
-
-

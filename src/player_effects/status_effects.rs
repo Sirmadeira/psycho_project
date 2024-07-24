@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::world_plugin::Ground;
 use crate::player_effects::{
     Grounded, Health, Limit, Player, PlayerGroundCollider, StatusEffectDash, StatusIdle,
 };
-use crate::treat_animations::lib::{AnimationCooldown,AnimationType};
+use crate::treat_animations::lib::{AnimationCooldown, AnimationType};
+use crate::world_plugin::Ground;
 
 // use crate::treat_animations::lib::AnimationType;
 
@@ -15,7 +15,14 @@ use super::StatusEffectWallBounce;
 pub fn check_status_effect(
     time: Res<Time>,
     mut commands: Commands,
-    mut q_1: Query<(Entity, Option<&mut StatusEffectDash>, Option<&mut AnimationCooldown>), With<Player>>,
+    mut q_1: Query<
+        (
+            Entity,
+            Option<&mut StatusEffectDash>,
+            Option<&mut AnimationCooldown>,
+        ),
+        With<Player>,
+    >,
 ) {
     for (ent, status_effect_dash, animation_cd) in q_1.iter_mut() {
         if let Some(mut status) = status_effect_dash {

@@ -34,7 +34,7 @@ pub fn spawn_main_rigidbody(
             Name::new(format!("Player_{}", player_count)),
             GravityScale(1.0),
             AdditionalMassProperties::Mass(10.0),
-            LockedAxes::ROTATION_LOCKED
+            LockedAxes::ROTATION_LOCKED,
         );
         // Testing
         let second_rigidbody = (
@@ -56,7 +56,7 @@ pub fn spawn_main_rigidbody(
             Name::new(format!("Player_{}", player_count)),
             GravityScale(1.0),
             AdditionalMassProperties::Mass(10.0),
-            LockedAxes::ROTATION_LOCKED
+            LockedAxes::ROTATION_LOCKED,
         );
 
         // Spawning the collider that moves and tells things

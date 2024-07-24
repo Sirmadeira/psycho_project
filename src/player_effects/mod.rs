@@ -42,8 +42,7 @@ impl Plugin for PlayerEffects {
         );
         app.add_systems(
             Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump)
-                .in_set(MyPlayerSet::HandleInputs),
+            (keyboard_walk, keyboard_dash, keyboard_jump).in_set(MyPlayerSet::HandleInputs),
         );
         // Side physics
         app.add_systems(
@@ -64,10 +63,7 @@ impl Plugin for PlayerEffects {
             OnEnter(StateSpawnScene::Done),
             MyPlayerSet::SpawnEntities.run_if(all_chars_created),
         );
-        app.configure_sets(
-            Update,
-            MyPlayerSet::HandleInputs.run_if(player_exists),
-        );
+        app.configure_sets(Update, MyPlayerSet::HandleInputs.run_if(player_exists));
         app.configure_sets(
             FixedUpdate,
             (MyPlayerSet::SidePhysics, MyPlayerSet::DetectCollisions).run_if(player_exists),

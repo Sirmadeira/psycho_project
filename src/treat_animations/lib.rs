@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::time::Timer;
-use bevy::utils::HashMap;
+use bevy::utils::{Duration, HashMap};
 
 // This is a resource, that I am gonna use to have easy acess to the info of my animation graphs
 #[derive(Resource, Reflect)]
@@ -10,7 +10,7 @@ pub struct Animations {
 }
 
 // Tells me which type of movement i should pass, to avoid multiple arguments or enums
-#[derive(Event, Debug)]
+#[derive(Event, Clone, Copy, Debug)]
 pub enum AnimationType {
     None,
     Idle,
@@ -21,7 +21,89 @@ pub enum AnimationType {
     RightDigWalk,
     BackRightDigWalk,
     LeftDigWalk,
-    BackLeftDigWalk
+    BackLeftDigWalk,
+}
+pub struct AnimationProperties {
+    pub name: &'static str,
+    pub duration: Duration,
+    pub repeat: bool,
+    pub cooldown: Option<Duration>,
+    pub after_anim: Option<&'static str>,
+}
+
+impl AnimationProperties {
+    pub fn new(
+        name: &'static str,
+        duration: Duration,
+        repeat: bool,
+        cooldown: Option<Duration>,
+        after_anim: Option<&'static str>,
+    ) -> Self {
+        Self {
+            name,
+            duration,
+            repeat,
+            cooldown,
+            after_anim,
+        }
+    }
+}
+
+impl AnimationType {
+    pub fn properties(self) -> AnimationProperties {
+        match self {
+            AnimationType::Idle => AnimationProperties::new(
+                "Idle",
+                Duration::from_millis(200),
+                false,
+                None,
+                None,
+            ),
+            AnimationType::FrontWalk => {
+                AnimationProperties::new("FrontWalk", Duration::from_millis(200), true, None, None)
+            }
+            AnimationType::BackWalk => {
+                AnimationProperties::new("BackWalk", Duration::from_millis(200), true, None, None)
+            }
+            AnimationType::LeftWalk => {
+                AnimationProperties::new("LeftWalk", Duration::from_millis(200), true, None, None)
+            }
+            AnimationType::RightWalk => {
+                AnimationProperties::new("RightWalk", Duration::from_millis(200), true, None, None)
+            }
+            AnimationType::RightDigWalk => AnimationProperties::new(
+                "RightDigWalk",
+                Duration::from_millis(200),
+                false,
+                None,
+                Some("FrontWalk"),
+            ),
+            AnimationType::BackRightDigWalk => AnimationProperties::new(
+                "BackRightDigWalk",
+                Duration::from_millis(200),
+                false,
+                None,
+                Some("BackWalk"),
+            ),
+            AnimationType::LeftDigWalk => AnimationProperties::new(
+                "LeftDigWalk",
+                Duration::from_millis(200),
+                false,
+                None,
+                Some("FrontWalk"),
+            ),
+            AnimationType::BackLeftDigWalk => AnimationProperties::new(
+                "BackLeftDigWalk",
+                Duration::from_millis(200),
+                false,
+                None,
+                Some("BackWalk"),
+            ),
+            AnimationType::None => {
+                AnimationProperties::new("None", Duration::ZERO, false, None, None)
+            }
+        }
+    }
 }
 
 #[derive(Reflect, Component, Debug)]
