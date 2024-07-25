@@ -1,4 +1,4 @@
-use crate::{player_effects::player_exists, MyAppState};
+use crate::{spawn_game_entities::player_exists, MyAppState};
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::PhysicsSet;
 

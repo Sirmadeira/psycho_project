@@ -9,7 +9,7 @@ pub mod spawn_hitbox;
 use self::{follow_along::*, lib::*, spawn_hitbox::*};
 use crate::spawn_game_entities::all_chars_created;
 use crate::spawn_game_entities::lib::StateSpawnScene;
-use crate::player_effects::player_exists;
+use crate::spawn_game_entities::player_exists;
 use crate::MyHitboxSet;
 
 pub struct FormHitbox;

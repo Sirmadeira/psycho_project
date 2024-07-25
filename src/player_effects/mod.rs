@@ -1,33 +1,23 @@
 use bevy::prelude::*;
 
-use self::{detect_hits::*, lib::*, move_character::*, spawn_objects::*, status_effects::*};
+use self::{detect_hits::*, lib::*, move_character::*, status_effects::*};
 
 pub mod detect_hits;
 pub mod lib;
 pub mod move_character;
-pub mod spawn_objects;
 pub mod status_effects;
 
-use crate::spawn_game_entities::all_chars_created;
-use crate::spawn_game_entities::lib::StateSpawnScene;
+use crate::spawn_game_entities::player_exists;
 use crate::MyPlayerSet;
 
 pub struct PlayerEffects;
 
 impl Plugin for PlayerEffects {
     fn build(&self, app: &mut App) {
-        app.register_type::<PdInfo>();
-        app.register_type::<Timers>();
-        app.register_type::<Limit>();
-        app.register_type::<Health>();
         app.register_type::<StatusEffectDash>();
         app.register_type::<StatusEffectWallBounce>();
         app.add_event::<TypeOfAttack>();
         app.add_event::<MovementAction>();
-        app.add_systems(
-            OnEnter(StateSpawnScene::Done),
-            spawn_main_rigidbody.in_set(MyPlayerSet::SpawnEntities),
-        );
         app.add_systems(
             Update,
             (
@@ -37,42 +27,19 @@ impl Plugin for PlayerEffects {
                 check_status_idle,
                 check_dead,
             )
-                .in_set(MyPlayerSet::HandleStatusEffects),
+                .run_if(player_exists),
         );
         app.add_systems(
             Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump).in_set(MyPlayerSet::HandleInputs),
+            (keyboard_walk, keyboard_dash, keyboard_jump).run_if(player_exists)
         );
         // Side physics
         app.add_systems(
             FixedUpdate,
-            (move_character, head_look_at).in_set(MyPlayerSet::SidePhysics),
+            (move_character, head_look_at).in_set(MyPlayerSet::SidePhysics).run_if(player_exists),
         );
-        // Detecting specific hits
-        app.add_systems(
-            FixedUpdate,
-            (
-                detect_hits_body_weapon,
-                detect_hits_wall_weapon,
-                detect_hits_weapon_weapon,
-            )
-                .in_set(MyPlayerSet::DetectCollisions),
-        );
-        app.configure_sets(
-            OnEnter(StateSpawnScene::Done),
-            MyPlayerSet::SpawnEntities.run_if(all_chars_created),
-        );
-        app.configure_sets(Update, MyPlayerSet::HandleInputs.run_if(player_exists));
-        app.configure_sets(
-            FixedUpdate,
-            (MyPlayerSet::SidePhysics, MyPlayerSet::DetectCollisions).run_if(player_exists),
-        );
+        app.add_systems(FixedUpdate,(detect_hits_body_weapon,detect_hits_wall_weapon,detect_hits_weapon_weapon).run_if(player_exists));
+        
     }
 }
 
-pub fn player_exists(player_q: Query<Entity, With<Player>>) -> bool {
-    match player_q.get_single() {
-        Ok(_) => true,
-        Err(_) => false,
-    }
-}

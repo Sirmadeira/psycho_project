@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*,time::Stopwatch};
 
 
 //World
@@ -49,3 +49,49 @@ pub enum StateSpawnScene {
     Spawned,
     Done,
 }
+
+
+
+// Marker component - Basically the rigid body that will move the player
+#[derive(Component)]
+pub struct Player;
+
+// Marker just to easily check other players
+#[derive(Component)]
+pub struct SidePlayer;
+
+
+// Amount of jumps you can have
+#[derive(Reflect, Component, Debug)]
+pub struct Limit {
+    pub jump_limit: u8,
+}
+
+impl Default for Limit {
+    fn default() -> Self {
+        Self { jump_limit: 2 }
+    }
+}
+
+#[derive(Component, Reflect, Debug)]
+pub struct Health(pub i8);
+
+// Kind of a simple pid
+#[derive(Reflect, Component, Debug)]
+pub struct PdInfo {
+    pub kp: f32,
+}
+
+// Times the dash for each key
+#[derive(Reflect, Component, Debug)]
+pub struct Timers {
+    pub up: Stopwatch,
+    pub down: Stopwatch,
+    pub left: Stopwatch,
+    pub right: Stopwatch,
+}
+
+
+// Marker component - Tells me which is the collider to check for groun
+#[derive(Component)]
+pub struct PlayerGroundCollider;

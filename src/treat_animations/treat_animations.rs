@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 
 use crate::load_assets_plugin::MyAssets;
-use crate::spawn_game_entities::lib::AmountPlayers;
-use crate::player_effects::lib::Player;
+use crate::spawn_game_entities::lib::{AmountPlayers,Player};
 use crate::treat_animations::lib::*;
 use bevy::utils::{Duration, HashMap};
 

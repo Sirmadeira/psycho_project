@@ -34,17 +34,10 @@ pub enum MyAppState {
 // Set responsbile to handle player related configs
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 enum MyPlayerSet {
-    SpawnEntities,
     HandleStatusEffects,
     HandleInputs,
     DetectCollisions,
     SidePhysics,
-}
-// Set responsible for handling modular characters
-#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
-enum MyModCharSet {
-    SpawnEntities,
-    AttachToSkeleton,
 }
 
 // Set responsible for handling hitboxes and their existences

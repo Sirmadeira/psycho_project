@@ -4,7 +4,7 @@ use bevy_rapier3d::prelude::*;
 
 use crate::player_effects::*;
 use crate::treat_animations::lib::{AnimationCooldown, AnimationType};
-use crate::spawn_game_entities::lib::Ground;
+use crate::spawn_game_entities::lib::*;
 // use crate::treat_animations::lib::AnimationType;
 
 use super::StatusEffectWallBounce;

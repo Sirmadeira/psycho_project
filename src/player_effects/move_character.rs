@@ -6,9 +6,8 @@ use std::f32::consts::PI;
 
 use crate::ingame_camera::lib::CamInfo;
 use crate::spawn_game_entities::helpers::find_child_with_name_containing;
-use crate::player_effects::{
-    Grounded, Limit, MovementAction, PdInfo, Player, PlayerGroundCollider, StatusEffectDash, Timers,
-};
+use crate::spawn_game_entities::lib::*;
+use crate::player_effects::*;
 use crate::treat_animations::lib::AnimationType;
 
 use super::TypeOfAttack;
@@ -303,23 +302,23 @@ pub fn head_look_at(
     *current_transform = current_transform.looking_at(clipped_direction, up);
 }
 
-pub fn player_look_at_camera(
-    q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<(&Transform, &PdInfo), With<Player>>,
-    mut q_3: Query<&mut Velocity, With<Player>>,
-) {
-    let cam_transform = q_1.get_single().expect("Camera to exist");
-    let (player_transform, pd_info) = q_2.get_single().expect("Player to exist");
+// pub fn player_look_at_camera(
+//     q_1: Query<&Transform, With<CamInfo>>,
+//     q_2: Query<(&Transform, &PdInfo), With<Player>>,
+//     mut q_3: Query<&mut Velocity, With<Player>>,
+// ) {
+//     let cam_transform = q_1.get_single().expect("Camera to exist");
+//     let (player_transform, pd_info) = q_2.get_single().expect("Player to exist");
 
-    let rot_error = (cam_transform.rotation * player_transform.rotation.inverse()).normalize();
+//     let rot_error = (cam_transform.rotation * player_transform.rotation.inverse()).normalize();
 
-    let (axis_error, angle_error) = rot_error.to_axis_angle();
+//     let (axis_error, angle_error) = rot_error.to_axis_angle();
 
-    let angle_error_rad = angle_error.to_radians();
+//     let angle_error_rad = angle_error.to_radians();
 
-    let angvel = pd_info.kp * angle_error_rad * axis_error;
+//     let angvel = pd_info.kp * angle_error_rad * axis_error;
 
-    for mut v in q_3.iter_mut() {
-        v.angvel = angvel;
-    }
-}
+//     for mut v in q_3.iter_mut() {
+//         v.angvel = angvel;
+//     }
+// }

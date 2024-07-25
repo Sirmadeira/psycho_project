@@ -6,10 +6,11 @@ use crate::MyAppState;
 pub mod lib;
 pub mod spawn_world;
 pub mod spawn_mod_char;
+pub mod spawn_player;
 pub mod helpers;
 
 
-use self::{spawn_world::*,spawn_mod_char::*,lib::*};
+use self::{spawn_world::*,spawn_mod_char::*,spawn_player::*,lib::*};
 
 pub struct SpawnGameEntities;
 
@@ -20,9 +21,15 @@ impl Plugin for SpawnGameEntities {
             (spawn_light, spawn_floor, spawn_wall),
         );
         // Debuging
+        // Spawn mod char debug
         app.register_type::<Attachments>();
         app.register_type::<ConfigModularCharacters>();
         app.insert_state(StateSpawnScene::Spawning);
+        // Spawn player debug
+        app.register_type::<PdInfo>();
+        app.register_type::<Timers>();
+        app.register_type::<Limit>();
+        app.register_type::<Health>();
         // Config resources
         app.insert_resource(AmountPlayers { quantity: 2 });
         app.insert_resource(ConfigModularCharacters {
@@ -45,6 +52,8 @@ impl Plugin for SpawnGameEntities {
             ).run_if(all_chars_created)
             .chain()
         );
+        //Formulating entity for player movement
+        app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
     }
 }
 
@@ -61,4 +70,11 @@ pub fn all_chars_created(
         }
     }
     return false;
+}
+
+pub fn player_exists(player_q: Query<Entity, With<Player>>) -> bool {
+    match player_q.get_single() {
+        Ok(_) => true,
+        Err(_) => false,
+    }
 }

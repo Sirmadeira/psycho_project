@@ -1,5 +1,5 @@
 use crate::ingame_camera::lib::CamInfo;
-use crate::player_effects::lib::Player;
+use crate::spawn_game_entities::lib::Player;
 use bevy::prelude::*;
 
 pub fn sync_player_camera(
