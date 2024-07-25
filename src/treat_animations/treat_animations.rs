@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use bevy::prelude::*;
 
 use crate::load_assets_plugin::MyAssets;
@@ -69,16 +71,17 @@ pub fn add_animation_graph(
 // This will handle animation according to input events given by player_effects or other plugins
 
 pub fn state_machine(
-    player_skeleton: Query<(Entity, Has<AnimationCooldown>), With<Player>>,
+    player_skeleton: Query<(Entity, Has<AnimationCooldown>,Has<DiagonalAnimation>), With<Player>>,
     mut components: Query<(&mut AnimationPlayer, Option<&mut AnimationTransitions>)>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
     animations: Res<Animations>,
+    mut after_animation: EventWriter<AfterAnim>,
     mut animation_to_play: EventReader<AnimationType>,
     mut commands: Commands,
 ) {
     // Ensuring that this is the player animation
-    let (player_entity, has_cooldown) = player_skeleton
+    let (player_entity, has_cooldown,has_diagonal) = player_skeleton
         .get_single()
         .expect("Expected to have exactly one player entity");
 
@@ -101,7 +104,9 @@ pub fn state_machine(
 
             // Adds animation if there is
             if let Some(animation) = animations.named_nodes.get(properties.name) {
-                if current_animation != *animation {
+                
+                if current_animation != *animation && properties.after_anim.is_none() {
+                    commands.entity(player_entity).remove::<DiagonalAnimation>();
                     // If has cooldown can transition
                     if has_cooldown {
                         continue;
@@ -117,6 +122,19 @@ pub fn state_machine(
                         );
                     }
                 }
+                // Handle first scenario where he just entered an animation that has after anim
+                else if properties.after_anim.is_some() && !has_diagonal{
+                    active_transition.play(&mut animation_player, *animation, properties.duration);
+                    commands.entity(player_entity).insert(DiagonalAnimation);
+                }
+                // Emits event when active animation is_finished later to seek to
+                else if properties.after_anim.is_some() && has_diagonal{
+                    let active_animation = animation_player.animation_mut(current_animation).expect("To be playing animation");
+                    if active_animation.is_finished(){
+                        after_animation.send(AfterAnim(&properties.after_anim.unwrap()));
+                    }
+                }
+
             }
             // Adds cooldown if there is
             if let Some(cooldown) = properties.cooldown {
@@ -134,4 +152,21 @@ pub fn state_machine(
         );
         commands.entity(animated_entity).insert(transitions);
     }
+}
+
+
+pub fn after_anim_state_machine(mut animation_components: Query<(&mut AnimationTransitions,&mut AnimationPlayer),With<AnimationTransitions>>,   
+         mut after_animation: EventReader<AfterAnim>,
+         animations: Res<Animations>,){
+
+
+    let (mut active_transition,mut animation_player) = animation_components.get_single_mut().expect("To exist for no only one main player");
+
+    for animation in after_animation.read(){
+        let properties = animation.properties();
+        let animation = animations.named_nodes.get(properties.name).expect("For after anim to have correct name");
+        active_transition.play(&mut animation_player, *animation, properties.duration).repeat();
+
+    }   
+
 }

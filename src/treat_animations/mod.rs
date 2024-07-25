@@ -12,6 +12,7 @@ use self::{lib::*, treat_animations::*};
 impl Plugin for TreatAnimations {
     fn build(&self, app: &mut App) {
         app.add_event::<AnimationType>();
+        app.add_event::<AfterAnim>();
         app.register_type::<Animations>();
         app.add_systems(OnEnter(MyAppState::InGame), spawn_animations_graphs);
         //Weird i know but u need to do this all the time
@@ -27,6 +28,13 @@ impl Plugin for TreatAnimations {
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))
                 .after(add_animation_graph),
+        );
+        app.add_systems(
+            Update,
+            after_anim_state_machine
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame))
+                .after(state_machine),
         );
     }
 }

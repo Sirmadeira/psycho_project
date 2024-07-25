@@ -109,3 +109,26 @@ impl AnimationType {
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct AnimationCooldown(pub Timer);
+
+
+#[derive(Reflect, Component, Debug)]
+#[component(storage = "SparseSet")]
+pub struct DiagonalAnimation;
+
+
+#[derive(Event, Clone, Copy, Debug)]
+pub struct AfterAnim(pub &'static str);
+
+impl AfterAnim{
+    pub fn properties(&self) -> AnimationProperties {
+        match self.0 {
+            "FrontWalk" => {
+                AnimationProperties::new("FrontWalk", Duration::from_millis(200), true, None, None)
+            },
+            "BackWalk" => {
+                AnimationProperties::new("BackWalk", Duration::from_millis(200), true, None, None)
+            },
+            _ => todo!()
+        }
+    }
+}
