@@ -52,13 +52,9 @@ impl AnimationProperties {
 impl AnimationType {
     pub fn properties(self) -> AnimationProperties {
         match self {
-            AnimationType::Idle => AnimationProperties::new(
-                "Idle",
-                Duration::from_millis(200),
-                false,
-                None,
-                None,
-            ),
+            AnimationType::Idle => {
+                AnimationProperties::new("Idle", Duration::from_millis(200), false, None, None)
+            }
             AnimationType::FrontWalk => {
                 AnimationProperties::new("FrontWalk", Duration::from_millis(200), true, None, None)
             }
@@ -110,25 +106,27 @@ impl AnimationType {
 #[component(storage = "SparseSet")]
 pub struct AnimationCooldown(pub Timer);
 
-
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct DiagonalAnimation;
 
-
 #[derive(Event, Clone, Copy, Debug)]
 pub struct AfterAnim(pub &'static str);
 
-impl AfterAnim{
+impl AfterAnim {
     pub fn properties(&self) -> AnimationProperties {
         match self.0 {
             "FrontWalk" => {
                 AnimationProperties::new("FrontWalk", Duration::from_millis(200), true, None, None)
-            },
+            }
             "BackWalk" => {
                 AnimationProperties::new("BackWalk", Duration::from_millis(200), true, None, None)
-            },
-            _ => todo!()
+            }
+            _ => todo!(),
         }
     }
 }
+
+// Marker component serves to point out the unique animated entity of player
+#[derive(Reflect, Component, Debug)]
+pub struct AnimatedEntity;

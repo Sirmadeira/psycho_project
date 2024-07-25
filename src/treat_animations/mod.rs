@@ -18,23 +18,17 @@ impl Plugin for TreatAnimations {
         //Weird i know but u need to do this all the time
         app.add_systems(
             Update,
-            add_animation_graph
+            (add_animation_graph, setup_state_machine)
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
         app.add_systems(
             Update,
-            state_machine
+            (state_machine, after_anim_state_machine)
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))
-                .after(add_animation_graph),
-        );
-        app.add_systems(
-            Update,
-            after_anim_state_machine
-                .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame))
-                .after(state_machine),
+                .after(setup_state_machine)
+                .chain(),
         );
     }
 }

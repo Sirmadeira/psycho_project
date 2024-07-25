@@ -6,12 +6,16 @@ use crate::mod_char::lib::Skeleton;
 use crate::player_effects::{
     Health, Limit, PdInfo, Player, PlayerGroundCollider, SidePlayer, Timers,
 };
+use crate::mod_char::helpers::find_child_with_name_containing;
+use crate::treat_animations::lib::AnimatedEntity;
 
-// Adding physical body that will move our modular character dynamically move
-// Make it as the parent of the animation bones
+// Adding physical body that will move our modular character dynamically 
+// Also adding usefull attachments
 pub fn spawn_main_rigidbody(
     mut commands: Commands,
     mod_characters: Query<(Entity, &Name), With<Skeleton>>,
+    children_entities: Query<&Children>,
+    names: Query<&Name>,
 ) {
     for ((player_character, scene_name), player_count) in mod_characters.iter().zip(1..) {
         // Spawning main physical body
@@ -36,7 +40,7 @@ pub fn spawn_main_rigidbody(
             AdditionalMassProperties::Mass(10.0),
             LockedAxes::ROTATION_LOCKED,
         );
-        // Testing
+
         let second_rigidbody = (
             RigidBody::Fixed,
             SpatialBundle {
@@ -81,6 +85,7 @@ pub fn spawn_main_rigidbody(
             ..Default::default()
         },);
 
+
         if scene_name.to_string() == "skeleton_1" {
             let player_details = commands
                 .spawn(main_rigidbody)
@@ -93,7 +98,12 @@ pub fn spawn_main_rigidbody(
                 })
                 .id();
 
-            commands.entity(player_character).set_parent(player_details);
+            let player = commands.entity(player_character).set_parent(player_details).id();
+            // Exterminate this after spawn centralization
+            let animated_entity = find_child_with_name_containing(&children_entities,&names,&player, "Armature").expect("To have entity with animation");
+            commands.entity(animated_entity).insert(AnimatedEntity);
+
+
         } else {
             let other_details = commands
                 .spawn(second_rigidbody)
