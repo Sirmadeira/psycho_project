@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use bevy_rapier3d::prelude::*;
 
-use crate::mod_char::lib::Skeleton;
+use crate::spawn_game_entities::lib::Skeleton;
 use crate::player_effects::{
     Health, Limit, PdInfo, Player, PlayerGroundCollider, SidePlayer, Timers,
 };
-use crate::mod_char::helpers::find_child_with_name_containing;
+use crate::spawn_game_entities::helpers::find_child_with_name_containing;
 use crate::treat_animations::lib::AnimatedEntity;
 
 // Adding physical body that will move our modular character dynamically 

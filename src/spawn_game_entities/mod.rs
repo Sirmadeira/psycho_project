@@ -1,25 +1,24 @@
-use crate::{
-    mod_char::lib::{AmountPlayers, Attachments, ConfigModularCharacters},
-    MyModCharSet,
-};
-
 use bevy::prelude::*;
-
-// Making thme public just in case i need to query a specific component or resource for future logic
-
-pub mod helpers;
-pub mod lib;
-pub mod spawn_modular;
-
-use self::{lib::*, spawn_modular::*};
 
 use crate::MyAppState;
 
-// This plugin creates the character
-pub struct ModChar;
 
-impl Plugin for ModChar {
+pub mod lib;
+pub mod spawn_world;
+pub mod spawn_mod_char;
+pub mod helpers;
+
+
+use self::{spawn_world::*,spawn_mod_char::*,lib::*};
+
+pub struct SpawnGameEntities;
+
+impl Plugin for SpawnGameEntities {
     fn build(&self, app: &mut App) {
+        app.add_systems(
+            OnEnter(MyAppState::InGame),
+            (spawn_light, spawn_floor, spawn_wall),
+        );
         // Debuging
         app.register_type::<Attachments>();
         app.register_type::<ConfigModularCharacters>();
@@ -35,7 +34,6 @@ impl Plugin for ModChar {
             OnEnter(MyAppState::InGame),
             spawn_skeleton_and_attachments
                 .chain()
-                .in_set(MyModCharSet::SpawnEntities),
         );
         // Transfer old bones animations to new bones and spit out character to be player
         app.add_systems(
@@ -44,18 +42,12 @@ impl Plugin for ModChar {
                 transfer_animation,
                 make_end_entity,
                 disable_culling_for_skinned_meshes,
-            )
-                .chain()
-                .in_set(MyModCharSet::AttachToSkeleton),
-        );
-        // Sets
-        app.configure_sets(OnEnter(MyAppState::InGame), MyModCharSet::SpawnEntities);
-        app.configure_sets(
-            OnEnter(StateSpawnScene::Spawned),
-            MyModCharSet::AttachToSkeleton.run_if(all_chars_created),
+            ).run_if(all_chars_created)
+            .chain()
         );
     }
 }
+
 
 pub fn all_chars_created(
     skeleton_query: Query<Entity, With<Skeleton>>,

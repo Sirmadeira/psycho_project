@@ -1,5 +1,16 @@
 use bevy::prelude::*;
 
+
+//World
+// Marks ground entities
+#[derive(Component)]
+pub struct Ground;
+// Marks wall entities
+#[derive(Component)]
+pub struct Wall;
+
+
+// Mod char
 // Struct that will give me precious informating when assembling my character
 // Leave it like this them we separate quantity
 

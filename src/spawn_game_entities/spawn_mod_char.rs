@@ -1,16 +1,15 @@
-use bevy::utils::HashMap;
+use regex::Regex;
 use bevy::{
     animation::AnimationTarget,
     gltf::Gltf,
     prelude::*,
     render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling},
+    utils::HashMap
 };
-use regex::Regex;
 
 use crate::load_assets_plugin::MyAssets;
-use crate::mod_char::{lib::*, AmountPlayers, Skeleton, StateSpawnScene};
-
-use super::helpers::{collect_bones, find_child_with_name_containing};
+use crate:: spawn_game_entities::lib::*;
+use crate:: spawn_game_entities::helpers::*;
 
 // Spawn main skeleton and his attachments/visual bones. According to given scene name in resource configs
 pub fn spawn_skeleton_and_attachments(

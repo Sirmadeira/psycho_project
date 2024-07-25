@@ -7,21 +7,21 @@ use iyes_perf_ui::prelude::*;
 mod form_hitbox;
 mod ingame_camera;
 mod load_assets_plugin;
-mod mod_char;
 mod player_effects;
 mod resolution_plugin;
 mod treat_animations;
 mod ui_plugin;
-mod world_plugin;
+mod lighting_plugin;
+mod spawn_game_entities;
 
 use ingame_camera::IngameCamera;
 use load_assets_plugin::LoadingAssetsPlugin;
-use mod_char::ModChar;
 use player_effects::PlayerEffects;
 use resolution_plugin::ResolutionPlugin;
 use treat_animations::TreatAnimations;
 use ui_plugin::UiPlugin;
-use world_plugin::WorldPlugin;
+use lighting_plugin::LightingPlugin;
+use spawn_game_entities::SpawnGameEntities;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub enum MyAppState {
@@ -68,19 +68,19 @@ fn main() {
         .add_plugins(bevy::diagnostic::SystemInformationDiagnosticsPlugin)
         // Bevy perf UI
         .add_plugins(PerfUiPlugin)
+        // Bevy egui debugger
+        .add_plugins(WorldInspectorPlugin::new())
         // Physics plugin
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
         // Main menu and debugger
         .add_plugins(UiPlugin)
-        // Bevy egui debugger
-        .add_plugins(WorldInspectorPlugin::new())
         // Loads our assets with handles
         .add_plugins(LoadingAssetsPlugin)
         // Starting the scene and lighting
-        .add_plugins(WorldPlugin)
-        // Loads our modular character
-        .add_plugins(ModChar)
+        .add_plugins(LightingPlugin)
+        // Formulates all the game entities to be used
+        .add_plugins(SpawnGameEntities)
         // Forms physical dynamic colliders that will folllow along the transform of the player
         .add_plugins(FormHitbox)
         // Player movement plugin

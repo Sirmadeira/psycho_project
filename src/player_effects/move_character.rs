@@ -5,7 +5,7 @@ use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
 use crate::ingame_camera::lib::CamInfo;
-use crate::mod_char::helpers::find_child_with_name_containing;
+use crate::spawn_game_entities::helpers::find_child_with_name_containing;
 use crate::player_effects::{
     Grounded, Limit, MovementAction, PdInfo, Player, PlayerGroundCollider, StatusEffectDash, Timers,
 };

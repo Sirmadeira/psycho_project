@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-use crate::{load_assets_plugin::MyAssets, mod_char::helpers::find_child_with_name_containing};
-use crate::mod_char::lib::AmountPlayers;
+use crate::load_assets_plugin::MyAssets;
+use crate::spawn_game_entities::lib::AmountPlayers;
 use crate::player_effects::lib::Player;
 use crate::treat_animations::lib::*;
 use bevy::utils::{Duration, HashMap};

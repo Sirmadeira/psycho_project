@@ -4,7 +4,7 @@ use bevy_rapier3d::prelude::*;
 
 use crate::form_hitbox::lib::{BaseSkeleton, Hitbox, WeaponCollider};
 use crate::player_effects::lib::{Health, StatusEffectWallBounce};
-use crate::world_plugin::Wall;
+use crate::spawn_game_entities::lib::Wall;
 use std::borrow::BorrowMut;
 
 // I only need this because CollidingEntities, is broken. And i dont need the collisions info. For now
