@@ -8,11 +8,13 @@ pub mod spawn_camera;
 pub mod spawn_world;
 pub mod spawn_mod_char;
 pub mod spawn_player;
-pub mod helpers;
 pub mod spawn_hitbox;
+pub mod spawn_animation;
+pub mod helpers;
 
 
-use self::{spawn_world::*,spawn_mod_char::*,spawn_player::*,spawn_camera::*,spawn_hitbox::*,lib::*};
+
+use self::{spawn_world::*,spawn_mod_char::*,spawn_player::*,spawn_camera::*,spawn_hitbox::*,spawn_animation::*,lib::*};
 
 pub struct SpawnGameEntities;
 
@@ -48,6 +50,8 @@ impl Plugin for SpawnGameEntities {
             OnEnter(StateSpawnScene::Done),
             (spawn_simple_colliders, spawn_hitbox_weapon)
         );
+        //Creates animation graphs
+        app.add_systems(OnEnter(MyAppState::InGame), spawn_animation_graph);
         // Debug camera
         app.register_type::<Zoom>();
         app.register_type::<CamInfo>();
@@ -71,6 +75,8 @@ impl Plugin for SpawnGameEntities {
         app.register_type::<BaseEntities>();
         app.register_type::<PidInfo>();
         app.register_type::<Offset>();
+        // Animation debug
+        app.register_type::<Animations>();
 
 }
 }

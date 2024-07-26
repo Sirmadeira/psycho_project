@@ -36,7 +36,7 @@ impl Plugin for PlayerEffects {
         // Side physics
         app.add_systems(
             FixedUpdate,
-            (move_character, head_look_at).in_set(MyPlayerSet::SidePhysics).run_if(player_exists),
+            (move_character, head_look_at).run_if(player_exists),
         );
         app.add_systems(FixedUpdate,(detect_hits_body_weapon,detect_hits_wall_weapon,detect_hits_weapon_weapon).run_if(player_exists));
         

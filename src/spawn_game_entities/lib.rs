@@ -1,4 +1,4 @@
-use bevy::{prelude::*,time::Stopwatch};
+use bevy::{prelude::*,time::Stopwatch,utils::HashMap};
 
 // Camera
 // Info for camera mechanics
@@ -158,4 +158,12 @@ pub struct PidInfo {
     // These values are here because they need to be agregated
     pub integral: Vec3,
     pub previous_error: Vec3,
+}
+
+
+// This is a resource, that I am gonna use to have easy acess to the info of my animation graphs
+#[derive(Resource, Reflect)]
+pub struct Animations {
+    pub named_nodes: HashMap<String, AnimationNodeIndex>,
+    pub animation_graph: Handle<AnimationGraph>,
 }
