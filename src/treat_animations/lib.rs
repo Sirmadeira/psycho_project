@@ -48,46 +48,46 @@ impl AnimationType {
     pub fn properties(self) -> AnimationProperties {
         match self {
             AnimationType::Idle => {
-                AnimationProperties::new("Idle", Duration::from_millis(200), false, None, None)
+                AnimationProperties::new("Idle", Duration::from_millis(400), false, None, None)
             }
             AnimationType::FrontWalk => {
-                AnimationProperties::new("FrontWalk", Duration::from_millis(200), true, None, None)
+                AnimationProperties::new("FrontWalk", Duration::from_millis(400), true, None, None)
             }
             AnimationType::BackWalk => {
-                AnimationProperties::new("BackWalk", Duration::from_millis(200), true, None, None)
+                AnimationProperties::new("BackWalk", Duration::from_millis(400), true, None, None)
             }
             AnimationType::LeftWalk => {
-                AnimationProperties::new("LeftWalk", Duration::from_millis(200), true, None, None)
+                AnimationProperties::new("LeftWalk", Duration::from_millis(400), true, None, None)
             }
             AnimationType::RightWalk => {
-                AnimationProperties::new("RightWalk", Duration::from_millis(200), true, None, None)
+                AnimationProperties::new("RightWalk", Duration::from_millis(400), true, None, None)
             }
             AnimationType::RightDigWalk => AnimationProperties::new(
                 "RightDigWalk",
-                Duration::from_millis(200),
+                Duration::from_millis(400),
                 false,
-                None,
+                Some(Duration::from_millis(400)),
                 Some("FrontWalk"),
             ),
             AnimationType::BackRightDigWalk => AnimationProperties::new(
                 "BackRightDigWalk",
-                Duration::from_millis(200),
+                Duration::from_millis(400),
                 false,
-                None,
+                Some(Duration::from_millis(400)),
                 Some("BackWalk"),
             ),
             AnimationType::LeftDigWalk => AnimationProperties::new(
                 "LeftDigWalk",
-                Duration::from_millis(200),
+                Duration::from_millis(400),
                 false,
-                None,
+                Some(Duration::from_millis(400)),
                 Some("FrontWalk"),
             ),
             AnimationType::BackLeftDigWalk => AnimationProperties::new(
                 "BackLeftDigWalk",
-                Duration::from_millis(200),
+                Duration::from_millis(400),
                 false,
-                None,
+                Some(Duration::from_millis(400)),
                 Some("BackWalk"),
             ),
             AnimationType::None => {
@@ -103,7 +103,7 @@ pub struct AnimationCooldown(pub Timer);
 
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
-pub struct DiagonalAnimation;
+pub struct DiagonalAnimation(pub String);
 
 #[derive(Event, Clone, Copy, Debug)]
 pub struct AfterAnim(pub &'static str);
@@ -112,16 +112,12 @@ impl AfterAnim {
     pub fn properties(&self) -> AnimationProperties {
         match self.0 {
             "FrontWalk" => {
-                AnimationProperties::new("FrontWalk", Duration::from_millis(200), true, None, None)
+                AnimationProperties::new("FrontWalk", Duration::from_millis(400), true, None, None)
             }
             "BackWalk" => {
-                AnimationProperties::new("BackWalk", Duration::from_millis(200), true, None, None)
+                AnimationProperties::new("BackWalk", Duration::from_millis(400), true, None, None)
             }
             _ => todo!(),
         }
     }
 }
-
-// Marker component serves to point out the unique animated entity of player
-#[derive(Reflect, Component, Debug)]
-pub struct AnimatedEntity;

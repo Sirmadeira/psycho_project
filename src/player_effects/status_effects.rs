@@ -41,6 +41,8 @@ pub fn check_status_effect(
         }
     }
 }
+
+
 pub fn check_status_wallbounce(
     time: Res<Time>,
     mut commands: Commands,

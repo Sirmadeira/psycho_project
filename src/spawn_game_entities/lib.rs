@@ -160,10 +160,15 @@ pub struct PidInfo {
     pub previous_error: Vec3,
 }
 
-
+//Animation
 // This is a resource, that I am gonna use to have easy acess to the info of my animation graphs
 #[derive(Resource, Reflect)]
 pub struct Animations {
     pub named_nodes: HashMap<String, AnimationNodeIndex>,
     pub animation_graph: Handle<AnimationGraph>,
 }
+
+
+// Marker component serves to point out the unique animated entity of player
+#[derive(Reflect, Component, Debug)]
+pub struct AnimatedEntity;

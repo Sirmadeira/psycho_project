@@ -1,5 +1,7 @@
+use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy::utils::Duration;
+use crate::spawn_game_entities::helpers::find_child_with_name_containing;
 use crate::spawn_game_entities::lib::*;
 use crate::treat_animations::lib::*;
 
@@ -84,16 +86,15 @@ pub fn state_machine(
         // Handle first scenario where he just entered an animation that has after anim
         else if properties.after_anim.is_some() && !has_diagonal {
             active_transitions.play(&mut animation_player, *animation, properties.duration);
-            commands.entity(player_entity).insert(DiagonalAnimation);
+            commands.entity(player_entity).insert(DiagonalAnimation(properties.name.to_string()));
         }
         // Emits event when active animation is_finished later to seek to
-        else if properties.after_anim.is_some() && has_diagonal {
-            let active_animation = animation_player
-                .animation_mut(current_animation)
-                .expect("To be playing animation");
-            // Handle scenario where animation become repetable
-            if active_animation.is_finished() {
-                after_animation.send(AfterAnim(&properties.after_anim.unwrap()));
+        else if properties.after_anim.is_some() && has_diagonal{
+            if let Some(active_animation) = animation_player.animation_mut(current_animation){
+                // Handle scenario where animation become repetable
+                if active_animation.is_finished() {
+                    after_animation.send(AfterAnim(&properties.after_anim.unwrap()));
+                }
             }
         }
         // Adds cooldown if there is
@@ -125,5 +126,42 @@ pub fn after_anim_state_machine(
         active_transition
             .play(&mut animation_player, *animation, properties.duration)
             .repeat();
+    }
+}
+
+
+// Interpolates root bone after animation
+pub fn apply_diagonal(query: Query<Entity,With<AnimatedEntity>>,
+    dig_infos: Query<Option<&DiagonalAnimation>,Added<DiagonalAnimation>>,
+    names: Query<&Name>,
+    children_entities:Query<&Children>,
+    mut transform: Query<&mut Transform>,
+    mut commands: Commands){
+
+    let entity = query.get_single().expect("TO have animated entity");
+
+    for dig_info in dig_infos.iter(){
+
+
+        if let Some(dig_info) = dig_info{
+
+            let root = find_child_with_name_containing(&children_entities, &names, &entity, "Root").expect("To have root");
+
+            commands.entity(root).remove::<AnimationTarget>();
+
+            let mut current_transform = transform.get_mut(root).expect("To have transform as ALL  entities in bevy");
+        
+        
+            let target_transform = match dig_info.0.as_str() {
+                "RightDigWalk" => Quat::from_rotation_z(-45.0_f32.to_radians()),
+                "LeftDigWalk" => Quat::from_rotation_z(45.0_f32.to_radians()),
+                "BackRightDigWalk" => Quat::from_rotation_z(45.0_f32.to_radians()),
+                "BackLeftDigWalk" => Quat::from_rotation_z(-45.0_f32.to_radians()),
+                _ => Quat::IDENTITY, // Default rotation if animation name doesn't match any case
+            };
+        
+            current_transform.rotation = current_transform.rotation.slerp(target_transform, 0.25);   
+        } 
+    
     }
 }

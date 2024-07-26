@@ -27,5 +27,12 @@ impl Plugin for TreatAnimations {
                 .after(setup_state_machine)
                 .chain(),
         );
+        app.add_systems(
+            Update,
+            apply_diagonal
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame))
+                .after(setup_state_machine)
+        );
     }
 }

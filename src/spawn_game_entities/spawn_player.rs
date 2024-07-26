@@ -2,10 +2,8 @@ use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use bevy_rapier3d::prelude::*;
 
-use crate::spawn_game_entities::lib::Skeleton;
 use crate::spawn_game_entities::lib::*;
 use crate::spawn_game_entities::helpers::find_child_with_name_containing;
-use crate::treat_animations::lib::AnimatedEntity;
 
 // Adding physical body that will move our modular character dynamically 
 // Also adding usefull attachments
@@ -97,7 +95,7 @@ pub fn spawn_main_rigidbody(
                 .id();
 
             let player = commands.entity(player_character).set_parent(player_details).id();
-            // Exterminate this after spawn centralization
+
             let animated_entity = find_child_with_name_containing(&children_entities,&names,&player, "Armature").expect("To have entity with animation");
             commands.entity(animated_entity).insert(AnimatedEntity);
 
