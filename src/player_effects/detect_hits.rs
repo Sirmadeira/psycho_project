@@ -2,8 +2,7 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::form_hitbox::lib::{BaseSkeleton, Hitbox, WeaponCollider};
-use crate::spawn_game_entities::lib::{Health,Wall};
+use crate::spawn_game_entities::lib::*;
 use crate::player_effects::lib::StatusEffectWallBounce;
 use std::borrow::BorrowMut;
 

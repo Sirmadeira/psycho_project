@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::form_hitbox::lib::{BaseEntities, Offset, PidInfo};
+use crate::spawn_game_entities::lib::*;
 
 pub fn colliders_look_at(
     mut collider_info: Query<

@@ -9,9 +9,10 @@ pub mod spawn_world;
 pub mod spawn_mod_char;
 pub mod spawn_player;
 pub mod helpers;
+pub mod spawn_hitbox;
 
 
-use self::{spawn_world::*,spawn_mod_char::*,spawn_player::*,spawn_camera::*,lib::*};
+use self::{spawn_world::*,spawn_mod_char::*,spawn_player::*,spawn_camera::*,spawn_hitbox::*,lib::*};
 
 pub struct SpawnGameEntities;
 
@@ -40,27 +41,37 @@ impl Plugin for SpawnGameEntities {
             ).run_if(all_chars_created)
             .chain()
         );
-        //Formulating entity for player movement
+        //Create player
         app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
+        // Create hitbox
+        app.add_systems(
+            OnEnter(StateSpawnScene::Done),
+            (spawn_simple_colliders, spawn_hitbox_weapon)
+        );
         // Debug camera
         app.register_type::<Zoom>();
         app.register_type::<CamInfo>();
-
         // Spawn mod char debug
         app.register_type::<Attachments>();
         app.register_type::<ConfigModularCharacters>();
         app.insert_state(StateSpawnScene::Spawning);
-        // Spawn player debug
-        app.register_type::<PdInfo>();
-        app.register_type::<Timers>();
-        app.register_type::<Limit>();
-        app.register_type::<Health>();
         // Config resources
         app.insert_resource(AmountPlayers { quantity: 2 });
         app.insert_resource(ConfigModularCharacters {
             visuals_to_be_attached: vec![String::from("rigge_female")],
             weapons_to_be_attached: vec![String::from("katana")],
         });
+        // Spawn player debug
+        app.register_type::<PdInfo>();
+        app.register_type::<Timers>();
+        app.register_type::<Limit>();
+        app.register_type::<Health>();
+        //Hitbox debug
+        app.register_type::<Hitbox>();
+        app.register_type::<BaseEntities>();
+        app.register_type::<PidInfo>();
+        app.register_type::<Offset>();
+
 }
 }
 

@@ -4,8 +4,8 @@ use bevy_rapier3d::prelude::*;
 use crate::spawn_game_entities::helpers::find_child_with_name_containing;
 use crate::spawn_game_entities::lib::{AmountPlayers, Attachments, Skeleton};
 
-use crate::form_hitbox::helpers::create_dynamic_collider_groups;
-use crate::form_hitbox::lib::{BaseEntities, Hitbox, Offset, PidInfo, WeaponCollider};
+use crate::spawn_game_entities::helpers::create_dynamic_collider_groups;
+use crate::spawn_game_entities::lib::{BaseEntities, Hitbox, Offset, PidInfo, WeaponCollider};
 
 use super::BaseSkeleton;
 

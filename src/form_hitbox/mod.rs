@@ -2,28 +2,16 @@ use bevy::prelude::*;
 use bevy::transform::TransformSystem;
 
 pub mod follow_along;
-pub mod helpers;
-pub mod lib;
-pub mod spawn_hitbox;
 
-use self::{follow_along::*, lib::*, spawn_hitbox::*};
-use crate::spawn_game_entities::all_chars_created;
+use self::follow_along::*;
+use crate::spawn_game_entities::{all_chars_created,player_exists};
 use crate::spawn_game_entities::lib::StateSpawnScene;
-use crate::spawn_game_entities::player_exists;
 use crate::MyHitboxSet;
 
 pub struct FormHitbox;
 
 impl Plugin for FormHitbox {
     fn build(&self, app: &mut App) {
-        app.register_type::<Hitbox>();
-        app.register_type::<BaseEntities>();
-        app.register_type::<PidInfo>();
-        app.register_type::<Offset>();
-        app.add_systems(
-            OnEnter(StateSpawnScene::Done),
-            (spawn_simple_colliders, spawn_hitbox_weapon).in_set(MyHitboxSet::SpawnEntities),
-        );
         app.add_systems(
             FixedPostUpdate,
             colliders_look_at
