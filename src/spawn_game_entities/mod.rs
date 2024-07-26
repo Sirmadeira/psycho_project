@@ -4,38 +4,26 @@ use crate::MyAppState;
 
 
 pub mod lib;
+pub mod spawn_camera;
 pub mod spawn_world;
 pub mod spawn_mod_char;
 pub mod spawn_player;
 pub mod helpers;
 
 
-use self::{spawn_world::*,spawn_mod_char::*,spawn_player::*,lib::*};
+use self::{spawn_world::*,spawn_mod_char::*,spawn_player::*,spawn_camera::*,lib::*};
 
 pub struct SpawnGameEntities;
 
 impl Plugin for SpawnGameEntities {
     fn build(&self, app: &mut App) {
+        // Creating world
         app.add_systems(
             OnEnter(MyAppState::InGame),
             (spawn_light, spawn_floor, spawn_wall),
         );
-        // Debuging
-        // Spawn mod char debug
-        app.register_type::<Attachments>();
-        app.register_type::<ConfigModularCharacters>();
-        app.insert_state(StateSpawnScene::Spawning);
-        // Spawn player debug
-        app.register_type::<PdInfo>();
-        app.register_type::<Timers>();
-        app.register_type::<Limit>();
-        app.register_type::<Health>();
-        // Config resources
-        app.insert_resource(AmountPlayers { quantity: 2 });
-        app.insert_resource(ConfigModularCharacters {
-            visuals_to_be_attached: vec![String::from("rigge_female")],
-            weapons_to_be_attached: vec![String::from("katana")],
-        });
+        // Creating camera
+        app.add_systems(OnEnter(MyAppState::InGame), spawn_camera);
         // Make skeleton and creates usefull component for animations
         app.add_systems(
             OnEnter(MyAppState::InGame),
@@ -54,7 +42,26 @@ impl Plugin for SpawnGameEntities {
         );
         //Formulating entity for player movement
         app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
-    }
+        // Debug camera
+        app.register_type::<Zoom>();
+        app.register_type::<CamInfo>();
+
+        // Spawn mod char debug
+        app.register_type::<Attachments>();
+        app.register_type::<ConfigModularCharacters>();
+        app.insert_state(StateSpawnScene::Spawning);
+        // Spawn player debug
+        app.register_type::<PdInfo>();
+        app.register_type::<Timers>();
+        app.register_type::<Limit>();
+        app.register_type::<Health>();
+        // Config resources
+        app.insert_resource(AmountPlayers { quantity: 2 });
+        app.insert_resource(ConfigModularCharacters {
+            visuals_to_be_attached: vec![String::from("rigge_female")],
+            weapons_to_be_attached: vec![String::from("katana")],
+        });
+}
 }
 
 

@@ -1,5 +1,34 @@
 use bevy::{prelude::*,time::Stopwatch};
 
+// Camera
+// Info for camera mechanics
+#[derive(Reflect, Component, Debug)]
+pub struct CamInfo {
+    pub mouse_sens: f32,
+    pub zoom_enabled: bool,
+    pub zoom: Zoom,
+    pub zoom_sens: f32,
+    pub cursor_lock_activation_key: KeyCode,
+    pub cursor_lock_active: bool,
+}
+
+// Sets the zoom bounds (min & max)
+#[derive(Reflect, Component, Debug)]
+pub struct Zoom {
+    pub min: f32,
+    pub max: f32,
+    pub radius: f32,
+}
+
+impl Zoom {
+    pub fn new(min: f32, max: f32) -> Self {
+        Self {
+            min,
+            max,
+            radius: (min + max) / 2.0,
+        }
+    }
+}
 
 //World
 // Marks ground entities
@@ -11,9 +40,7 @@ pub struct Wall;
 
 
 // Mod char
-// Struct that will give me precious informating when assembling my character
-// Leave it like this them we separate quantity
-
+// Tell me quantity of players
 #[derive(Resource, Reflect)]
 pub struct AmountPlayers {
     pub quantity: u32,
@@ -36,8 +63,7 @@ pub struct Attachments {
 #[derive(Component)]
 pub struct Skeleton;
 
-// Transform utilized to offset visuals, usefull to reflect helpfull functions in  blender
-
+// Marker compoenent for visual
 #[derive(Component)]
 pub struct Visual;
 
@@ -51,7 +77,7 @@ pub enum StateSpawnScene {
 }
 
 
-
+//Player
 // Marker component - Basically the rigid body that will move the player
 #[derive(Component)]
 pub struct Player;

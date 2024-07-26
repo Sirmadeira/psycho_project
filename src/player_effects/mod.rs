@@ -14,10 +14,10 @@ pub struct PlayerEffects;
 
 impl Plugin for PlayerEffects {
     fn build(&self, app: &mut App) {
-        app.register_type::<StatusEffectDash>();
-        app.register_type::<StatusEffectWallBounce>();
         app.add_event::<TypeOfAttack>();
         app.add_event::<MovementAction>();
+        app.register_type::<StatusEffectDash>();
+        app.register_type::<StatusEffectWallBounce>();
         app.add_systems(
             Update,
             (

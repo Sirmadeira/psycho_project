@@ -2,9 +2,8 @@ use bevy::input::mouse::MouseMotion;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
-
-use crate::ingame_camera::CamInfo;
 use core::f32::consts::PI;
+use crate::spawn_game_entities::lib::CamInfo;
 
 // Turns on the ability to control the camera
 pub fn toggle_cursor(

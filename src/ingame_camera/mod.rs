@@ -1,21 +1,20 @@
-use crate::{spawn_game_entities::player_exists, MyAppState};
+
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::PhysicsSet;
 
+use crate::spawn_game_entities::player_exists;
+use crate::spawn_game_entities::lib::CamInfo;
+
+
 pub mod camera_mechanics;
-pub mod lib;
-pub mod spawn_entities;
 pub mod sync_camera;
 
-use self::{camera_mechanics::*, lib::*, spawn_entities::*, sync_camera::*};
+use self::{camera_mechanics::*, sync_camera::*};
 
 pub struct IngameCamera;
 
 impl Plugin for IngameCamera {
     fn build(&self, app: &mut App) {
-        app.register_type::<CamInfo>();
-        app.register_type::<Zoom>();
-        app.add_systems(OnEnter(MyAppState::InGame), spawn_camera);
         app.add_systems(
             Update,
             (

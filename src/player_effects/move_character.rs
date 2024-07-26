@@ -4,7 +4,6 @@ use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
-use crate::ingame_camera::lib::CamInfo;
 use crate::spawn_game_entities::helpers::find_child_with_name_containing;
 use crate::spawn_game_entities::lib::*;
 use crate::player_effects::*;
