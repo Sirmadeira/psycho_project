@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 
-use self::{detect_hits::*, lib::*, move_character::*, status_effects::*};
+use self::{detect_hits::*, lib::*, move_character::*, status_effects::*,rotate_character::*};
 
 pub mod detect_hits;
 pub mod lib;
 pub mod move_character;
 pub mod status_effects;
+pub mod rotate_character;
 
 use crate::spawn_game_entities::player_exists;
 

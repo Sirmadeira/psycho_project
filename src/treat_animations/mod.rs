@@ -11,7 +11,6 @@ use self::{lib::*, treat_animations::*};
 
 impl Plugin for TreatAnimations {
     fn build(&self, app: &mut App) {
-        app.add_event::<AfterAnim>();
         app.add_event::<AnimationType>();
         app.add_systems(
             Update,
@@ -21,18 +20,10 @@ impl Plugin for TreatAnimations {
         );
         app.add_systems(
             Update,
-            (state_machine, after_anim_state_machine)
+            state_machine
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))
-                .after(setup_state_machine)
-                .chain(),
-        );
-        app.add_systems(
-            Update,
-            apply_diagonal
-                .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame))
-                .after(setup_state_machine)
+                .after(setup_state_machine),
         );
     }
 }

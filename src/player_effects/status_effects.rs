@@ -111,7 +111,7 @@ pub fn check_status_idle(
     mut commands: Commands,
     mut animation_writer: EventWriter<AnimationType>,
 ) {
-    const STOPPED_THRESHOLD: f32 = 0.02; // Define a small threshold for stopping
+    const STOPPED_THRESHOLD: f32 = 0.0001; // Define a small threshold for stopping
 
     for (entity, vel) in q_1.iter() {
         if vel.linvel.length_squared() < STOPPED_THRESHOLD * STOPPED_THRESHOLD {

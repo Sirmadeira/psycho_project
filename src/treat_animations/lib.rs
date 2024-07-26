@@ -23,7 +23,6 @@ pub struct AnimationProperties {
     pub duration: Duration,
     pub repeat: bool,
     pub cooldown: Option<Duration>,
-    pub after_anim: Option<&'static str>,
 }
 
 impl AnimationProperties {
@@ -32,14 +31,12 @@ impl AnimationProperties {
         duration: Duration,
         repeat: bool,
         cooldown: Option<Duration>,
-        after_anim: Option<&'static str>,
     ) -> Self {
         Self {
             name,
             duration,
             repeat,
             cooldown,
-            after_anim,
         }
     }
 }
@@ -48,50 +45,46 @@ impl AnimationType {
     pub fn properties(self) -> AnimationProperties {
         match self {
             AnimationType::Idle => {
-                AnimationProperties::new("Idle", Duration::from_millis(400), false, None, None)
+                AnimationProperties::new("Idle", Duration::from_millis(200), false, None,)
             }
             AnimationType::FrontWalk => {
-                AnimationProperties::new("FrontWalk", Duration::from_millis(400), true, None, None)
+                AnimationProperties::new("FrontWalk", Duration::from_millis(200), true, None)
             }
             AnimationType::BackWalk => {
-                AnimationProperties::new("BackWalk", Duration::from_millis(400), true, None, None)
+                AnimationProperties::new("BackWalk", Duration::from_millis(200), true, None)
             }
             AnimationType::LeftWalk => {
-                AnimationProperties::new("LeftWalk", Duration::from_millis(400), true, None, None)
+                AnimationProperties::new("LeftWalk", Duration::from_millis(200), true, None)
             }
             AnimationType::RightWalk => {
-                AnimationProperties::new("RightWalk", Duration::from_millis(400), true, None, None)
+                AnimationProperties::new("RightWalk", Duration::from_millis(200), true, None)
             }
             AnimationType::RightDigWalk => AnimationProperties::new(
                 "RightDigWalk",
-                Duration::from_millis(400),
+                Duration::from_millis(200),
                 false,
-                Some(Duration::from_millis(400)),
-                Some("FrontWalk"),
+                None,
             ),
             AnimationType::BackRightDigWalk => AnimationProperties::new(
                 "BackRightDigWalk",
-                Duration::from_millis(400),
+                Duration::from_millis(200),
                 false,
-                Some(Duration::from_millis(400)),
-                Some("BackWalk"),
+                None,
             ),
             AnimationType::LeftDigWalk => AnimationProperties::new(
                 "LeftDigWalk",
-                Duration::from_millis(400),
+                Duration::from_millis(200),
                 false,
-                Some(Duration::from_millis(400)),
-                Some("FrontWalk"),
+                None,
             ),
             AnimationType::BackLeftDigWalk => AnimationProperties::new(
                 "BackLeftDigWalk",
-                Duration::from_millis(400),
+                Duration::from_millis(200),
                 false,
-                Some(Duration::from_millis(400)),
-                Some("BackWalk"),
+                None,
             ),
             AnimationType::None => {
-                AnimationProperties::new("None", Duration::ZERO, false, None, None)
+                AnimationProperties::new("None", Duration::ZERO, false, None)
             }
         }
     }
@@ -101,23 +94,4 @@ impl AnimationType {
 #[component(storage = "SparseSet")]
 pub struct AnimationCooldown(pub Timer);
 
-#[derive(Reflect, Component, Debug)]
-#[component(storage = "SparseSet")]
-pub struct DiagonalAnimation(pub String);
 
-#[derive(Event, Clone, Copy, Debug)]
-pub struct AfterAnim(pub &'static str);
-
-impl AfterAnim {
-    pub fn properties(&self) -> AnimationProperties {
-        match self.0 {
-            "FrontWalk" => {
-                AnimationProperties::new("FrontWalk", Duration::from_millis(400), true, None, None)
-            }
-            "BackWalk" => {
-                AnimationProperties::new("BackWalk", Duration::from_millis(400), true, None, None)
-            }
-            _ => todo!(),
-        }
-    }
-}
