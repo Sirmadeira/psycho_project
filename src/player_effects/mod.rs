@@ -8,7 +8,6 @@ pub mod move_character;
 pub mod status_effects;
 
 use crate::spawn_game_entities::player_exists;
-use crate::MyPlayerSet;
 
 pub struct PlayerEffects;
 

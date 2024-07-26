@@ -31,22 +31,6 @@ pub enum MyAppState {
     InGame,
 }
 
-// Set responsbile to handle player related configs
-#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
-enum MyPlayerSet {
-    HandleStatusEffects,
-    HandleInputs,
-    DetectCollisions,
-    SidePhysics,
-}
-
-// Set responsible for handling hitboxes and their existences
-#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
-enum MyHitboxSet {
-    SpawnEntities,
-    FollowAlongSkeleton,
-}
-
 // Main running function
 fn main() {
     App::new()
