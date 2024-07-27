@@ -6,12 +6,36 @@ use crate::spawn_game_entities::lib::*;
 use crate::spawn_game_entities::helpers::find_child_with_name_containing;
 
 // Guy who is gonna send animation nevents according to rotation also is gonna tell to rotate the dynamic player
-pub fn detect_rotation(){
-    todo!()
+pub fn detect_rotation(q_1: Query<&Transform,With<CamInfo>>,q_2:Query<&Transform,With<Player>>){
+    
+    let camera_transform = q_1.get_single().expect("Cam to have transform");
+
+    let player_transform = q_2.get_single().expect("Player to have transform");
+
+    let camera_forward = camera_transform.forward();
+
+    let player_forward = player_transform.forward();
+    
+    // Calculates difference in yaw angle between two vectorsee
+    let dot_product = camera_forward.dot(*player_forward);
+
+    let angle = dot_product.acos();
+
+    // Define a threshold for yaw difference
+    let threshold = PI / 4.0; // 45 degrees
+
+    // Check if the angle exceeds the threshold
+    if angle > threshold {
+        println!("Angle difference{}",angle);
+        println!("Angle difference{}",threshold);
+    }
+
+
+    // todo!()
 }
 
 
-pub fn head_look_at(
+pub fn spine_look_at(
     q_1: Query<&Transform, With<CamInfo>>,
     q_2: Query<Entity, With<Player>>,
     children_entities: Query<&Children>,
@@ -22,15 +46,15 @@ pub fn head_look_at(
     let target_transform = q_1.get_single().expect("Failed to find camera transform");
     let player = q_2.get_single().expect("Failed to find player entity");
 
-    let head = find_child_with_name_containing(&children_entities, &names, &player, "Spine_2")
-        .expect("Failed to find head bone");
+    let spine = find_child_with_name_containing(&children_entities, &names, &player, "Spine_2")
+        .expect("Failed to find spine bone");
 
     // Remove animation target
-    commands.entity(head).remove::<AnimationTarget>();
+    commands.entity(spine).remove::<AnimationTarget>();
 
     let mut current_transform = transform
-        .get_mut(head)
-        .expect("Failed to get head transform");
+        .get_mut(spine)
+        .expect("Failed to get spine transform");
 
     // Compute the direction to look at, using the camera's forward direction
     let target_direction = target_transform.forward();
