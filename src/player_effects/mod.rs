@@ -16,6 +16,7 @@ impl Plugin for PlayerEffects {
     fn build(&self, app: &mut App) {
         app.add_event::<TypeOfAttack>();
         app.add_event::<MovementAction>();
+        app.add_event::<RotateAction>();
         app.register_type::<StatusEffectDash>();
         app.register_type::<StatusEffectWallBounce>();
         app.add_systems(
@@ -31,12 +32,12 @@ impl Plugin for PlayerEffects {
         );
         app.add_systems(
             Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump,detect_rotation).run_if(player_exists)
+            (keyboard_walk, keyboard_dash, keyboard_jump).run_if(player_exists)
         );
         // Side physics
         app.add_systems(
             FixedUpdate,
-            (move_character, spine_look_at).run_if(player_exists),
+            (move_character,rotate_character,detect_rotation, spine_look_at).run_if(player_exists),
         );
         app.add_systems(FixedUpdate,(detect_hits_body_weapon,detect_hits_wall_weapon,detect_hits_weapon_weapon).run_if(player_exists));
         

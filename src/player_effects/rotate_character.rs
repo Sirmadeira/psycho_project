@@ -1,38 +1,59 @@
-
 use bevy::prelude::*;
 use bevy::animation::AnimationTarget;
+use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
+use crate::player_effects::lib::RotateAction;
 use crate::spawn_game_entities::lib::*;
 use crate::spawn_game_entities::helpers::find_child_with_name_containing;
 
+
+
 // Guy who is gonna send animation nevents according to rotation also is gonna tell to rotate the dynamic player
-pub fn detect_rotation(q_1: Query<&Transform,With<CamInfo>>,q_2:Query<&Transform,With<Player>>){
+pub fn detect_rotation(q_1: Query<&Transform,With<CamInfo>>,q_2:Query<&Transform,With<Player>>,mut event_writer: EventWriter<RotateAction>){
     
     let camera_transform = q_1.get_single().expect("Cam to have transform");
 
     let player_transform = q_2.get_single().expect("Player to have transform");
 
-    let camera_forward = camera_transform.forward();
 
-    let player_forward = player_transform.forward();
-    
-    // Calculates difference in yaw angle between two vectorsee
-    let dot_product = camera_forward.dot(*player_forward);
 
-    let angle = dot_product.acos();
+    let rot_error = (camera_transform.rotation * player_transform.rotation.inverse()).normalize();
 
-    // Define a threshold for yaw difference
-    let threshold = PI / 4.0; // 45 degrees
+    let (axis_error, angle_error) = rot_error.to_axis_angle();
 
-    // Check if the angle exceeds the threshold
-    if angle > threshold {
-        println!("Angle difference{}",angle);
-        println!("Angle difference{}",threshold);
+    let angle_error_rad = angle_error.to_radians();
+
+    let angvel = 650.0 * angle_error_rad * axis_error;
+
+    let only_y  = Vec3::new(0.0, angvel.y, 0.0);
+
+    if angvel != Vec3::ZERO{
+        event_writer.send(RotateAction::EaseRotation(only_y));
     }
 
 
-    // todo!()
 }
+
+
+pub fn rotate_character(mut rotate_event_reader: EventReader<RotateAction>,
+    mut q_1: Query<&mut Velocity, With<Player>>){
+    
+    for mut v in q_1.iter_mut() {
+
+        for event in rotate_event_reader.read(){
+            match event {
+                RotateAction::EaseRotation(angvel) =>{
+                    v.angvel = *angvel;
+                }
+
+            }
+        }
+    }
+
+
+}
+
+
 
 
 pub fn spine_look_at(
@@ -75,7 +96,7 @@ pub fn spine_look_at(
 
     //Yaw need to be clipped according to radian quadrants. Meaning it needs to stay between 2 quadrant and 4 quadrant
     // Just think that first limit is inversed
-    let yaw_limits = (PI /3.0, PI);
+    let yaw_limits = (PI /1.25, PI);
 
     let clipped_yaw = if yaw > 0.0 {
         yaw.clamp(yaw_limits.0, yaw_limits.1)
@@ -85,7 +106,7 @@ pub fn spine_look_at(
 
     // Convert the clipped yaw and pitch back to a direction vector
     let clipped_direction = Vec3::new(
-        clipped_pitch.cos() * clipped_yaw.sin(),
+        0.0,
         clipped_pitch.sin(),
         clipped_pitch.cos() * clipped_yaw.cos(),
     );
@@ -95,6 +116,7 @@ pub fn spine_look_at(
 
     *current_transform = current_transform.looking_at(clipped_direction, up);
 }
+
 
 // Refactor this make it so it send an event that rotates the root bone and triggers when a certain yaw is achieved for example
 // If camera rotates 90 degress from starting position, spin character
@@ -116,43 +138,5 @@ pub fn spine_look_at(
 
 //     for mut v in q_3.iter_mut() {
 //         v.angvel = angvel;
-//     }
-// }
-
-
-
-// // Interpolates root bone after animation
-// pub fn apply_diagonal(query: Query<Entity,With<AnimatedEntity>>,
-//     dig_infos: Query<Option<&DiagonalAnimation>,Added<DiagonalAnimation>>,
-//     names: Query<&Name>,
-//     children_entities:Query<&Children>,
-//     mut transform: Query<&mut Transform>,
-//     mut commands: Commands){
-
-//     let entity = query.get_single().expect("TO have animated entity");
-
-//     for dig_info in dig_infos.iter(){
-
-
-//         if let Some(dig_info) = dig_info{
-
-//             let root = find_child_with_name_containing(&children_entities, &names, &entity, "Root").expect("To have root");
-
-//             commands.entity(root).remove::<AnimationTarget>();
-
-//             let mut current_transform = transform.get_mut(root).expect("To have transform as ALL  entities in bevy");
-        
-        
-//             let target_transform = match dig_info.0.as_str() {
-//                 "RightDigWalk" => Quat::from_rotation_z(-45.0_f32.to_radians()),
-//                 "LeftDigWalk" => Quat::from_rotation_z(45.0_f32.to_radians()),
-//                 "BackRightDigWalk" => Quat::from_rotation_z(45.0_f32.to_radians()),
-//                 "BackLeftDigWalk" => Quat::from_rotation_z(-45.0_f32.to_radians()),
-//                 _ => Quat::IDENTITY, // Default rotation if animation name doesn't match any case
-//             };
-        
-//             current_transform.rotation = current_transform.rotation.slerp(target_transform, 0.25);   
-//         } 
-    
 //     }
 // }

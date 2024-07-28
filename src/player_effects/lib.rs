@@ -23,6 +23,11 @@ pub enum TypeOfAttack {
     Right,
 }
 
+#[derive(Event, Debug)]
+pub enum RotateAction {
+    EaseRotation(Vec3)
+}
+
 // Check if is on ground
 #[derive(Component)]
 #[component(storage = "SparseSet")]

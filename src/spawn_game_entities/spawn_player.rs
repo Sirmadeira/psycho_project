@@ -34,7 +34,7 @@ pub fn spawn_main_rigidbody(
             Name::new(format!("Player_{}", player_count)),
             GravityScale(1.0),
             AdditionalMassProperties::Mass(10.0),
-            LockedAxes::ROTATION_LOCKED,
+            LockedAxes::ROTATION_LOCKED_X | LockedAxes::ROTATION_LOCKED_Z
         );
 
         let second_rigidbody = (

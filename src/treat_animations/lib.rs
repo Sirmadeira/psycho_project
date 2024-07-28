@@ -13,10 +13,6 @@ pub enum AnimationType {
     BackWalk,
     LeftWalk,
     RightWalk,
-    RightDigWalk,
-    BackRightDigWalk,
-    LeftDigWalk,
-    BackLeftDigWalk,
 }
 pub struct AnimationProperties {
     pub name: &'static str,
@@ -58,32 +54,7 @@ impl AnimationType {
             }
             AnimationType::RightWalk => {
                 AnimationProperties::new("RightWalk", Duration::from_millis(200), true, None)
-            }
-            AnimationType::RightDigWalk => AnimationProperties::new(
-                "RightDigWalk",
-                Duration::from_millis(200),
-                false,
-                None,
-            ),
-            AnimationType::BackRightDigWalk => AnimationProperties::new(
-                "BackRightDigWalk",
-                Duration::from_millis(200),
-                false,
-                None,
-            ),
-            AnimationType::LeftDigWalk => AnimationProperties::new(
-                "LeftDigWalk",
-                Duration::from_millis(200),
-                false,
-                None,
-            ),
-            AnimationType::BackLeftDigWalk => AnimationProperties::new(
-                "BackLeftDigWalk",
-                Duration::from_millis(200),
-                false,
-                None,
-            ),
-            AnimationType::None => {
+            }AnimationType::None => {
                 AnimationProperties::new("None", Duration::ZERO, false, None)
             }
         }
