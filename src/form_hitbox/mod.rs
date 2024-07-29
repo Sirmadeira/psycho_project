@@ -12,7 +12,8 @@ impl Plugin for FormHitbox {
     fn build(&self, app: &mut App) {
         app.add_systems(
             FixedPostUpdate,
-            colliders_look_at.run_if(all_chars_created)
+            colliders_look_at
+                .run_if(all_chars_created)
                 .after(TransformSystem::TransformPropagate),
         );
     }

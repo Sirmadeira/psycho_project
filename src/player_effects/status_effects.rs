@@ -3,8 +3,8 @@ use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
 use crate::player_effects::*;
-use crate::treat_animations::lib::{AnimationCooldown, AnimationType};
 use crate::spawn_game_entities::lib::*;
+use crate::treat_animations::lib::{AnimationCooldown, AnimationType};
 // use crate::treat_animations::lib::AnimationType;
 
 use super::StatusEffectWallBounce;
@@ -41,7 +41,6 @@ pub fn check_status_effect(
         }
     }
 }
-
 
 pub fn check_status_wallbounce(
     time: Res<Time>,

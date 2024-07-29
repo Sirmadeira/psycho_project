@@ -1,6 +1,5 @@
-
+use crate::spawn_game_entities::lib::{CamInfo, Zoom};
 use bevy::prelude::*;
-use crate::spawn_game_entities::lib::{CamInfo,Zoom};
 
 pub fn spawn_camera(mut commands: Commands) {
     let camera = (

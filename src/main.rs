@@ -6,22 +6,22 @@ use iyes_perf_ui::prelude::*;
 
 mod form_hitbox;
 mod ingame_camera;
+mod lighting_plugin;
 mod load_assets_plugin;
 mod player_effects;
 mod resolution_plugin;
+mod spawn_game_entities;
 mod treat_animations;
 mod ui_plugin;
-mod lighting_plugin;
-mod spawn_game_entities;
 
 use ingame_camera::IngameCamera;
+use lighting_plugin::LightingPlugin;
 use load_assets_plugin::LoadingAssetsPlugin;
 use player_effects::PlayerEffects;
 use resolution_plugin::ResolutionPlugin;
+use spawn_game_entities::SpawnGameEntities;
 use treat_animations::TreatAnimations;
 use ui_plugin::UiPlugin;
-use lighting_plugin::LightingPlugin;
-use spawn_game_entities::SpawnGameEntities;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub enum MyAppState {

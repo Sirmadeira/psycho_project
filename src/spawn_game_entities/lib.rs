@@ -1,4 +1,4 @@
-use bevy::{prelude::*,time::Stopwatch,utils::HashMap};
+use bevy::{prelude::*, time::Stopwatch, utils::HashMap};
 
 // Camera
 // Info for camera mechanics
@@ -38,7 +38,6 @@ pub struct Ground;
 #[derive(Component)]
 pub struct Wall;
 
-
 // Mod char
 // Tell me quantity of players
 #[derive(Resource, Reflect)]
@@ -76,7 +75,6 @@ pub enum StateSpawnScene {
     Done,
 }
 
-
 //Player
 // Marker component - Basically the rigid body that will move the player
 #[derive(Component)]
@@ -85,7 +83,6 @@ pub struct Player;
 // Marker just to easily check other players
 #[derive(Component)]
 pub struct SidePlayer;
-
 
 // Amount of jumps you can have
 #[derive(Reflect, Component, Debug)]
@@ -117,11 +114,9 @@ pub struct Timers {
     pub right: Stopwatch,
 }
 
-
 // Marker component - Tells me which is the collider to check for groun
 #[derive(Component)]
 pub struct PlayerGroundCollider;
-
 
 //Hitboxes
 // Marker component good to check if any of the colliders are touching the ground collider
@@ -167,7 +162,6 @@ pub struct Animations {
     pub named_nodes: HashMap<String, AnimationNodeIndex>,
     pub animation_graph: Handle<AnimationGraph>,
 }
-
 
 // Marker component serves to point out the unique animated entity of player
 #[derive(Reflect, Component, Debug)]

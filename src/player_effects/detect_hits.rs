@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::spawn_game_entities::lib::*;
 use crate::player_effects::lib::StatusEffectWallBounce;
+use crate::spawn_game_entities::lib::*;
 use std::borrow::BorrowMut;
 
 // I only need this because CollidingEntities, is broken. And i dont need the collisions info. For now

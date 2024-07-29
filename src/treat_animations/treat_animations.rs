@@ -1,9 +1,7 @@
-use bevy::prelude::*;
-use bevy::utils::Duration;
 use crate::spawn_game_entities::lib::*;
 use crate::treat_animations::lib::*;
-
-
+use bevy::prelude::*;
+use bevy::utils::Duration;
 
 // Loads from assets and put into our animations players must have for animation playing
 pub fn add_animation_graph(
@@ -22,11 +20,10 @@ pub fn add_animation_graph(
 // Adds necessary components
 pub fn setup_state_machine(
     animations: Res<Animations>,
-    mut animated_entities: Query<(Entity,&mut AnimationPlayer),Added<AnimationPlayer>>,
+    mut animated_entities: Query<(Entity, &mut AnimationPlayer), Added<AnimationPlayer>>,
     mut commands: Commands,
 ) {
-
-    for (entity,mut animation_player) in  animated_entities.iter_mut(){
+    for (entity, mut animation_player) in animated_entities.iter_mut() {
         let mut transitions = AnimationTransitions::new();
         transitions.play(
             &mut animation_player,
@@ -41,7 +38,10 @@ pub fn setup_state_machine(
 
 pub fn state_machine(
     player_skeleton: Query<(Entity, Has<AnimationCooldown>), With<Player>>,
-    mut animation_components: Query<(&mut AnimationPlayer,&mut AnimationTransitions),With<AnimatedEntity>>,
+    mut animation_components: Query<
+        (&mut AnimationPlayer, &mut AnimationTransitions),
+        With<AnimatedEntity>,
+    >,
     animations: Res<Animations>,
     mut animation_to_play: EventReader<AnimationType>,
     mut commands: Commands,
@@ -87,4 +87,3 @@ pub fn state_machine(
         }
     }
 }
-

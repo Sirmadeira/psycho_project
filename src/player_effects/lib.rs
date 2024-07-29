@@ -1,8 +1,4 @@
-use bevy::{
-    prelude::*,
-    time::Timer,
-};
-
+use bevy::{prelude::*, time::Timer};
 
 #[derive(Event, Debug)]
 pub enum MovementAction {
@@ -25,7 +21,7 @@ pub enum TypeOfAttack {
 
 #[derive(Event, Debug)]
 pub enum RotateAction {
-    EaseRotation(Vec3)
+    EaseRotation(Vec3),
 }
 
 // Check if is on ground
@@ -58,4 +54,3 @@ pub struct StatusEffectDefend {
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct StatusIdle;
-

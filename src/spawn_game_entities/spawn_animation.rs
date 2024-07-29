@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::load_assets_plugin::MyAssets;
 use crate::spawn_game_entities::lib::*;
-use bevy::utils:: HashMap;
+use bevy::utils::HashMap;
 
 // Creates animation graph for each player and add it is clips to it
 pub fn spawn_animation_graph(
@@ -48,4 +48,3 @@ pub fn spawn_animation_graph(
         });
     }
 }
-

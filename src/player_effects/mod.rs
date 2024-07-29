@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
-use self::{detect_hits::*, lib::*, move_character::*, status_effects::*,rotate_character::*};
+use self::{detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*};
 
 pub mod detect_hits;
 pub mod lib;
 pub mod move_character;
-pub mod status_effects;
 pub mod rotate_character;
+pub mod status_effects;
 
 use crate::spawn_game_entities::player_exists;
 
@@ -32,15 +32,27 @@ impl Plugin for PlayerEffects {
         );
         app.add_systems(
             Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump).run_if(player_exists)
+            (keyboard_walk, keyboard_dash, keyboard_jump).run_if(player_exists),
         );
         // Side physics
         app.add_systems(
             FixedUpdate,
-            (move_character,rotate_character,detect_rotation, spine_look_at).run_if(player_exists),
+            (
+                move_character,
+                rotate_character,
+                detect_rotation,
+                spine_look_at,
+            )
+                .run_if(player_exists),
         );
-        app.add_systems(FixedUpdate,(detect_hits_body_weapon,detect_hits_wall_weapon,detect_hits_weapon_weapon).run_if(player_exists));
-        
+        app.add_systems(
+            FixedUpdate,
+            (
+                detect_hits_body_weapon,
+                detect_hits_wall_weapon,
+                detect_hits_weapon_weapon,
+            )
+                .run_if(player_exists),
+        );
     }
 }
-

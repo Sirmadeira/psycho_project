@@ -2,8 +2,6 @@ use bevy::prelude::*;
 use bevy::time::Timer;
 use bevy::utils::Duration;
 
-
-
 // Tells me which type of movement i should pass, to avoid multiple arguments or enums
 #[derive(Event, Clone, Copy, Debug)]
 pub enum AnimationType {
@@ -13,6 +11,8 @@ pub enum AnimationType {
     BackWalk,
     LeftWalk,
     RightWalk,
+    FrontDash,
+    LeftDash,
 }
 pub struct AnimationProperties {
     pub name: &'static str,
@@ -41,7 +41,7 @@ impl AnimationType {
     pub fn properties(self) -> AnimationProperties {
         match self {
             AnimationType::Idle => {
-                AnimationProperties::new("Idle", Duration::from_millis(200), false, None,)
+                AnimationProperties::new("Idle", Duration::from_millis(200), false, None)
             }
             AnimationType::FrontWalk => {
                 AnimationProperties::new("FrontWalk", Duration::from_millis(200), true, None)
@@ -54,9 +54,15 @@ impl AnimationType {
             }
             AnimationType::RightWalk => {
                 AnimationProperties::new("RightWalk", Duration::from_millis(200), true, None)
-            }AnimationType::None => {
-                AnimationProperties::new("None", Duration::ZERO, false, None)
             }
+            AnimationType::FrontDash => {
+                AnimationProperties::new("FrontDash", Duration::from_millis(200), false, None)
+            }
+            AnimationType::LeftDash => {
+                AnimationProperties::new("LeftDash", Duration::from_millis(200), false, None)
+            }
+
+            AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false, None),
         }
     }
 }
@@ -64,5 +70,3 @@ impl AnimationType {
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct AnimationCooldown(pub Timer);
-
-

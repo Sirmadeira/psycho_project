@@ -2,19 +2,19 @@ use bevy::prelude::*;
 
 use crate::MyAppState;
 
-
+pub mod helpers;
 pub mod lib;
+pub mod spawn_animation;
 pub mod spawn_camera;
-pub mod spawn_world;
+pub mod spawn_hitbox;
 pub mod spawn_mod_char;
 pub mod spawn_player;
-pub mod spawn_hitbox;
-pub mod spawn_animation;
-pub mod helpers;
+pub mod spawn_world;
 
-
-
-use self::{spawn_world::*,spawn_mod_char::*,spawn_player::*,spawn_camera::*,spawn_hitbox::*,spawn_animation::*,lib::*};
+use self::{
+    lib::*, spawn_animation::*, spawn_camera::*, spawn_hitbox::*, spawn_mod_char::*,
+    spawn_player::*, spawn_world::*,
+};
 
 pub struct SpawnGameEntities;
 
@@ -30,8 +30,7 @@ impl Plugin for SpawnGameEntities {
         // Make skeleton and creates usefull component for animations
         app.add_systems(
             OnEnter(MyAppState::InGame),
-            spawn_skeleton_and_attachments
-                .chain()
+            spawn_skeleton_and_attachments.chain(),
         );
         // Transfer old bones animations to new bones and spit out character to be player
         app.add_systems(
@@ -40,15 +39,16 @@ impl Plugin for SpawnGameEntities {
                 transfer_animation,
                 make_end_entity,
                 disable_culling_for_skinned_meshes,
-            ).run_if(all_chars_created)
-            .chain()
+            )
+                .run_if(all_chars_created)
+                .chain(),
         );
         //Create player
         app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
         // Create hitbox
         app.add_systems(
             OnEnter(StateSpawnScene::Done),
-            (spawn_simple_colliders, spawn_hitbox_weapon)
+            (spawn_simple_colliders, spawn_hitbox_weapon),
         );
         //Creates animation graphs
         app.add_systems(OnEnter(MyAppState::InGame), spawn_animation_graph);
@@ -77,10 +77,8 @@ impl Plugin for SpawnGameEntities {
         app.register_type::<Offset>();
         // Animation debug
         app.register_type::<Animations>();
-
+    }
 }
-}
-
 
 pub fn all_chars_created(
     skeleton_query: Query<Entity, With<Skeleton>>,

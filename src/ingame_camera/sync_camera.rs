@@ -1,4 +1,4 @@
-use crate::spawn_game_entities::lib::{Player,CamInfo};
+use crate::spawn_game_entities::lib::{CamInfo, Player};
 use bevy::prelude::*;
 
 pub fn sync_player_camera(

@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::spawn_game_entities::lib::*;
 use crate::player_effects::*;
+use crate::spawn_game_entities::lib::*;
 use crate::treat_animations::lib::AnimationType;
 
 use super::TypeOfAttack;
@@ -64,7 +64,7 @@ pub fn keyboard_dash(
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut movement_event_writer: EventWriter<MovementAction>,
-    // mut animation_type_writer: EventWriter<AnimationType>,
+    mut animation_type_writer: EventWriter<AnimationType>,
     mut q: Query<(&mut Timers, Entity, Has<StatusEffectDash>), With<Player>>,
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
@@ -72,7 +72,7 @@ pub fn keyboard_dash(
         let cam = q_1.get_single().expect("To have camera");
 
         let mut direction = Vec2::ZERO;
-        // let mut movetype = AnimationType::None;
+        let mut movetype = AnimationType::None;
 
         timers
             .up
@@ -93,6 +93,7 @@ pub fn keyboard_dash(
         if timers.up.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyW) {
             direction.x = cam.forward().x;
             direction.y = cam.forward().z;
+            movetype = AnimationType::FrontDash
         }
         if keys.just_released(KeyCode::KeyS) {
             timers.down.reset();
@@ -107,6 +108,7 @@ pub fn keyboard_dash(
         if timers.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA) {
             direction.x = cam.left().x;
             direction.y = cam.left().z;
+            movetype = AnimationType::LeftDash
         }
         if keys.just_released(KeyCode::KeyD) {
             timers.right.reset();
@@ -125,7 +127,7 @@ pub fn keyboard_dash(
 
             // Sending events
             movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
-            // animation_type_writer.send(movetype);
+            animation_type_writer.send(movetype);
         }
     }
 }
@@ -187,7 +189,6 @@ pub fn keyboard_jump(
     }
 }
 
-
 pub fn move_character(
     mut movement_event_reader: EventReader<MovementAction>,
     time: Res<Time>,
@@ -209,4 +210,3 @@ pub fn move_character(
         }
     }
 }
-

@@ -1,7 +1,7 @@
+use crate::spawn_game_entities::lib::AmountPlayers;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_rapier3d::prelude::*;
-use crate::spawn_game_entities::lib::AmountPlayers;
 use std::collections::VecDeque;
 
 // Collects a lot of subchild bones
@@ -51,7 +51,6 @@ pub fn find_child_with_name_containing(
 
     return None;
 }
-
 
 pub fn create_dynamic_collider_groups(
     player_amount: &Res<AmountPlayers>,

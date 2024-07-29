@@ -2,10 +2,10 @@ use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use bevy_rapier3d::prelude::*;
 
-use crate::spawn_game_entities::lib::*;
 use crate::spawn_game_entities::helpers::find_child_with_name_containing;
+use crate::spawn_game_entities::lib::*;
 
-// Adding physical body that will move our modular character dynamically 
+// Adding physical body that will move our modular character dynamically
 // Also adding usefull attachments
 pub fn spawn_main_rigidbody(
     mut commands: Commands,
@@ -34,7 +34,7 @@ pub fn spawn_main_rigidbody(
             Name::new(format!("Player_{}", player_count)),
             GravityScale(1.0),
             AdditionalMassProperties::Mass(10.0),
-            LockedAxes::ROTATION_LOCKED_X | LockedAxes::ROTATION_LOCKED_Z
+            LockedAxes::ROTATION_LOCKED_X | LockedAxes::ROTATION_LOCKED_Z,
         );
 
         let second_rigidbody = (
@@ -81,7 +81,6 @@ pub fn spawn_main_rigidbody(
             ..Default::default()
         },);
 
-
         if scene_name.to_string() == "skeleton_1" {
             let player_details = commands
                 .spawn(main_rigidbody)
@@ -94,12 +93,15 @@ pub fn spawn_main_rigidbody(
                 })
                 .id();
 
-            let player = commands.entity(player_character).set_parent(player_details).id();
+            let player = commands
+                .entity(player_character)
+                .set_parent(player_details)
+                .id();
 
-            let animated_entity = find_child_with_name_containing(&children_entities,&names,&player, "Armature").expect("To have entity with animation");
+            let animated_entity =
+                find_child_with_name_containing(&children_entities, &names, &player, "Armature")
+                    .expect("To have entity with animation");
             commands.entity(animated_entity).insert(AnimatedEntity);
-
-
         } else {
             let other_details = commands
                 .spawn(second_rigidbody)

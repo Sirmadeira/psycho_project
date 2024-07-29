@@ -1,21 +1,20 @@
-use bevy::prelude::*;
+use crate::player_effects::lib::RotateAction;
+use crate::spawn_game_entities::helpers::find_child_with_name_containing;
+use crate::spawn_game_entities::lib::*;
 use bevy::animation::AnimationTarget;
+use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
-use crate::player_effects::lib::RotateAction;
-use crate::spawn_game_entities::lib::*;
-use crate::spawn_game_entities::helpers::find_child_with_name_containing;
-
-
 
 // Guy who is gonna send animation nevents according to rotation also is gonna tell to rotate the dynamic player
-pub fn detect_rotation(q_1: Query<&Transform,With<CamInfo>>,q_2:Query<&Transform,With<Player>>,mut event_writer: EventWriter<RotateAction>){
-    
+pub fn detect_rotation(
+    q_1: Query<&Transform, With<CamInfo>>,
+    q_2: Query<&Transform, With<Player>>,
+    mut event_writer: EventWriter<RotateAction>,
+) {
     let camera_transform = q_1.get_single().expect("Cam to have transform");
 
     let player_transform = q_2.get_single().expect("Player to have transform");
-
-
 
     let rot_error = (camera_transform.rotation * player_transform.rotation.inverse()).normalize();
 
@@ -25,36 +24,27 @@ pub fn detect_rotation(q_1: Query<&Transform,With<CamInfo>>,q_2:Query<&Transform
 
     let angvel = 650.0 * angle_error_rad * axis_error;
 
-    let only_y  = Vec3::new(0.0, angvel.y, 0.0);
+    let only_y = Vec3::new(0.0, angvel.y, 0.0);
 
-    if angvel != Vec3::ZERO{
+    if angvel != Vec3::ZERO {
         event_writer.send(RotateAction::EaseRotation(only_y));
     }
-
-
 }
 
-
-pub fn rotate_character(mut rotate_event_reader: EventReader<RotateAction>,
-    mut q_1: Query<&mut Velocity, With<Player>>){
-    
+pub fn rotate_character(
+    mut rotate_event_reader: EventReader<RotateAction>,
+    mut q_1: Query<&mut Velocity, With<Player>>,
+) {
     for mut v in q_1.iter_mut() {
-
-        for event in rotate_event_reader.read(){
+        for event in rotate_event_reader.read() {
             match event {
-                RotateAction::EaseRotation(angvel) =>{
+                RotateAction::EaseRotation(angvel) => {
                     v.angvel = *angvel;
                 }
-
             }
         }
     }
-
-
 }
-
-
-
 
 pub fn spine_look_at(
     q_1: Query<&Transform, With<CamInfo>>,
@@ -96,7 +86,7 @@ pub fn spine_look_at(
 
     //Yaw need to be clipped according to radian quadrants. Meaning it needs to stay between 2 quadrant and 4 quadrant
     // Just think that first limit is inversed
-    let yaw_limits = (PI /1.25, PI);
+    let yaw_limits = (PI / 1.25, PI);
 
     let clipped_yaw = if yaw > 0.0 {
         yaw.clamp(yaw_limits.0, yaw_limits.1)
@@ -116,7 +106,6 @@ pub fn spine_look_at(
 
     *current_transform = current_transform.looking_at(clipped_direction, up);
 }
-
 
 // Refactor this make it so it send an event that rotates the root bone and triggers when a certain yaw is achieved for example
 // If camera rotates 90 degress from starting position, spin character

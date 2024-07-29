@@ -1,10 +1,8 @@
-
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::PhysicsSet;
 
-use crate::spawn_game_entities::player_exists;
 use crate::spawn_game_entities::lib::CamInfo;
-
+use crate::spawn_game_entities::player_exists;
 
 pub mod camera_mechanics;
 pub mod sync_camera;
