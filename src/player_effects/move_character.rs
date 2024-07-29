@@ -116,6 +116,7 @@ pub fn keyboard_dash(
         if timers.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD) {
             direction.x = cam.right().x;
             direction.y = cam.right().z;
+            movetype = AnimationType::RightDash
         }
 
         if direction != Vec2::ZERO && has_dashed == false {

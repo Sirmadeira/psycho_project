@@ -31,20 +31,20 @@ pub fn detect_rotation(
     }
 }
 
-pub fn rotate_character(
-    mut rotate_event_reader: EventReader<RotateAction>,
-    mut q_1: Query<&mut Velocity, With<Player>>,
-) {
-    for mut v in q_1.iter_mut() {
-        for event in rotate_event_reader.read() {
-            match event {
-                RotateAction::EaseRotation(angvel) => {
-                    v.angvel = *angvel;
-                }
-            }
-        }
-    }
-}
+// pub fn rotate_character(
+//     mut rotate_event_reader: EventReader<RotateAction>,
+//     mut q_1: Query<&mut Velocity, With<Player>>,
+// ) {
+//     for mut v in q_1.iter_mut() {
+//         for event in rotate_event_reader.read() {
+//             match event {
+//                 RotateAction::EaseRotation(angvel) => {
+//                     v.angvel = *angvel;
+//                 }
+//             }
+//         }
+//     }
+// }
 
 pub fn spine_look_at(
     q_1: Query<&Transform, With<CamInfo>>,
