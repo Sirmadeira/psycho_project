@@ -69,6 +69,7 @@ pub fn state_machine(
 
         // Handles scenario where the is no after anim
         if current_animation != *animation {
+            println!("Animation to play {}",properties.name);
             if has_cooldown {
                 continue;
             } else if properties.repeat {
