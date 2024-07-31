@@ -110,10 +110,9 @@ pub fn check_status_idle(
     mut commands: Commands,
     mut animation_writer: EventWriter<AnimationType>,
 ) {
-    const STOPPED_THRESHOLD: f32 = 0.0001; // Define a small threshold for stopping
 
     for (entity, vel) in q_1.iter() {
-        if vel.linvel.length_squared() < STOPPED_THRESHOLD * STOPPED_THRESHOLD {
+        if vel.linvel.length() < 0.01 {
             // If the linear velocity is below the threshold, consider the player stopped
             animation_writer.send(AnimationType::Idle);
             commands.entity(entity).insert(StatusIdle); // Insert a marker component or handle the idle state

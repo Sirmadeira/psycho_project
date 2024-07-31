@@ -107,6 +107,7 @@ pub fn keyboard_dash(
         if timers.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS) {
             direction.x = cam.back().x;
             direction.y = cam.back().z;
+            movetype = AnimationType::BackDash
         }
         if keys.just_released(KeyCode::KeyA) {
             timers.left.reset();
