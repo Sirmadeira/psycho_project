@@ -31,20 +31,20 @@ pub fn detect_rotation(
     }
 }
 
-// pub fn rotate_character(
-//     mut rotate_event_reader: EventReader<RotateAction>,
-//     mut q_1: Query<&mut Velocity, With<Player>>,
-// ) {
-//     for mut v in q_1.iter_mut() {
-//         for event in rotate_event_reader.read() {
-//             match event {
-//                 RotateAction::EaseRotation(angvel) => {
-//                     v.angvel = *angvel;
-//                 }
-//             }
-//         }
-//     }
-// }
+pub fn rotate_character(
+    mut rotate_event_reader: EventReader<RotateAction>,
+    mut q_1: Query<&mut Velocity, With<Player>>,
+) {
+    for mut v in q_1.iter_mut() {
+        for event in rotate_event_reader.read() {
+            match event {
+                RotateAction::EaseRotation(angvel) => {
+                    v.angvel = *angvel;
+                }
+            }
+        }
+    }
+}
 
 pub fn spine_look_at(
     q_1: Query<&Transform, With<CamInfo>>,
@@ -107,25 +107,3 @@ pub fn spine_look_at(
     *current_transform = current_transform.looking_at(clipped_direction, up);
 }
 
-// Refactor this make it so it send an event that rotates the root bone and triggers when a certain yaw is achieved for example
-// If camera rotates 90 degress from starting position, spin character
-// pub fn player_look_at_camera(
-//     q_1: Query<&Transform, With<CamInfo>>,
-//     q_2: Query<(&Transform, &PdInfo), With<Player>>,
-//     mut q_3: Query<&mut Velocity, With<Player>>,
-// ) {
-//     let cam_transform = q_1.get_single().expect("Camera to exist");
-//     let (player_transform, pd_info) = q_2.get_single().expect("Player to exist");
-
-//     let rot_error = (cam_transform.rotation * player_transform.rotation.inverse()).normalize();
-
-//     let (axis_error, angle_error) = rot_error.to_axis_angle();
-
-//     let angle_error_rad = angle_error.to_radians();
-
-//     let angvel = pd_info.kp * angle_error_rad * axis_error;
-
-//     for mut v in q_3.iter_mut() {
-//         v.angvel = angvel;
-//     }
-// }

@@ -39,6 +39,7 @@ impl Plugin for PlayerEffects {
             FixedUpdate,
             (
                 move_character,
+                rotate_character,
                 detect_rotation,
                 spine_look_at,
             )
