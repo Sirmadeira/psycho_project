@@ -30,6 +30,16 @@ impl Zoom {
     }
 }
 
+// Atmospher/Lighting
+
+// Marker component
+#[derive(Component)]
+pub struct Sun;
+
+// Timer to update it is gonna be a biggie while i am debuggin
+#[derive(Resource)]
+pub struct CycleTimer(pub Timer);
+
 //World
 // Marks ground entities
 #[derive(Component)]

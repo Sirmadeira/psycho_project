@@ -14,11 +14,13 @@ pub fn keyboard_walk(
     mut animation_type_writer: EventWriter<AnimationType>,
     mut attack_writer: EventWriter<TypeOfAttack>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<Has<StatusEffectDash>,With<Player>>
+    q_2: Query<Has<StatusEffectDash>, With<Player>>,
 ) {
     let cam = q_1.get_single().expect("To have camera");
 
-    let has_dash = q_2.get_single().expect("To be able to check if he has or not dashed");
+    let has_dash = q_2
+        .get_single()
+        .expect("To be able to check if he has or not dashed");
 
     let mut direction = Vec2::ZERO;
 
@@ -27,7 +29,7 @@ pub fn keyboard_walk(
     let mut attacktype = TypeOfAttack::None;
 
     if has_dash {
-        return
+        return;
     }
     //forward
     if keys.pressed(KeyCode::KeyW) {

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_atmosphere::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use form_hitbox::FormHitbox;
@@ -54,6 +55,8 @@ fn main() {
         .add_plugins(UiPlugin)
         // Loads our assets with handles
         .add_plugins(LoadingAssetsPlugin)
+        // Plugin to form a cube that render cool atmosphere shaders
+        .add_plugins(AtmospherePlugin)
         // Starting the scene and lighting
         .add_plugins(LightingPlugin)
         // Formulates all the game entities to be used

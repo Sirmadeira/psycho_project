@@ -106,4 +106,3 @@ pub fn spine_look_at(
 
     *current_transform = current_transform.looking_at(clipped_direction, up);
 }
-

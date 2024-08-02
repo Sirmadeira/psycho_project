@@ -14,7 +14,7 @@ pub enum AnimationType {
     FrontDash,
     LeftDash,
     RightDash,
-    BackDash
+    BackDash,
 }
 pub struct AnimationProperties {
     pub name: &'static str,
@@ -69,7 +69,6 @@ impl AnimationType {
             AnimationType::BackDash => {
                 AnimationProperties::new("BackDash", Duration::from_millis(0), false, None)
             }
-
 
             AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false, None),
         }

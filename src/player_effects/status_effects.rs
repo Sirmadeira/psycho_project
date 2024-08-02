@@ -110,7 +110,6 @@ pub fn check_status_idle(
     mut commands: Commands,
     mut animation_writer: EventWriter<AnimationType>,
 ) {
-
     for (entity, vel) in q_1.iter() {
         if vel.linvel.length() < 0.01 {
             // If the linear velocity is below the threshold, consider the player stopped

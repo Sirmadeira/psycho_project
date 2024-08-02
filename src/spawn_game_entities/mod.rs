@@ -1,18 +1,18 @@
-use bevy::prelude::*;
-
 use crate::MyAppState;
+use bevy::{prelude::*, utils::Duration};
+use bevy_atmosphere::prelude::{AtmosphereModel, Nishita};
 
 pub mod helpers;
 pub mod lib;
 pub mod spawn_animation;
-pub mod spawn_camera;
+pub mod spawn_camera_atmosphere;
 pub mod spawn_hitbox;
 pub mod spawn_mod_char;
 pub mod spawn_player;
 pub mod spawn_world;
 
 use self::{
-    lib::*, spawn_animation::*, spawn_camera::*, spawn_hitbox::*, spawn_mod_char::*,
+    lib::*, spawn_animation::*, spawn_camera_atmosphere::*, spawn_hitbox::*, spawn_mod_char::*,
     spawn_player::*, spawn_world::*,
 };
 
@@ -21,13 +21,11 @@ pub struct SpawnGameEntities;
 impl Plugin for SpawnGameEntities {
     fn build(&self, app: &mut App) {
         // Creating world
-        app.add_systems(
-            OnEnter(MyAppState::InGame),
-            (spawn_light, spawn_floor, spawn_wall),
-        );
+        app.add_systems(OnEnter(MyAppState::InGame), (spawn_floor, spawn_wall));
+
         // Creating camera
-        app.add_systems(OnEnter(MyAppState::InGame), spawn_camera);
-        // Make skeleton and creates usefull component for animations
+        app.add_systems(OnEnter(MyAppState::InGame), spawn_camera_light);
+        // Creating modular character
         app.add_systems(
             OnEnter(MyAppState::InGame),
             spawn_skeleton_and_attachments.chain(),
@@ -65,6 +63,15 @@ impl Plugin for SpawnGameEntities {
             visuals_to_be_attached: vec![String::from("rigge_female")],
             weapons_to_be_attached: vec![String::from("katana")],
         });
+        // Atmospheric resources - To config later https://docs.rs/bevy_atmosphere/latest/bevy_atmosphere/collection/nishita/struct.Nishita.html
+        app.insert_resource(AtmosphereModel::new(Nishita {
+            sun_intensity: 11.0,
+            ..default()
+        }));
+        app.insert_resource(CycleTimer(Timer::new(
+            Duration::from_secs(50),
+            TimerMode::Repeating,
+        )));
         // Spawn player debug
         app.register_type::<PdInfo>();
         app.register_type::<Timers>();
