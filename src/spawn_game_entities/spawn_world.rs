@@ -1,18 +1,34 @@
 use crate::spawn_game_entities::lib::*;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use crate::load_assets_plugin::MyAssets;
+
 
 // Spawns the main collider floor and a ugly mesh
 pub fn spawn_floor(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_pack: Res<MyAssets>,
+    assets_gltf: Res<Assets<Gltf>>,
 ) {
+
+    let collection_gltf = &asset_pack.gltf_files;
+
+    let wood_floor = collection_gltf.get("wood_floor.glb").expect("To have floor");
+
+    let test = assets_gltf.get(wood_floor).expect("TO find asset");
+
+    let scene_test = &test.named_scenes["Scene"];
+
+    // for (name,material) in &test.named_materials{
+    //     println!("Here is the material {}",name);
+    // }
+    // BAKE MESH ADD MATERIAL
+
     let floor = (
-        PbrBundle {
-            mesh: meshes.add(Plane3d::default().mesh().size(10.0, 10.0)),
-            material: materials.add(Color::srgb(0.3, 0.5, 0.3)),
-            ..default()
+        SceneBundle{
+            scene: scene_test.clone(),
+            transform:Transform::from_xyz(0.0,0.0,0.0),
+            ..Default::default()
         },
         Name::new("Floor"),
     );
@@ -23,7 +39,8 @@ pub fn spawn_floor(
         CollisionGroups::new(Group::GROUP_10, Group::ALL),
     );
 
-    commands.spawn(floor).insert(collider);
+    commands.spawn(floor);
+    commands.spawn(collider);
 }
 
 pub fn spawn_wall(mut commands: Commands) {

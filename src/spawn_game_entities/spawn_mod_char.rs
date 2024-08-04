@@ -32,6 +32,7 @@ pub fn spawn_skeleton_and_attachments(
 
         // This values is basedc on the maximum value in the two given vectors
         for i in 0..max_len {
+            // Grabbing myy assets handles and checking if their name matches with the given config options
             for (file_name, gltf_handle) in &asset_pack.gltf_files {
                 let gltf = assets_gltf
                     .get(gltf_handle)

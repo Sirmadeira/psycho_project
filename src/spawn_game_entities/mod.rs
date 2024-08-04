@@ -69,7 +69,7 @@ impl Plugin for SpawnGameEntities {
             ..default()
         }));
         app.insert_resource(CycleTimer(Timer::new(
-            Duration::from_secs(50),
+            Duration::from_secs(3600),
             TimerMode::Repeating,
         )));
         // Spawn player debug
