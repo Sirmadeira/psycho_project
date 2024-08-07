@@ -16,7 +16,10 @@ pub enum AnimationType {
     RightDash,
     BackDash,
     Jump,
-    AirFront
+    FrontAir,
+    BackAir,
+    LeftAir,
+    RightAir
 }
 pub struct AnimationProperties {
     pub name: &'static str,
@@ -74,9 +77,19 @@ impl AnimationType {
             AnimationType::Jump => {
                 AnimationProperties::new("Jump", Duration::from_millis(0), false, None)
             }
-            AnimationType::AirFront => {
-                AnimationProperties::new("AirFront", Duration::from_millis(400), false, None)
+            AnimationType::FrontAir => {
+                AnimationProperties::new("FrontAir", Duration::from_millis(400), false, None)
             }
+            AnimationType::BackAir => {
+                AnimationProperties::new("BackAir", Duration::from_millis(400), false, None)
+            }
+            AnimationType::LeftAir => {
+                AnimationProperties::new("LeftAir", Duration::from_millis(400), false, None)
+            }
+            AnimationType::RightAir => {
+                AnimationProperties::new("RightAir", Duration::from_millis(400), false, None)
+            }
+
 
             AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false, None),
         }

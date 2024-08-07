@@ -40,7 +40,7 @@ pub fn keyboard_walk(
             movetype = AnimationType::FrontWalk;
         }
         else {
-            movetype = AnimationType::AirFront;
+            movetype = AnimationType::FrontAir;
         }
         attacktype = TypeOfAttack::Forward;
     }
@@ -48,21 +48,36 @@ pub fn keyboard_walk(
     if keys.pressed(KeyCode::KeyS) {
         direction.x = cam.back().x;
         direction.y = cam.back().z;
-        movetype = AnimationType::BackWalk;
+        if has_grounded{
+            movetype = AnimationType::BackWalk;
+        }
+        else {
+            movetype = AnimationType::BackAir;
+        }
         attacktype = TypeOfAttack::Backward;
     }
     // left
     if keys.pressed(KeyCode::KeyA) {
         direction.x = cam.left().x;
         direction.y = cam.left().z;
-        movetype = AnimationType::LeftWalk;
+        if has_grounded{
+            movetype = AnimationType::LeftWalk;
+        }
+        else {
+            movetype = AnimationType::LeftAir;
+        }
         attacktype = TypeOfAttack::Left;
     }
     // right
     if keys.pressed(KeyCode::KeyD) {
         direction.x = cam.right().x;
         direction.y = cam.right().z;
-        movetype = AnimationType::RightWalk;
+        if has_grounded{
+            movetype = AnimationType::RightWalk;
+        }
+        else {
+            movetype = AnimationType::RightAir;
+        }
         attacktype = TypeOfAttack::Right;
     }
 
