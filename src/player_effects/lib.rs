@@ -54,3 +54,5 @@ pub struct StatusEffectDefend {
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct StatusIdle;
+
+
