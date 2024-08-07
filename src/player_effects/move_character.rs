@@ -213,7 +213,7 @@ pub fn move_character(
                     status.impulse.x = direction.x * 200.0;
                     status.impulse.z = direction.y * 200.0;
                 }
-                MovementAction::Jump => vel.linvel.y += 20git.0,
+                MovementAction::Jump => vel.linvel.y += 20.0,
             }
         }
     }
