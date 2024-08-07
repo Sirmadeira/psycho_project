@@ -86,20 +86,21 @@ pub fn check_status_grounded(
     mut commands: Commands,
     q_1: Query<Entity, With<PlayerGroundCollider>>,
     q_2: Query<Entity, With<Ground>>,
+    q_3: Query<Entity,With<Player>>
 ) {
-    // Grabs every hitbox and check if any of them are touching the ground.
+    // Player
+    let player = q_3.get_single().expect("Player to exist");
+    // Grabs main collider from player and check if it is colliding with ground
     for entity1 in q_1.iter() {
         let entity2 = q_2.get_single().expect("Ground to exist");
         /* Find the contact pair, if it exists, between two colliders. */
         if let Some(contact_pair) = rapier_context.contact_pair(entity1, entity2) {
             // The contact pair exists meaning that the broad-phase identified a potential contact.
             if contact_pair.has_any_active_contact() {
-                // The contact pair has active contacts, meaning that it
-                // contains contacts for which contact forces were computed.
-                commands.entity(entity1).insert(Grounded);
+                commands.entity(player).insert(Grounded);
             }
         } else {
-            commands.entity(entity1).remove::<Grounded>();
+            commands.entity(player).remove::<Grounded>();
         }
     }
 }

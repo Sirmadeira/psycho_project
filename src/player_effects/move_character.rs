@@ -178,24 +178,22 @@ pub fn keyboard_dash(
 
 pub fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,
-    q_1: Query<Has<Grounded>, With<PlayerGroundCollider>>,
-    mut q_2: Query<&mut Limit>,
+    mut q_1: Query<(Has<Grounded>,&mut Limit), With<Player>>,
     mut movement_event_writer: EventWriter<MovementAction>,
-    // mut animation_type_writer: EventWriter<AnimationType>,
+    mut animation_type_writer: EventWriter<AnimationType>,
 ) {
-    for is_grounded in q_1.iter() {
-        for mut jumps in q_2.iter_mut() {
-            if is_grounded {
-                jumps.jump_limit = Limit {
-                    ..Default::default()
-                }
-                .jump_limit
-            }
-            if keys.just_pressed(KeyCode::Space) && jumps.jump_limit != 0 {
-                jumps.jump_limit -= 1;
-                movement_event_writer.send(MovementAction::Jump);
-            }
-        }
+
+    let (is_grounded,mut amount_jumps) = q_1.get_single_mut().expect("Player to only have one grounded flag and limit");
+
+    if is_grounded{
+        amount_jumps.jump_limit = Limit{
+            ..Default::default()
+        }.jump_limit
+    }
+    if keys.just_pressed(KeyCode::Space) && amount_jumps.jump_limit != 0{
+        amount_jumps.jump_limit -=1;
+        movement_event_writer.send(MovementAction::Jump);
+        animation_type_writer.send(AnimationType::Jump);
     }
 }
 
@@ -215,7 +213,7 @@ pub fn move_character(
                     status.impulse.x = direction.x * 200.0;
                     status.impulse.z = direction.y * 200.0;
                 }
-                MovementAction::Jump => vel.linvel.y += 5.0,
+                MovementAction::Jump => vel.linvel.y += 20git.0,
             }
         }
     }

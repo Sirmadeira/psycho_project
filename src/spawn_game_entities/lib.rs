@@ -124,7 +124,7 @@ pub struct Timers {
     pub right: Stopwatch,
 }
 
-// Marker component - Tells me which is the collider to check for groun
+// Marker component - Tells me which is the collider to check for ground
 #[derive(Component)]
 pub struct PlayerGroundCollider;
 
@@ -152,6 +152,7 @@ pub struct BaseEntities {
 #[derive(Reflect, Component, Debug)]
 pub struct Offset(pub Vec3);
 
+// Hitbox movement is based around this guy
 #[derive(Reflect, Component, Debug)]
 pub struct PidInfo {
     // Proportional gain how agressive to reac

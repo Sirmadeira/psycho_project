@@ -46,6 +46,7 @@ pub fn rotate_character(
     }
 }
 
+
 pub fn spine_look_at(
     q_1: Query<&Transform, With<CamInfo>>,
     q_2: Query<Entity, With<Player>>,
