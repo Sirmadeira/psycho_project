@@ -84,10 +84,10 @@ impl AnimationType {
                 AnimationProperties::new("BackAir", Duration::from_millis(400), false, None)
             }
             AnimationType::LeftAir => {
-                AnimationProperties::new("LeftAir", Duration::from_millis(400), false, None)
+                AnimationProperties::new("LeftAir", Duration::from_millis(500), false, None)
             }
             AnimationType::RightAir => {
-                AnimationProperties::new("RightAir", Duration::from_millis(400), false, None)
+                AnimationProperties::new("RightAir", Duration::from_millis(500), false, None)
             }
 
 
