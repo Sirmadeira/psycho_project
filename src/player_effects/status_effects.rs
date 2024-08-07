@@ -114,13 +114,14 @@ pub fn check_status_idle(
     for (entity, vel) in q_1.iter() {
         if vel.linvel.length() < 0.01 {
             // If the linear velocity is below the threshold, consider the player stopped
-            animation_writer.send(AnimationType::Idle);
             commands.entity(entity).insert(StatusIdle); // Insert a marker component or handle the idle state
+            animation_writer.send(AnimationType::Idle);
         } else {
             commands.entity(entity).remove::<StatusIdle>(); // Remove the idle marker if the player is moving
         }
     }
 }
+
 
 pub fn check_dead(
     hp_entities: Query<(Entity, &Health)>,
@@ -133,3 +134,4 @@ pub fn check_dead(
         }
     }
 }
+

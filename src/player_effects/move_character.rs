@@ -14,11 +14,11 @@ pub fn keyboard_walk(
     mut animation_type_writer: EventWriter<AnimationType>,
     mut attack_writer: EventWriter<TypeOfAttack>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<Has<StatusEffectDash>, With<Player>>,
+    q_2: Query<(Has<StatusEffectDash>,Has<Grounded>), With<Player>>,
 ) {
     let cam = q_1.get_single().expect("To have camera");
 
-    let has_dash = q_2
+    let (has_dash,has_grounded) = q_2
         .get_single()
         .expect("To be able to check if he has or not dashed");
 
@@ -31,11 +31,17 @@ pub fn keyboard_walk(
     if has_dash {
         return;
     }
+
     //forward
     if keys.pressed(KeyCode::KeyW) {
         direction.x = cam.forward().x;
         direction.y = cam.forward().z;
-        movetype = AnimationType::FrontWalk;
+        if has_grounded{
+            movetype = AnimationType::FrontWalk;
+        }
+        else {
+            movetype = AnimationType::AirFront;
+        }
         attacktype = TypeOfAttack::Forward;
     }
     // back
