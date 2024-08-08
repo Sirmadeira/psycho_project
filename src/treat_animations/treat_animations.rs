@@ -1,5 +1,6 @@
 use crate::spawn_game_entities::lib::*;
 use crate::treat_animations::lib::*;
+use crate::player_effects::lib::StatusEffectStun;
 use bevy::prelude::*;
 use bevy::utils::Duration;
 
@@ -37,19 +38,14 @@ pub fn setup_state_machine(
 // This will handle animation according to input events given by player_effects or other plugins
 
 pub fn state_machine(
-    player_skeleton: Query<(Entity, Has<AnimationCooldown>), With<Player>>,
+    mut stun_info: Query<&mut StatusEffectStun, With<Player>>,
     mut animation_components: Query<
         (&mut AnimationPlayer, &mut AnimationTransitions),
         With<AnimatedEntity>,
     >,
     animations: Res<Animations>,
     mut animation_to_play: EventReader<AnimationType>,
-    mut commands: Commands,
 ) {
-    // Ensuring that this solely affects player
-    let (player_entity, has_cooldown) = player_skeleton
-        .get_single()
-        .expect("Expected to have exactly one player entity");
 
     let (mut animation_player, mut active_transitions) = animation_components
         .get_single_mut()
@@ -59,6 +55,7 @@ pub fn state_machine(
         .get_main_animation()
         .expect("Expected to always have an active transition");
 
+    
     for event in animation_to_play.read() {
         let properties = event.properties();
 
@@ -67,24 +64,25 @@ pub fn state_machine(
             .get(properties.name)
             .expect("To find animation in resource");
 
-        // Handles scenario where the is no after anim
-        if current_animation != *animation {
-            println!("Animation to play {}", properties.name);
-            if has_cooldown {
-                continue;
-            } else if properties.repeat {
-                active_transitions
-                    .play(&mut animation_player, *animation, properties.duration)
-                    .repeat();
-            } else {
+        if let Ok(mut stun) = stun_info.get_single_mut(){
+            if !stun.played_animation{
                 active_transitions.play(&mut animation_player, *animation, properties.duration);
+                stun.played_animation = true;
             }
+            return
         }
-        // Adds cooldown if there is
-        if let Some(cooldown) = properties.cooldown {
-            commands
-                .entity(player_entity)
-                .insert(AnimationCooldown(Timer::new(cooldown, TimerMode::Once)));
+        else {
+            // Handles scenario where the is no "stun"
+            if current_animation != *animation {
+                println!("Animation to play {}", properties.name);
+                if properties.repeat {
+                    active_transitions
+                        .play(&mut animation_player, *animation, properties.duration)
+                        .repeat();
+                } else {
+                    active_transitions.play(&mut animation_player, *animation, properties.duration);
+                }
+            }            
         }
     }
 }

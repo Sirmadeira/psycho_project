@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::time::Timer;
 use bevy::utils::Duration;
 
 // Tells me which type of movement i should pass, to avoid multiple arguments or enums
@@ -22,6 +21,8 @@ pub enum AnimationType {
     RightAir,
     Landing
 }
+
+
 pub struct AnimationProperties {
     pub name: &'static str,
     pub duration: Duration,
@@ -91,13 +92,9 @@ impl AnimationType {
                 AnimationProperties::new("RightAir", Duration::from_millis(500), false, None)
             }
             AnimationType::Landing => {
-                AnimationProperties::new("Landing", Duration::from_millis(0), false, None)
+                AnimationProperties::new("Landing", Duration::from_millis(0), false, Some(Duration::from_secs(1)))
             }
             AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false, None),
         }
     }
 }
-
-#[derive(Reflect, Component, Debug)]
-#[component(storage = "SparseSet")]
-pub struct AnimationCooldown(pub Timer);

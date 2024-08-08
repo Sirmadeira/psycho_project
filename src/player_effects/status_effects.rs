@@ -4,7 +4,7 @@ use bevy_rapier3d::prelude::*;
 
 use crate::player_effects::*;
 use crate::spawn_game_entities::lib::*;
-use crate::treat_animations::lib::{AnimationCooldown, AnimationType};
+use crate::treat_animations::lib::AnimationType;
 // use crate::treat_animations::lib::AnimationType;
 
 use super::StatusEffectWallBounce;
@@ -16,7 +16,7 @@ pub fn check_status_effect(
         (
             Entity,
             Option<&mut StatusEffectDash>,
-            Option<&mut AnimationCooldown>,
+            Option<&mut StatusEffectStun>,
         ),
         With<Player>,
     >,
@@ -33,10 +33,10 @@ pub fn check_status_effect(
 
         if let Some(mut cooldown) = animation_cd {
             cooldown
-                .0
+                .timer
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
-            if cooldown.0.finished() {
-                commands.entity(ent).remove::<AnimationCooldown>();
+            if cooldown.timer.finished() {
+                commands.entity(ent).remove::<StatusEffectStun>();
             }
         }
     }

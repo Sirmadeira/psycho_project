@@ -20,6 +20,7 @@ impl Plugin for PlayerEffects {
         app.add_event::<RotateAction>();
         app.register_type::<StatusEffectDash>();
         app.register_type::<StatusEffectWallBounce>();
+        app.register_type::<StatusEffectStun>();
         // Gives status effects
         app.add_systems(
             Update,
