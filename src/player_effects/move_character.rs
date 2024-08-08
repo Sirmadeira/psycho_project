@@ -8,78 +8,42 @@ use crate::treat_animations::lib::AnimationType;
 
 use super::TypeOfAttack;
 
+
 pub fn keyboard_walk(
-    keys: Res<ButtonInput<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>, // Res<Input<KeyCode>> is used instead of ButtonInput<KeyCode>
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
     mut attack_writer: EventWriter<TypeOfAttack>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<(Has<StatusEffectDash>,Has<Grounded>), With<Player>>,
+    q_2: Query<(Has<StatusEffectDash>, Has<Grounded>), With<Player>>,
 ) {
-    let cam = q_1.get_single().expect("To have camera");
+    let cam = q_1.get_single().expect("Expected to have a camera");
 
-    let (has_dash,has_grounded) = q_2
+    let (has_dash, has_grounded) = q_2
         .get_single()
-        .expect("To be able to check if he has or not dashed");
-
-    let mut direction = Vec2::ZERO;
-
-    let mut movetype = AnimationType::None;
-
-    let mut attacktype = TypeOfAttack::None;
+        .expect("Expected to be able to check if player has dashed");
 
     if has_dash {
         return;
     }
 
-    //forward
-    if keys.pressed(KeyCode::KeyW) {
-        direction.x = cam.forward().x;
-        direction.y = cam.forward().z;
-        if has_grounded{
-            movetype = AnimationType::FrontWalk;
+    let mut direction = Vec2::ZERO;
+    let mut movetype = AnimationType::None;
+    let mut attacktype = TypeOfAttack::None;
+
+    let mut key_to_direction = |key: KeyCode, cam_dir: Vec3, walk_anim: AnimationType, air_anim: AnimationType, atk_type: TypeOfAttack| {
+        if keys.pressed(key) {
+            direction.x = cam_dir.x;
+            direction.y = cam_dir.z;
+            movetype = if has_grounded { walk_anim } else { air_anim };
+            attacktype = atk_type;
         }
-        else {
-            movetype = AnimationType::FrontAir;
-        }
-        attacktype = TypeOfAttack::Forward;
-    }
-    // back
-    if keys.pressed(KeyCode::KeyS) {
-        direction.x = cam.back().x;
-        direction.y = cam.back().z;
-        if has_grounded{
-            movetype = AnimationType::BackWalk;
-        }
-        else {
-            movetype = AnimationType::BackAir;
-        }
-        attacktype = TypeOfAttack::Backward;
-    }
-    // left
-    if keys.pressed(KeyCode::KeyA) {
-        direction.x = cam.left().x;
-        direction.y = cam.left().z;
-        if has_grounded{
-            movetype = AnimationType::LeftWalk;
-        }
-        else {
-            movetype = AnimationType::LeftAir;
-        }
-        attacktype = TypeOfAttack::Left;
-    }
-    // right
-    if keys.pressed(KeyCode::KeyD) {
-        direction.x = cam.right().x;
-        direction.y = cam.right().z;
-        if has_grounded{
-            movetype = AnimationType::RightWalk;
-        }
-        else {
-            movetype = AnimationType::RightAir;
-        }
-        attacktype = TypeOfAttack::Right;
-    }
+    };
+
+    key_to_direction(KeyCode::KeyW, cam.forward().into(), AnimationType::FrontWalk, AnimationType::FrontAir, TypeOfAttack::Forward);
+    key_to_direction(KeyCode::KeyS, cam.back().into(), AnimationType::BackWalk, AnimationType::BackAir, TypeOfAttack::Backward);
+    key_to_direction(KeyCode::KeyA, cam.left().into(), AnimationType::LeftWalk, AnimationType::LeftAir, TypeOfAttack::Left);
+    key_to_direction(KeyCode::KeyD, cam.right().into(), AnimationType::RightWalk, AnimationType::RightAir, TypeOfAttack::Right);
 
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));

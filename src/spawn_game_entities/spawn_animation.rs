@@ -5,6 +5,8 @@ use bevy::utils::HashMap;
 use crate::load_assets_plugin::MyAssets;
 use crate::spawn_game_entities::lib::*;
 
+
+
 // Creates animation graph for each player and add it is clips to it
 pub fn spawn_animation_graph(
     amount_players: Res<AmountPlayers>,

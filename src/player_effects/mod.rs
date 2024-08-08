@@ -1,12 +1,13 @@
 use bevy::prelude::*;
 
-use self::{detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*};
+use self::{detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*,status_observers::*};
 
 pub mod detect_hits;
 pub mod lib;
 pub mod move_character;
 pub mod rotate_character;
 pub mod status_effects;
+pub mod status_observers;
 
 use crate::spawn_game_entities::player_exists;
 
@@ -19,6 +20,7 @@ impl Plugin for PlayerEffects {
         app.add_event::<RotateAction>();
         app.register_type::<StatusEffectDash>();
         app.register_type::<StatusEffectWallBounce>();
+        // Gives status effects
         app.add_systems(
             Update,
             (
@@ -30,11 +32,13 @@ impl Plugin for PlayerEffects {
             )
                 .run_if(player_exists),
         );
+        app.observe(observe_grounded);
+        // Send animation events and at the same time, movement events
         app.add_systems(
             Update,
             (keyboard_walk, keyboard_dash, keyboard_jump).run_if(player_exists),
         );
-        // Side physics
+        // Moves character around
         app.add_systems(
             FixedUpdate,
             (
@@ -45,6 +49,7 @@ impl Plugin for PlayerEffects {
             )
                 .run_if(player_exists),
         );
+
         app.add_systems(
             FixedUpdate,
             (

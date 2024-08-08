@@ -82,6 +82,8 @@ pub fn spawn_main_rigidbody(
         },);
 
         if scene_name.to_string() == "skeleton_1" {
+
+            // Main rigidbody + it is collider
             let player_details = commands
                 .spawn(main_rigidbody)
                 .insert(Player)
@@ -93,16 +95,19 @@ pub fn spawn_main_rigidbody(
                 })
                 .id();
 
+            // Final result - Basically the skeleton created in mod char + the rigidbody that is gonna move it
             let player = commands
                 .entity(player_character)
                 .set_parent(player_details)
                 .id();
-
+            
+            // Usefull marker component for treat_anim - TODO MADE IT SO I CAN EASILY SELECT THE MAIN PLAYER LATER SEPARATE THIS
             let animated_entity =
                 find_child_with_name_containing(&children_entities, &names, &player, "Armature")
                     .expect("To have entity with animation");
             commands.entity(animated_entity).insert(AnimatedEntity);
         } else {
+            // Main rigidbody + it is collider + a simple marker component saying is not main player
             let other_details = commands
                 .spawn(second_rigidbody)
                 .insert(SidePlayer)
@@ -113,7 +118,7 @@ pub fn spawn_main_rigidbody(
                     children.spawn(main_collider);
                 })
                 .id();
-
+        
             commands.entity(player_character).set_parent(other_details);
         }
     }
