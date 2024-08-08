@@ -6,6 +6,8 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
+use super::StatusEffectStun;
+
 // Guy who is gonna send animation nevents according to rotation also is gonna tell to rotate the dynamic player
 pub fn detect_rotation(
     q_1: Query<&Transform, With<CamInfo>>,
@@ -33,13 +35,15 @@ pub fn detect_rotation(
 
 pub fn rotate_character(
     mut rotate_event_reader: EventReader<RotateAction>,
-    mut q_1: Query<&mut Velocity, With<Player>>,
+    mut q_1: Query<(&mut Velocity,Has<StatusEffectStun>), With<Player>>,
 ) {
-    for mut v in q_1.iter_mut() {
+    for (mut v,is_stunned) in q_1.iter_mut() {
         for event in rotate_event_reader.read() {
-            match event {
-                RotateAction::EaseRotation(angvel) => {
-                    v.angvel = *angvel;
+            if !is_stunned{
+                match event {
+                    RotateAction::EaseRotation(angvel) => {
+                        v.angvel = *angvel;
+                    }
                 }
             }
         }
