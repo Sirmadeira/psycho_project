@@ -185,19 +185,23 @@ pub fn keyboard_jump(
 pub fn move_character(
     mut movement_event_reader: EventReader<MovementAction>,
     time: Res<Time>,
-    mut q_1: Query<(&mut Velocity, &mut ExternalImpulse,Has<StatusEffectStun>), With<Player>>,
+    mut q_1: Query<(&mut Velocity, &mut ExternalImpulse, Has<StatusEffectStun>), With<Player>>,
 ) {
     for event in movement_event_reader.read() {
-        for (mut vel, mut status,is_stunned) in &mut q_1 {
-            if !is_stunned{
+        for (mut vel, mut impulse, is_stunned) in &mut q_1 {
+            if is_stunned {
+                // If stunned, set all velocities to zero
+                vel.linvel = Vec3::ZERO;
+                impulse.impulse = Vec3::ZERO;
+            } else {
                 match event {
                     MovementAction::Move(direction) => {
                         vel.linvel.x += direction.x * 20.0 * time.delta_seconds();
                         vel.linvel.z += direction.y * 20.0 * time.delta_seconds();
                     }
                     MovementAction::Dash(direction) => {
-                        status.impulse.x = direction.x * 200.0;
-                        status.impulse.z = direction.y * 200.0;
+                        impulse.impulse.x = direction.x * 200.0;
+                        impulse.impulse.z = direction.y * 200.0;
                     }
                     MovementAction::Jump => vel.linvel.y += 20.0,
                 }
@@ -205,3 +209,4 @@ pub fn move_character(
         }
     }
 }
+

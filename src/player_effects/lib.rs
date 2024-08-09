@@ -54,7 +54,7 @@ pub struct StatusEffectDefend {
 // Check if has stopped
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
-pub struct StatusIdle;
+pub struct StatusIdle(pub Timer);
 
 
 // Check if it stuns - Stops animation midtrack and plays one last animation until it is finished

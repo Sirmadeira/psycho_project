@@ -92,7 +92,7 @@ impl AnimationType {
                 AnimationProperties::new("RightAir", Duration::from_millis(500), false, None)
             }
             AnimationType::Landing => {
-                AnimationProperties::new("Landing", Duration::from_millis(0), false, Some(Duration::from_secs(1)))
+                AnimationProperties::new("Landing", Duration::from_millis(0), false, Some(Duration::from_millis(500)))
             }
             AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false, None),
         }

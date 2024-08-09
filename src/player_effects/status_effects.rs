@@ -36,6 +36,7 @@ pub fn check_status_effect(
                 .timer
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
             if cooldown.timer.finished() {
+                println!("NO longer stunned");
                 commands.entity(ent).remove::<StatusEffectStun>();
             }
         }
@@ -111,15 +112,16 @@ pub fn check_status_grounded(
 
 // Check if player is idle if so it send animation type and adds a component
 pub fn check_status_idle(
-    q_1: Query<(Entity, &Velocity), With<Player>>,
+    q_1: Query<(Entity, &Velocity,Has<StatusIdle>), With<Player>>,
     mut commands: Commands,
     mut animation_writer: EventWriter<AnimationType>,
 ) {
-    for (entity, vel) in q_1.iter() {
+    for (entity, vel,is_idle) in q_1.iter() {
         if vel.linvel.length() < 0.01 {
-            // If the linear velocity is below the threshold, consider the player stopped
-            commands.entity(entity).insert(StatusIdle); // Insert a marker component or handle the idle state
-            animation_writer.send(AnimationType::Idle);
+            if !is_idle{
+                commands.entity(entity).insert(StatusIdle(Timer::new(Duration::from_micros(200), TimerMode::Once)));
+                animation_writer.send(AnimationType::Idle);
+            }
         } else {
             commands.entity(entity).remove::<StatusIdle>(); // Remove the idle marker if the player is moving
         }
