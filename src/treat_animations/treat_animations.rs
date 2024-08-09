@@ -56,8 +56,8 @@ pub fn state_machine(
                 .get(properties.name)
                 .expect("To find animation in resource");
 
-            println!("Animation to play {}", properties.name);
             if let Ok(mut stun) = stun_info.get_single_mut(){
+                println!("Animation to play {}", properties.name);
                 if !stun.played_animation{
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     stun.played_animation = true;
@@ -65,6 +65,7 @@ pub fn state_machine(
                 return
             }
             else {
+                println!("Animation to play {}", properties.name);
                 // Handles scenario where the is no "stun"
                 if current_animation != *animation {
                     if properties.repeat {
