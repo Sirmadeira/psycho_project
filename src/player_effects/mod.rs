@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{ecs::system::ObserverSystem, prelude::*};
 
 use self::{
     detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*,
@@ -43,7 +43,7 @@ impl Plugin for PlayerEffects {
             Update,
             (keyboard_walk, keyboard_dash, keyboard_jump)
                 .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)),
+                .run_if(in_state(MyAppState::InGame)).after(check_status_grounded),
         );
         // Moves character around
         app.add_systems(
