@@ -87,10 +87,10 @@ pub fn check_status_grounded(
     mut commands: Commands,
     q_1: Query<Entity, With<PlayerGroundCollider>>,
     q_2: Query<Entity, With<Ground>>,
-    q_3: Query<(Entity,Has<Grounded>),With<Player>>
+    q_3: Query<(Entity, Has<Grounded>), With<Player>>,
 ) {
     // Player
-    let (player,is_grounded )= q_3.get_single().expect("Player to exist");
+    let (player, is_grounded) = q_3.get_single().expect("Player to exist");
     // Grabs main collider from player and check if it is colliding with ground
     for entity1 in q_1.iter() {
         let entity2 = q_2.get_single().expect("Ground to exist");
@@ -98,10 +98,10 @@ pub fn check_status_grounded(
         if let Some(contact_pair) = rapier_context.contact_pair(entity1, entity2) {
             // The contact pair exists meaning that the broad-phase identified a potential contact.
             if contact_pair.has_any_active_contact() {
-                if is_grounded{
-                    return
-                }else {
-                    commands.entity(player).insert(Grounded);   
+                if is_grounded {
+                    return;
+                } else {
+                    commands.entity(player).insert(Grounded);
                 }
             }
         } else {
@@ -112,14 +112,17 @@ pub fn check_status_grounded(
 
 // Check if player is idle if so it send animation type and adds a component
 pub fn check_status_idle(
-    q_1: Query<(Entity, &Velocity,&ExternalImpulse,Has<StatusIdle>), With<Player>>,
+    q_1: Query<(Entity, &Velocity, &ExternalImpulse, Has<StatusIdle>), With<Player>>,
     mut commands: Commands,
     mut animation_writer: EventWriter<AnimationType>,
 ) {
-    for (entity, vel,imp,is_idle) in q_1.iter() {
-        if vel.linvel.length() < 0.01 && imp.impulse.length() < 0.01{
-            if !is_idle{
-                commands.entity(entity).insert(StatusIdle(Timer::new(Duration::from_micros(200), TimerMode::Once)));
+    for (entity, vel, imp, is_idle) in q_1.iter() {
+        if vel.linvel.length() < 0.01 && imp.impulse.length() < 0.01 {
+            if !is_idle {
+                commands.entity(entity).insert(StatusIdle(Timer::new(
+                    Duration::from_micros(200),
+                    TimerMode::Once,
+                )));
                 animation_writer.send(AnimationType::Idle);
             }
         } else {
@@ -127,7 +130,6 @@ pub fn check_status_idle(
         }
     }
 }
-
 
 pub fn check_dead(
     hp_entities: Query<(Entity, &Health)>,
@@ -140,4 +142,3 @@ pub fn check_dead(
         }
     }
 }
-

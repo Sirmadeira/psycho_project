@@ -8,22 +8,21 @@ use crate::treat_animations::lib::AnimationType;
 
 use super::TypeOfAttack;
 
-
 pub fn keyboard_walk(
     keys: Res<ButtonInput<KeyCode>>, // Res<Input<KeyCode>> is used instead of ButtonInput<KeyCode>
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
     mut attack_writer: EventWriter<TypeOfAttack>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<(Has<StatusEffectDash>,Has<StatusEffectStun> ,Has<Grounded>), With<Player>>,
+    q_2: Query<(Has<StatusEffectDash>, Has<StatusEffectStun>, Has<Grounded>), With<Player>>,
 ) {
     let cam = q_1.get_single().expect("Expected to have a camera");
 
-    let (has_dash,has_stun, has_grounded) = q_2
+    let (has_dash, has_stun, has_grounded) = q_2
         .get_single()
         .expect("Expected to be able to check if player has dashed");
 
-    if has_dash || has_stun{
+    if has_dash || has_stun {
         return;
     }
 
@@ -31,7 +30,11 @@ pub fn keyboard_walk(
     let mut movetype = AnimationType::None;
     let mut attacktype = TypeOfAttack::None;
 
-    let mut key_to_direction = |key: KeyCode, cam_dir: Vec3, walk_anim: AnimationType, air_anim: AnimationType, atk_type: TypeOfAttack| {
+    let mut key_to_direction = |key: KeyCode,
+                                cam_dir: Vec3,
+                                walk_anim: AnimationType,
+                                air_anim: AnimationType,
+                                atk_type: TypeOfAttack| {
         if keys.pressed(key) {
             direction.x = cam_dir.x;
             direction.y = cam_dir.z;
@@ -40,10 +43,34 @@ pub fn keyboard_walk(
         }
     };
 
-    key_to_direction(KeyCode::KeyW, cam.forward().into(), AnimationType::FrontWalk, AnimationType::FrontAir, TypeOfAttack::Forward);
-    key_to_direction(KeyCode::KeyS, cam.back().into(), AnimationType::BackWalk, AnimationType::BackAir, TypeOfAttack::Backward);
-    key_to_direction(KeyCode::KeyA, cam.left().into(), AnimationType::LeftWalk, AnimationType::LeftAir, TypeOfAttack::Left);
-    key_to_direction(KeyCode::KeyD, cam.right().into(), AnimationType::RightWalk, AnimationType::RightAir, TypeOfAttack::Right);
+    key_to_direction(
+        KeyCode::KeyW,
+        cam.forward().into(),
+        AnimationType::FrontWalk,
+        AnimationType::FrontAir,
+        TypeOfAttack::Forward,
+    );
+    key_to_direction(
+        KeyCode::KeyS,
+        cam.back().into(),
+        AnimationType::BackWalk,
+        AnimationType::BackAir,
+        TypeOfAttack::Backward,
+    );
+    key_to_direction(
+        KeyCode::KeyA,
+        cam.left().into(),
+        AnimationType::LeftWalk,
+        AnimationType::LeftAir,
+        TypeOfAttack::Left,
+    );
+    key_to_direction(
+        KeyCode::KeyD,
+        cam.right().into(),
+        AnimationType::RightWalk,
+        AnimationType::RightAir,
+        TypeOfAttack::Right,
+    );
 
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
@@ -163,20 +190,22 @@ pub fn keyboard_dash(
 
 pub fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,
-    mut q_1: Query<(Has<Grounded>,&mut Limit), With<Player>>,
+    mut q_1: Query<(Has<Grounded>, &mut Limit), With<Player>>,
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
 ) {
+    let (is_grounded, mut amount_jumps) = q_1
+        .get_single_mut()
+        .expect("Player to only have one grounded flag and limit");
 
-    let (is_grounded,mut amount_jumps) = q_1.get_single_mut().expect("Player to only have one grounded flag and limit");
-
-    if is_grounded{
-        amount_jumps.jump_limit = Limit{
+    if is_grounded {
+        amount_jumps.jump_limit = Limit {
             ..Default::default()
-        }.jump_limit
+        }
+        .jump_limit
     }
-    if keys.just_pressed(KeyCode::Space) && amount_jumps.jump_limit != 0{
-        amount_jumps.jump_limit -=1;
+    if keys.just_pressed(KeyCode::Space) && amount_jumps.jump_limit != 0 {
+        amount_jumps.jump_limit -= 1;
         movement_event_writer.send(MovementAction::Jump);
         animation_type_writer.send(AnimationType::Jump);
     }
@@ -200,8 +229,6 @@ pub fn move_character(
                 }
                 MovementAction::Jump => vel.linvel.y += 20.0,
             }
-            
         }
     }
 }
-

@@ -19,9 +19,8 @@ pub enum AnimationType {
     BackAir,
     LeftAir,
     RightAir,
-    Landing
+    Landing,
 }
-
 
 pub struct AnimationProperties {
     pub name: &'static str,
@@ -91,9 +90,12 @@ impl AnimationType {
             AnimationType::RightAir => {
                 AnimationProperties::new("RightAir", Duration::from_millis(500), false, None)
             }
-            AnimationType::Landing => {
-                AnimationProperties::new("Landing", Duration::from_millis(0), false, Some(Duration::from_millis(500)))
-            }
+            AnimationType::Landing => AnimationProperties::new(
+                "Landing",
+                Duration::from_millis(0),
+                false,
+                Some(Duration::from_millis(500)),
+            ),
             AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false, None),
         }
     }

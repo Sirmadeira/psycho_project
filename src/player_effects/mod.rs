@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use self::{detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*,status_observers::*};
+use self::{
+    detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*,
+    status_observers::*,
+};
 
 pub mod detect_hits;
 pub mod lib;
@@ -9,7 +12,7 @@ pub mod rotate_character;
 pub mod status_effects;
 pub mod status_observers;
 
-use crate::spawn_game_entities::player_exists;
+use crate::{spawn_game_entities::player_exists, MyAppState};
 
 pub struct PlayerEffects;
 
@@ -31,13 +34,16 @@ impl Plugin for PlayerEffects {
                 check_status_idle,
                 check_dead,
             )
-                .run_if(player_exists),
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame)),
         );
         app.observe(observe_grounded);
         // Send animation events and at the same time, movement events
         app.add_systems(
             Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump).run_if(player_exists),
+            (keyboard_walk, keyboard_dash, keyboard_jump)
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame)),
         );
         // Moves character around
         app.add_systems(
@@ -48,7 +54,8 @@ impl Plugin for PlayerEffects {
                 detect_rotation,
                 spine_look_at,
             )
-                .run_if(player_exists),
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame)),
         );
 
         app.add_systems(
@@ -58,7 +65,8 @@ impl Plugin for PlayerEffects {
                 detect_hits_wall_weapon,
                 detect_hits_weapon_weapon,
             )
-                .run_if(player_exists),
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame)),
         );
     }
 }

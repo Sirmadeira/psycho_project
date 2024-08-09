@@ -22,7 +22,7 @@ impl Plugin for LoadingAssetsPlugin {
 #[derive(AssetCollection, Resource)]
 pub struct MyAssets {
     #[asset(
-        paths("skeleton.glb", "rigge_female.glb", "katana.glb","wood_floor.glb"),
+        paths("skeleton.glb", "rigge_female.glb", "katana.glb", "wood_floor.glb"),
         collection(typed, mapped)
     )]
     pub gltf_files: HashMap<String, Handle<Gltf>>,

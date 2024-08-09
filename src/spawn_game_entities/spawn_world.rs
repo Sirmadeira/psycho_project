@@ -1,8 +1,7 @@
+use crate::load_assets_plugin::MyAssets;
 use crate::spawn_game_entities::lib::*;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use crate::load_assets_plugin::MyAssets;
-
 
 // Spawns the main collider floor and a ugly mesh
 pub fn spawn_floor(
@@ -10,10 +9,11 @@ pub fn spawn_floor(
     asset_pack: Res<MyAssets>,
     assets_gltf: Res<Assets<Gltf>>,
 ) {
-
     let collection_gltf = &asset_pack.gltf_files;
 
-    let wood_floor = collection_gltf.get("wood_floor.glb").expect("To have floor");
+    let wood_floor = collection_gltf
+        .get("wood_floor.glb")
+        .expect("To have floor");
 
     let test = assets_gltf.get(wood_floor).expect("TO find asset");
 
@@ -25,9 +25,9 @@ pub fn spawn_floor(
     // BAKE MESH ADD MATERIAL
 
     let floor = (
-        SceneBundle{
+        SceneBundle {
             scene: scene_test.clone(),
-            transform:Transform::from_xyz(0.0,0.0,0.0),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..Default::default()
         },
         Name::new("Floor"),

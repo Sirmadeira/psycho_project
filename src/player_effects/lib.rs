@@ -1,6 +1,5 @@
 use bevy::{prelude::*, time::Timer};
 
-
 #[derive(Event, Debug)]
 pub enum MovementAction {
     // Movement direction
@@ -56,11 +55,10 @@ pub struct StatusEffectDefend {
 #[component(storage = "SparseSet")]
 pub struct StatusIdle(pub Timer);
 
-
 // Check if it stuns - Stops animation midtrack and plays one last animation until it is finished
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
-pub struct StatusEffectStun{pub timer: Timer,
-                pub played_animation: bool}
-
-
+pub struct StatusEffectStun {
+    pub timer: Timer,
+    pub played_animation: bool,
+}

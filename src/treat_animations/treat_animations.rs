@@ -1,8 +1,8 @@
 use std::time::Duration;
 
+use crate::player_effects::lib::StatusEffectStun;
 use crate::spawn_game_entities::lib::*;
 use crate::treat_animations::lib::*;
-use crate::player_effects::lib::StatusEffectStun;
 use bevy::prelude::*;
 
 // Loads from assets and put into our animations players must have for animation playing
@@ -41,13 +41,11 @@ pub fn state_machine(
     animations: Res<Animations>,
     mut animation_to_play: EventReader<AnimationType>,
 ) {
-
     let (mut animation_player, mut active_transitions) = animation_components
         .get_single_mut()
         .expect("Expect to have animated armature");
 
-
-    if let Some(current_animation) = active_transitions.get_main_animation(){    
+    if let Some(current_animation) = active_transitions.get_main_animation() {
         for event in animation_to_play.read() {
             let properties = event.properties();
 
@@ -56,15 +54,14 @@ pub fn state_machine(
                 .get(properties.name)
                 .expect("To find animation in resource");
 
-            if let Ok(mut stun) = stun_info.get_single_mut(){
+            if let Ok(mut stun) = stun_info.get_single_mut() {
                 println!("Animation to play {}", properties.name);
-                if !stun.played_animation{
+                if !stun.played_animation {
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     stun.played_animation = true;
                 }
-                return
-            }
-            else {
+                return;
+            } else {
                 println!("Animation to play {}", properties.name);
                 // Handles scenario where the is no "stun"
                 if current_animation != *animation {
@@ -73,15 +70,21 @@ pub fn state_machine(
                             .play(&mut animation_player, *animation, properties.duration)
                             .repeat();
                     } else {
-                        active_transitions.play(&mut animation_player, *animation, properties.duration);
+                        active_transitions.play(
+                            &mut animation_player,
+                            *animation,
+                            properties.duration,
+                        );
                     }
-                }            
+                }
             }
         }
-    }
-    else {
+    } else {
         println!("Adding first animation");
-        let first_anim = animations.named_nodes.get("StartPose").expect("First animation to exist");
-        active_transitions.play(&mut animation_player,*first_anim,Duration::ZERO);
+        let first_anim = animations
+            .named_nodes
+            .get("StartPose")
+            .expect("First animation to exist");
+        active_transitions.play(&mut animation_player, *first_anim, Duration::ZERO);
     }
 }
