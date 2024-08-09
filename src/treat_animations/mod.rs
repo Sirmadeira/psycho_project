@@ -23,7 +23,7 @@ impl Plugin for TreatAnimations {
             state_machine
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))
-                .after(setup_state_machine),
+                .after(setup_state_machine)
         );
     }
 }

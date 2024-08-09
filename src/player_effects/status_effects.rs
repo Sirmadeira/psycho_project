@@ -112,12 +112,12 @@ pub fn check_status_grounded(
 
 // Check if player is idle if so it send animation type and adds a component
 pub fn check_status_idle(
-    q_1: Query<(Entity, &Velocity,Has<StatusIdle>), With<Player>>,
+    q_1: Query<(Entity, &Velocity,&ExternalImpulse,Has<StatusIdle>), With<Player>>,
     mut commands: Commands,
     mut animation_writer: EventWriter<AnimationType>,
 ) {
-    for (entity, vel,is_idle) in q_1.iter() {
-        if vel.linvel.length() < 0.01 {
+    for (entity, vel,imp,is_idle) in q_1.iter() {
+        if vel.linvel.length() < 0.01 && imp.impulse.length() < 0.01{
             if !is_idle{
                 commands.entity(entity).insert(StatusIdle(Timer::new(Duration::from_micros(200), TimerMode::Once)));
                 animation_writer.send(AnimationType::Idle);

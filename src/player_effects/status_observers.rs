@@ -14,10 +14,9 @@ pub fn observe_grounded(
     let character_grounded  = trigger.entity();
     // Check if player
     if q_1.get(character_grounded).is_ok() {
-        println!("Stun");
-        animation_writer.send(AnimationType::Landing);
         let animation_cd = AnimationType::Landing.properties().cooldown.expect("This animation to have a cooldown");
         commands.entity(character_grounded).insert(StatusEffectStun{timer: Timer::new(animation_cd, TimerMode::Once),played_animation: false});
+        animation_writer.send(AnimationType::Landing);
         
     } else {
         println!("Side player doesn't count");

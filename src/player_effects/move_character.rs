@@ -15,15 +15,15 @@ pub fn keyboard_walk(
     mut animation_type_writer: EventWriter<AnimationType>,
     mut attack_writer: EventWriter<TypeOfAttack>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<(Has<StatusEffectDash>, Has<Grounded>), With<Player>>,
+    q_2: Query<(Has<StatusEffectDash>,Has<StatusEffectStun> ,Has<Grounded>), With<Player>>,
 ) {
     let cam = q_1.get_single().expect("Expected to have a camera");
 
-    let (has_dash, has_grounded) = q_2
+    let (has_dash,has_stun, has_grounded) = q_2
         .get_single()
         .expect("Expected to be able to check if player has dashed");
 
-    if has_dash {
+    if has_dash || has_stun{
         return;
     }
 
@@ -69,16 +69,16 @@ pub fn keyboard_dash(
 
         timers
             .up
-            .tick(Duration::from_secs_f32(time.delta_seconds()));
+            .tick(Duration::from_secs_f64(time.delta_seconds_f64()));
         timers
             .down
-            .tick(Duration::from_secs_f32(time.delta_seconds()));
+            .tick(Duration::from_secs_f64(time.delta_seconds_f64()));
         timers
             .left
-            .tick(Duration::from_secs_f32(time.delta_seconds()));
+            .tick(Duration::from_secs_f64(time.delta_seconds_f64()));
         timers
             .right
-            .tick(Duration::from_secs_f32(time.delta_seconds()));
+            .tick(Duration::from_secs_f64(time.delta_seconds_f64()));
 
         if keys.just_released(KeyCode::KeyW) {
             timers.up.reset();
@@ -116,7 +116,7 @@ pub fn keyboard_dash(
         if direction != Vec2::ZERO && has_dashed == false {
             // Add dash status effect
             let status_dash = StatusEffectDash {
-                dash_cooldown: Timer::new(Duration::from_secs_f32(0.4), TimerMode::Once),
+                dash_cooldown: Timer::new(Duration::from_secs_f64(0.4), TimerMode::Once),
             };
             commands.entity(player).insert(status_dash);
 
@@ -185,27 +185,22 @@ pub fn keyboard_jump(
 pub fn move_character(
     mut movement_event_reader: EventReader<MovementAction>,
     time: Res<Time>,
-    mut q_1: Query<(&mut Velocity, &mut ExternalImpulse, Has<StatusEffectStun>), With<Player>>,
+    mut q_1: Query<(&mut Velocity, &mut ExternalImpulse), With<Player>>,
 ) {
     for event in movement_event_reader.read() {
-        for (mut vel, mut impulse, is_stunned) in &mut q_1 {
-            if is_stunned {
-                // If stunned, set all velocities to zero
-                vel.linvel = Vec3::ZERO;
-                impulse.impulse = Vec3::ZERO;
-            } else {
-                match event {
-                    MovementAction::Move(direction) => {
-                        vel.linvel.x += direction.x * 20.0 * time.delta_seconds();
-                        vel.linvel.z += direction.y * 20.0 * time.delta_seconds();
-                    }
-                    MovementAction::Dash(direction) => {
-                        impulse.impulse.x = direction.x * 200.0;
-                        impulse.impulse.z = direction.y * 200.0;
-                    }
-                    MovementAction::Jump => vel.linvel.y += 20.0,
+        for (mut vel, mut impulse) in &mut q_1 {
+            match event {
+                MovementAction::Move(direction) => {
+                    vel.linvel.x += direction.x * 20.0 * time.delta_seconds();
+                    vel.linvel.z += direction.y * 20.0 * time.delta_seconds();
                 }
+                MovementAction::Dash(direction) => {
+                    impulse.impulse.x = direction.x * 200.0;
+                    impulse.impulse.z = direction.y * 200.0;
+                }
+                MovementAction::Jump => vel.linvel.y += 20.0,
             }
+            
         }
     }
 }
