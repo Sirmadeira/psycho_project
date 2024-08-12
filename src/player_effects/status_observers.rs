@@ -16,13 +16,13 @@ pub fn observe_grounded(
             .properties()
             .cooldown
             .expect("This animation to have a cooldown");
+        animation_writer.send(AnimationType::Landing);
         commands
             .entity(character_grounded)
             .insert(StatusEffectStun {
                 timer: Timer::new(animation_cd, TimerMode::Once),
                 played_animation: false,
             });
-        animation_writer.send(AnimationType::Landing);
     } else {
         println!("Side player doesn't count");
     }

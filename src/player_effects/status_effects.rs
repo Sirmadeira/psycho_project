@@ -88,6 +88,7 @@ pub fn check_status_grounded(
     q_1: Query<Entity, With<PlayerGroundCollider>>,
     q_2: Query<Entity, With<Ground>>,
     q_3: Query<(Entity, Has<Grounded>), With<Player>>,
+    mut animation_writer: EventWriter<AnimationType>,
 ) {
     // Player
     let (player, is_grounded) = q_3.get_single().expect("Player to exist");
@@ -102,6 +103,8 @@ pub fn check_status_grounded(
                     return;
                 } else {
                     commands.entity(player).insert(Grounded);
+                    animation_writer.send(AnimationType::Landing);
+                    
                 }
             }
         } else {
