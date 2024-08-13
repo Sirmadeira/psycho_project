@@ -23,7 +23,7 @@ impl Plugin for PlayerEffects {
         app.register_type::<StatusEffectStun>();
         // Gives status effects
         app.add_systems(
-            Update,
+            FixedPreUpdate,
             (
                 check_status_grounded,
                 check_status_effect,
@@ -34,13 +34,12 @@ impl Plugin for PlayerEffects {
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
-        // app.observe(observe_grounded);
         // Send animation events and at the same time, movement events ae
         app.add_systems(
             Update,
             (keyboard_walk, keyboard_dash, keyboard_jump)
                 .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)).after(check_status_grounded),
+                .run_if(in_state(MyAppState::InGame)),
         );
         // Moves character around
         app.add_systems(

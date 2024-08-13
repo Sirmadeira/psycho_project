@@ -85,16 +85,16 @@ pub fn keyboard_dash(
 
         timers
             .up
-            .tick(Duration::from_secs_f64(time.delta_seconds_f64()));
+            .tick(Duration::from_secs_f32(time.delta_seconds()));
         timers
             .down
-            .tick(Duration::from_secs_f64(time.delta_seconds_f64()));
+            .tick(Duration::from_secs_f32(time.delta_seconds()));
         timers
             .left
-            .tick(Duration::from_secs_f64(time.delta_seconds_f64()));
+            .tick(Duration::from_secs_f32(time.delta_seconds()));
         timers
             .right
-            .tick(Duration::from_secs_f64(time.delta_seconds_f64()));
+            .tick(Duration::from_secs_f32(time.delta_seconds()));
 
         if keys.just_released(KeyCode::KeyW) {
             timers.up.reset();
@@ -132,7 +132,7 @@ pub fn keyboard_dash(
         if direction != Vec2::ZERO && has_dashed == false {
             // Add dash status effect
             let status_dash = StatusEffectDash {
-                dash_cooldown: Timer::new(Duration::from_secs_f64(0.5), TimerMode::Once),
+                dash_cooldown: Timer::new(Duration::from_secs_f32(0.5), TimerMode::Once),
             };
             commands.entity(player).insert(status_dash);
 

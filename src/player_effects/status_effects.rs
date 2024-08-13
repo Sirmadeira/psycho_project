@@ -105,14 +105,10 @@ pub fn check_status_grounded(
                     // Tell me player is grounded
                     commands.entity(player).insert(Grounded);
                     // Handle animation and stuns character
-                    let animation_cd = AnimationType::Landing
-                        .properties()
-                        .cooldown
-                        .expect("This animation to have a stun");
 
                     animation_writer.send(AnimationType::Landing);
                     commands.entity(player).insert(StatusEffectStun {
-                        timer: Timer::new(animation_cd, TimerMode::Once),
+                        timer: Timer::new(Duration::from_micros(50), TimerMode::Once),
                         played_animation: false,
                     });
                 }

@@ -26,7 +26,6 @@ pub struct AnimationProperties {
     pub name: &'static str,
     pub duration: Duration,
     pub repeat: bool,
-    pub cooldown: Option<Duration>,
 }
 
 impl AnimationProperties {
@@ -34,13 +33,11 @@ impl AnimationProperties {
         name: &'static str,
         duration: Duration,
         repeat: bool,
-        cooldown: Option<Duration>,
     ) -> Self {
         Self {
             name,
             duration,
             repeat,
-            cooldown,
         }
     }
 }
@@ -49,54 +46,53 @@ impl AnimationType {
     pub fn properties(self) -> AnimationProperties {
         match self {
             AnimationType::Idle => {
-                AnimationProperties::new("Idle", Duration::from_millis(200), false, None)
+                AnimationProperties::new("Idle", Duration::from_millis(200), false)
             }
             AnimationType::FrontWalk => {
-                AnimationProperties::new("FrontWalk", Duration::from_millis(200), true, None)
+                AnimationProperties::new("FrontWalk", Duration::from_millis(200), true)
             }
             AnimationType::BackWalk => {
-                AnimationProperties::new("BackWalk", Duration::from_millis(200), true, None)
+                AnimationProperties::new("BackWalk", Duration::from_millis(200), true)
             }
             AnimationType::LeftWalk => {
-                AnimationProperties::new("LeftWalk", Duration::from_millis(200), true, None)
+                AnimationProperties::new("LeftWalk", Duration::from_millis(200), true)
             }
             AnimationType::RightWalk => {
-                AnimationProperties::new("RightWalk", Duration::from_millis(200), true, None)
+                AnimationProperties::new("RightWalk", Duration::from_millis(200), true)
             }
             AnimationType::FrontDash => {
-                AnimationProperties::new("FrontDash", Duration::from_millis(0), false, None)
+                AnimationProperties::new("FrontDash", Duration::from_millis(0), false)
             }
             AnimationType::LeftDash => {
-                AnimationProperties::new("LeftDash", Duration::from_millis(0), false, None)
+                AnimationProperties::new("LeftDash", Duration::from_millis(0), false)
             }
             AnimationType::RightDash => {
-                AnimationProperties::new("RightDash", Duration::from_millis(0), false, None)
+                AnimationProperties::new("RightDash", Duration::from_millis(0), false)
             }
             AnimationType::BackDash => {
-                AnimationProperties::new("BackDash", Duration::from_millis(0), false, None)
+                AnimationProperties::new("BackDash", Duration::from_millis(0), false)
             }
             AnimationType::Jump => {
-                AnimationProperties::new("Jump", Duration::from_millis(0), false, None)
+                AnimationProperties::new("Jump", Duration::from_millis(0), false)
             }
             AnimationType::FrontAir => {
-                AnimationProperties::new("FrontAir", Duration::from_millis(400), false, None)
+                AnimationProperties::new("FrontAir", Duration::from_millis(400), false)
             }
             AnimationType::BackAir => {
-                AnimationProperties::new("BackAir", Duration::from_millis(400), false, None)
+                AnimationProperties::new("BackAir", Duration::from_millis(400), false)
             }
             AnimationType::LeftAir => {
-                AnimationProperties::new("LeftAir", Duration::from_millis(500), false, None)
+                AnimationProperties::new("LeftAir", Duration::from_millis(500), false)
             }
             AnimationType::RightAir => {
-                AnimationProperties::new("RightAir", Duration::from_millis(500), false, None)
+                AnimationProperties::new("RightAir", Duration::from_millis(500), false)
             }
             AnimationType::Landing => AnimationProperties::new(
                 "Landing",
                 Duration::from_millis(0),
                 false,
-                Some(Duration::from_millis(500)),
             ),
-            AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false, None),
+            AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false),
         }
     }
 }
