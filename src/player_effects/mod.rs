@@ -16,7 +16,6 @@ pub struct PlayerEffects;
 
 impl Plugin for PlayerEffects {
     fn build(&self, app: &mut App) {
-        app.add_event::<TypeOfAttack>();
         app.add_event::<MovementAction>();
         app.add_event::<RotateAction>();
         app.register_type::<StatusEffectDash>();

@@ -6,13 +6,11 @@ use crate::player_effects::*;
 use crate::spawn_game_entities::lib::*;
 use crate::treat_animations::lib::AnimationType;
 
-use super::TypeOfAttack;
 
 pub fn keyboard_walk(
     keys: Res<ButtonInput<KeyCode>>, // Res<Input<KeyCode>> is used instead of ButtonInput<KeyCode>
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
-    mut attack_writer: EventWriter<TypeOfAttack>,
     q_1: Query<&Transform, With<CamInfo>>,
     q_2: Query<(Has<StatusEffectDash>, Has<StatusEffectStun>, Has<Grounded>), With<Player>>,
 ) {
@@ -28,18 +26,14 @@ pub fn keyboard_walk(
 
     let mut direction = Vec2::ZERO;
     let mut movetype = AnimationType::None;
-    let mut attacktype = TypeOfAttack::None;
-
     let mut key_to_direction = |key: KeyCode,
                                 cam_dir: Vec3,
                                 walk_anim: AnimationType,
-                                air_anim: AnimationType,
-                                atk_type: TypeOfAttack| {
+                                air_anim: AnimationType| {
         if keys.pressed(key) {
             direction.x = cam_dir.x;
             direction.y = cam_dir.z;
             movetype = if has_grounded { walk_anim } else { air_anim };
-            attacktype = atk_type;
         }
     };
 
@@ -48,34 +42,29 @@ pub fn keyboard_walk(
         cam.forward().into(),
         AnimationType::FrontWalk,
         AnimationType::FrontAir,
-        TypeOfAttack::Forward,
     );
     key_to_direction(
         KeyCode::KeyS,
         cam.back().into(),
         AnimationType::BackWalk,
         AnimationType::BackAir,
-        TypeOfAttack::Backward,
     );
     key_to_direction(
         KeyCode::KeyA,
         cam.left().into(),
         AnimationType::LeftWalk,
         AnimationType::LeftAir,
-        TypeOfAttack::Left,
     );
     key_to_direction(
         KeyCode::KeyD,
         cam.right().into(),
         AnimationType::RightWalk,
         AnimationType::RightAir,
-        TypeOfAttack::Right,
     );
 
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
         animation_type_writer.send(movetype);
-        attack_writer.send(attacktype);
     }
 }
 
