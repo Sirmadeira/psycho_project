@@ -12,15 +12,15 @@ pub fn keyboard_walk(
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<(Has<StatusEffectDash>, Has<StatusEffectStun>, Has<Grounded>), With<Player>>,
+    q_2: Query<(Has<StatusEffectDash>, Has<StatusEffectStun>,Has<StatusEffectAttack>, Has<Grounded>), With<Player>>,
 ) {
     let cam = q_1.get_single().expect("Expected to have a camera");
 
-    let (has_dash, has_stun, has_grounded) = q_2
+    let (has_dash, has_stun,has_attack, has_grounded) = q_2
         .get_single()
         .expect("Expected to be able to check if player has dashed");
 
-    if has_dash || has_stun {
+    if has_dash || has_stun || has_attack {
         return;
     }
 
@@ -143,39 +143,39 @@ pub fn keyboard_dash(
     }
 }
 
-// pub fn keyboard_attack(
-//     mouse: Res<ButtonInput<MouseButton>>,
-//     mut animation_type_writer: EventWriter<AnimationType>,
-//     mut type_attack: EventReader<TypeOfAttack>,
-// ) {
-//     // Light attack
-//     for event in type_attack.read() {
-//         match event {
-//             TypeOfAttack::Forward => {
-//                 if mouse.just_pressed(MouseButton::Left) {
-//                 }
-//             }
-//             TypeOfAttack::Backward => {
-//                 if mouse.just_pressed(MouseButton::Left) {
-//                 }
-//             }
-//             TypeOfAttack::Left => {
-//                 if mouse.just_pressed(MouseButton::Left) {
-//                 }
-//             }
-//             TypeOfAttack::Right => {
-//                 if mouse.just_pressed(MouseButton::Left) {
-//                 }
-//             }
-//             TypeOfAttack::None => {
-//                 // Handle no attack state if necessary
-//             }
-//         }
-//     }
-//     // Defend
-//     if mouse.just_pressed(MouseButton::Right) {
-//     }
-// }
+pub fn keyboard_attack(
+    mouse: Res<ButtonInput<MouseButton>>,
+    keys: Res<ButtonInput<KeyCode>>,
+    mut animation_type_writer: EventWriter<AnimationType>,
+    q_1: Query<Entity,With<Player>>,
+    mut commands: Commands
+) {
+
+    let player = q_1.get_single().expect("FOr player to exist");
+
+    let mut movetype = AnimationType::None;
+
+    if mouse.pressed(MouseButton::Left) && keys.pressed(KeyCode::KeyW){
+        movetype = AnimationType::FrontAttack;
+    }
+    if mouse.pressed(MouseButton::Left) && keys.pressed(KeyCode::KeyS){
+        movetype = AnimationType::BackAttack;
+    }
+    if mouse.pressed(MouseButton::Left) && keys.pressed(KeyCode::KeyA){
+        movetype = AnimationType::LeftAttack;
+    }
+    if mouse.pressed(MouseButton::Left) && keys.pressed(KeyCode::KeyD){
+        movetype = AnimationType::RightAttack;
+    }
+    if movetype != AnimationType::None{
+        animation_type_writer.send(movetype);
+
+        commands.entity(player).insert(StatusEffectAttack(Timer::new(Duration::from_micros(500), TimerMode::Once)));
+    }
+    // Defend
+    if mouse.just_pressed(MouseButton::Right) {
+    }
+}
 
 pub fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,

@@ -26,7 +26,7 @@ impl Plugin for PlayerEffects {
             FixedPreUpdate,
             (
                 check_status_grounded,
-                check_status_effect,
+                check_status_ticker,
                 check_status_wallbounce,
                 check_status_idle,
                 check_dead,
@@ -37,7 +37,7 @@ impl Plugin for PlayerEffects {
         // Send animation events and at the same time, movement events ae
         app.add_systems(
             Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump)
+            (keyboard_walk, keyboard_dash, keyboard_jump,keyboard_attack)
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );

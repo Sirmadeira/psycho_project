@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 
 // Tells me which type of movement i should pass, to avoid multiple arguments or enums
-#[derive(Event, Clone, Copy, Debug)]
+#[derive(Event, Clone, Copy, Debug,PartialEq,Eq)]
 pub enum AnimationType {
     None,
     Idle,
@@ -20,6 +20,10 @@ pub enum AnimationType {
     LeftAir,
     RightAir,
     Landing,
+    FrontAttack,
+    BackAttack,
+    LeftAttack,
+    RightAttack
 }
 
 pub struct AnimationProperties {
@@ -89,6 +93,26 @@ impl AnimationType {
             }
             AnimationType::Landing => AnimationProperties::new(
                 "Landing",
+                Duration::from_millis(0),
+                false,
+            ),
+            AnimationType::FrontAttack => AnimationProperties::new(
+                "FrontAttack",
+                Duration::from_millis(0),
+                false,
+            ),
+            AnimationType::BackAttack => AnimationProperties::new(
+                "BackAttack",
+                Duration::from_millis(0),
+                false,
+            ),
+            AnimationType::LeftAttack => AnimationProperties::new(
+                "LeftAttack",
+                Duration::from_millis(0),
+                false,
+            ),
+            AnimationType::RightAttack => AnimationProperties::new(
+                "RightAttack",
                 Duration::from_millis(0),
                 false,
             ),

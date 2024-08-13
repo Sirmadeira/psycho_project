@@ -9,7 +9,7 @@ use crate::treat_animations::lib::AnimationType;
 
 use super::StatusEffectWallBounce;
 
-pub fn check_status_effect(
+pub fn check_status_ticker(
     time: Res<Time>,
     mut commands: Commands,
     mut q_1: Query<
@@ -17,21 +17,22 @@ pub fn check_status_effect(
             Entity,
             Option<&mut StatusEffectDash>,
             Option<&mut StatusEffectStun>,
+            Option<&mut StatusEffectAttack>
         ),
         With<Player>,
     >,
 ) {
-    for (ent, status_effect_dash, animation_cd) in q_1.iter_mut() {
-        if let Some(mut status) = status_effect_dash {
-            status
+    for (ent,opt_dash, status_effect_stun,opt_attack) in q_1.iter_mut() {
+        if let Some(mut status_dash) = opt_dash {
+            status_dash
                 .dash_cooldown
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
-            if status.dash_cooldown.finished() {
+            if status_dash.dash_cooldown.finished() {
                 commands.entity(ent).remove::<StatusEffectDash>();
             }
         }
 
-        if let Some(mut cooldown) = animation_cd {
+        if let Some(mut cooldown) = status_effect_stun {
             cooldown
                 .timer
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
@@ -40,6 +41,15 @@ pub fn check_status_effect(
                 commands.entity(ent).remove::<StatusEffectStun>();
             }
         }
+        
+        if let Some(mut status_attack) = opt_attack{
+            status_attack.0.tick(Duration::from_secs_f32(time.delta_seconds()));
+            if status_attack.0.finished(){
+                println!("No longer attacking");
+                commands.entity(ent).remove::<StatusEffectAttack>();
+            }
+        }
+
     }
 }
 
@@ -142,6 +152,8 @@ pub fn check_status_idle(
         }
     }
 }
+
+
 
 pub fn check_dead(
     hp_entities: Query<(Entity, &Health)>,

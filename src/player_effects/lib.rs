@@ -42,6 +42,10 @@ pub struct StatusEffectDefend {
     pub dash_cooldown: Timer,
 }
 
+#[derive(Reflect,Component,Debug)]
+#[component(storage = "SparseSet")]
+pub struct StatusEffectAttack(pub Timer);
+
 // Check if has stopped
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
