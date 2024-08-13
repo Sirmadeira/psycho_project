@@ -170,7 +170,7 @@ pub fn keyboard_attack(
     if movetype != AnimationType::None{
         animation_type_writer.send(movetype);
 
-        commands.entity(player).insert(StatusEffectAttack(Timer::new(Duration::from_micros(500), TimerMode::Once)));
+        commands.entity(player).insert(StatusEffectAttack(Timer::new(Duration::from_secs(1), TimerMode::Once)));
     }
     // Defend
     if mouse.just_pressed(MouseButton::Right) {
