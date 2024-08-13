@@ -143,7 +143,7 @@ pub fn keyboard_dash(
         if direction != Vec2::ZERO && has_dashed == false {
             // Add dash status effect
             let status_dash = StatusEffectDash {
-                dash_cooldown: Timer::new(Duration::from_secs_f64(0.4), TimerMode::Once),
+                dash_cooldown: Timer::new(Duration::from_secs_f64(0.5), TimerMode::Once),
             };
             commands.entity(player).insert(status_dash);
 

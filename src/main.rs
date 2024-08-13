@@ -71,5 +71,3 @@ fn main() {
         .add_plugins(IngameCamera)
         .run();
 }
-
-

@@ -1,16 +1,12 @@
-use bevy:: prelude::*;
+use bevy::prelude::*;
 
-use self::{
-    detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*,
-    status_observers::*,
-};
+use self::{detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*};
 
 pub mod detect_hits;
 pub mod lib;
 pub mod move_character;
 pub mod rotate_character;
 pub mod status_effects;
-pub mod status_observers;
 
 use crate::{spawn_game_entities::player_exists, MyAppState};
 
@@ -43,7 +39,9 @@ impl Plugin for PlayerEffects {
             Update,
             (keyboard_walk, keyboard_dash, keyboard_jump)
                 .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)).chain().after(check_status_grounded),
+                .run_if(in_state(MyAppState::InGame))
+                .chain()
+                .after(check_status_grounded),
         );
         // Moves character around
         app.add_systems(
