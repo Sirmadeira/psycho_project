@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 
 // Tells me which type of movement i should pass, to avoid multiple arguments or enums
-#[derive(Event, Clone, Copy, Debug,PartialEq,Eq)]
+#[derive(Event, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AnimationType {
     None,
     Idle,
@@ -23,7 +23,7 @@ pub enum AnimationType {
     FrontAttack,
     BackAttack,
     LeftAttack,
-    RightAttack
+    RightAttack,
 }
 
 pub struct AnimationProperties {
@@ -33,11 +33,7 @@ pub struct AnimationProperties {
 }
 
 impl AnimationProperties {
-    pub fn new(
-        name: &'static str,
-        duration: Duration,
-        repeat: bool,
-    ) -> Self {
+    pub fn new(name: &'static str, duration: Duration, repeat: bool) -> Self {
         Self {
             name,
             duration,
@@ -50,19 +46,19 @@ impl AnimationType {
     pub fn properties(self) -> AnimationProperties {
         match self {
             AnimationType::Idle => {
-                AnimationProperties::new("Idle", Duration::from_millis(200), false)
+                AnimationProperties::new("Idle", Duration::from_millis(400), false)
             }
             AnimationType::FrontWalk => {
-                AnimationProperties::new("FrontWalk", Duration::from_millis(200), true)
+                AnimationProperties::new("FrontWalk", Duration::from_millis(400), true)
             }
             AnimationType::BackWalk => {
-                AnimationProperties::new("BackWalk", Duration::from_millis(200), true)
+                AnimationProperties::new("BackWalk", Duration::from_millis(400), true)
             }
             AnimationType::LeftWalk => {
-                AnimationProperties::new("LeftWalk", Duration::from_millis(200), true)
+                AnimationProperties::new("LeftWalk", Duration::from_millis(400), true)
             }
             AnimationType::RightWalk => {
-                AnimationProperties::new("RightWalk", Duration::from_millis(200), true)
+                AnimationProperties::new("RightWalk", Duration::from_millis(400), true)
             }
             AnimationType::FrontDash => {
                 AnimationProperties::new("FrontDash", Duration::from_millis(0), false)
@@ -91,31 +87,21 @@ impl AnimationType {
             AnimationType::RightAir => {
                 AnimationProperties::new("RightAir", Duration::from_millis(500), false)
             }
-            AnimationType::Landing => AnimationProperties::new(
-                "Landing",
-                Duration::from_millis(0),
-                false,
-            ),
-            AnimationType::FrontAttack => AnimationProperties::new(
-                "FrontAttack",
-                Duration::from_millis(0),
-                false,
-            ),
-            AnimationType::BackAttack => AnimationProperties::new(
-                "BackAttack",
-                Duration::from_millis(0),
-                false,
-            ),
-            AnimationType::LeftAttack => AnimationProperties::new(
-                "LeftAttack",
-                Duration::from_millis(0),
-                false,
-            ),
-            AnimationType::RightAttack => AnimationProperties::new(
-                "RightAttack",
-                Duration::from_millis(0),
-                false,
-            ),
+            AnimationType::Landing => {
+                AnimationProperties::new("Landing", Duration::from_millis(0), false)
+            }
+            AnimationType::FrontAttack => {
+                AnimationProperties::new("FrontAttack", Duration::from_millis(0), false)
+            }
+            AnimationType::BackAttack => {
+                AnimationProperties::new("BackAttack", Duration::from_millis(0), false)
+            }
+            AnimationType::LeftAttack => {
+                AnimationProperties::new("LeftAttack", Duration::from_millis(0), false)
+            }
+            AnimationType::RightAttack => {
+                AnimationProperties::new("RightAttack", Duration::from_millis(0), false)
+            }
             AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false),
         }
     }

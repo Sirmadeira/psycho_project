@@ -5,7 +5,6 @@ use bevy::utils::HashMap;
 use crate::load_assets_plugin::MyAssets;
 use crate::spawn_game_entities::lib::*;
 
-// Creates animation graph for each player and add it is clips to it
 pub fn spawn_animation_graph(
     amount_players: Res<AmountPlayers>,
     asset_pack: Res<MyAssets>,
@@ -20,7 +19,9 @@ pub fn spawn_animation_graph(
         // Node with a string name
         let mut named_nodes = HashMap::new();
 
-        // Using bevy asset loader to easily acess my assets
+        let blend_node = graph.add_blend(0.5, graph.root);
+
+        // Using bevy asset loader to easily access my assets
         for (_, gltf_handle) in &asset_pack.gltf_files {
             let gltf = assets_gltf
                 .get(gltf_handle)
@@ -28,8 +29,18 @@ pub fn spawn_animation_graph(
 
             // Creating named nodes
             for (name_animation, animation_clip) in gltf.named_animations.iter() {
-                // Returns animations node
-                let node = graph.add_clip(animation_clip.clone(), 1.0, graph.root);
+                // Set the parent node depending on the animation name
+                let parent_node = if name_animation.as_ref() == "Idle"
+                    || name_animation.as_ref() == "FrontWalk"
+                {
+                    println!("{}", name_animation);
+                    blend_node
+                } else {
+                    graph.root
+                };
+
+                let node = graph.add_clip(animation_clip.clone(), 1.0, parent_node);
+
                 // Creating named node
                 named_nodes.insert(name_animation.to_string(), node);
                 println!(

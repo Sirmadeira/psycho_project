@@ -17,12 +17,12 @@ pub fn check_status_ticker(
             Entity,
             Option<&mut StatusEffectDash>,
             Option<&mut StatusEffectStun>,
-            Option<&mut StatusEffectAttack>
+            Option<&mut StatusEffectAttack>,
         ),
         With<Player>,
     >,
 ) {
-    for (ent,opt_dash, status_effect_stun,opt_attack) in q_1.iter_mut() {
+    for (ent, opt_dash, status_effect_stun, opt_attack) in q_1.iter_mut() {
         if let Some(mut status_dash) = opt_dash {
             status_dash
                 .dash_cooldown
@@ -41,15 +41,16 @@ pub fn check_status_ticker(
                 commands.entity(ent).remove::<StatusEffectStun>();
             }
         }
-        
-        if let Some(mut status_attack) = opt_attack{
-            status_attack.0.tick(Duration::from_secs_f32(time.delta_seconds()));
-            if status_attack.0.finished(){
+
+        if let Some(mut status_attack) = opt_attack {
+            status_attack
+                .0
+                .tick(Duration::from_secs_f32(time.delta_seconds()));
+            if status_attack.0.finished() {
                 println!("No longer attacking");
                 commands.entity(ent).remove::<StatusEffectAttack>();
             }
         }
-
     }
 }
 
@@ -131,29 +132,31 @@ pub fn check_status_grounded(
 
 // Check if player is idle if so it send animation type and adds a component
 pub fn check_status_idle(
-    mut q_1: Query<(Entity, &Velocity, &ExternalImpulse,Option<&mut StatusIdle>), With<Player>>,
+    mut q_1: Query<(Entity, &Velocity, &ExternalImpulse, Option<&mut StatusIdle>), With<Player>>,
     mut commands: Commands,
     mut animation_writer: EventWriter<AnimationType>,
-    time: Res<Time>
+    time: Res<Time>,
 ) {
     for (player, vel, imp, opt_status_idle) in q_1.iter_mut() {
         if vel.linvel.length() < 0.01 && imp.impulse.length() < 0.01 {
-            if let Some(mut status_idle) = opt_status_idle{
-                status_idle.0.tick(Duration::from_secs_f32(time.delta_seconds()));
-                if status_idle.0.finished(){
+            if let Some(mut status_idle) = opt_status_idle {
+                status_idle
+                    .0
+                    .tick(Duration::from_secs_f32(time.delta_seconds()));
+                if status_idle.0.finished() {
                     animation_writer.send(AnimationType::Idle);
                 }
-            }
-            else {
-                commands.entity(player).insert(StatusIdle(Timer::new(Duration::from_micros(100), TimerMode::Once)));
+            } else {
+                commands.entity(player).insert(StatusIdle(Timer::new(
+                    Duration::from_micros(100),
+                    TimerMode::Once,
+                )));
             }
         } else {
             commands.entity(player).remove::<StatusIdle>(); // Remove the idle marker if the player is moving
         }
     }
 }
-
-
 
 pub fn check_dead(
     hp_entities: Query<(Entity, &Health)>,

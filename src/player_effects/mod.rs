@@ -1,8 +1,6 @@
-use bevy:: prelude::*;
+use bevy::prelude::*;
 
-use self::{
-    detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*,
-};
+use self::{detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*};
 
 pub mod detect_hits;
 pub mod lib;
@@ -21,9 +19,17 @@ impl Plugin for PlayerEffects {
         app.register_type::<StatusEffectDash>();
         app.register_type::<StatusEffectWallBounce>();
         app.register_type::<StatusEffectStun>();
+        
+        // Send movement events
+        app.add_systems(
+            PreUpdate,
+            (keyboard_walk, keyboard_dash, keyboard_jump)
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame)),
+        );
         // Gives status effects
         app.add_systems(
-            FixedPreUpdate,
+            FixedUpdate,
             (
                 check_status_grounded,
                 check_status_ticker,
@@ -34,26 +40,22 @@ impl Plugin for PlayerEffects {
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
-        // Send animation events and at the same time, movement events ae
-        app.add_systems(
-            Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump,keyboard_attack)
-                .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)),
-        );
+
+        // Detectsthe rotation must occur before rotate_character
+        app.add_systems(FixedPreUpdate,detect_rotation.run_if(in_state(MyAppState::InGame)).run_if(player_exists));
+
         // Moves character around
         app.add_systems(
             FixedUpdate,
             (
                 move_character,
                 rotate_character,
-                detect_rotation,
                 spine_look_at,
             )
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
-        // DEtect colli
+        // Detect collision
         app.add_systems(
             FixedUpdate,
             (

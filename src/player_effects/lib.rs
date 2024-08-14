@@ -10,7 +10,6 @@ pub enum MovementAction {
     Jump,
 }
 
-
 #[derive(Event, Debug)]
 pub enum RotateAction {
     EaseRotation(Vec3),
@@ -42,7 +41,7 @@ pub struct StatusEffectDefend {
     pub dash_cooldown: Timer,
 }
 
-#[derive(Reflect,Component,Debug)]
+#[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct StatusEffectAttack(pub Timer);
 
