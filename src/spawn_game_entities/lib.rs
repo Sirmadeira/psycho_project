@@ -1,3 +1,5 @@
+use std::default;
+
 use bevy::{prelude::*, time::Stopwatch, utils::HashMap};
 
 // Camera
@@ -167,13 +169,56 @@ pub struct PidInfo {
 }
 
 //Animation
-// This is a resource, that I am gonna use to have easy acess to the info of my animation graphs
+// This is a resource, that I am gonna use to play the pre imported clips
 #[derive(Resource, Reflect)]
 pub struct Animations {
     pub named_nodes: HashMap<String, AnimationNodeIndex>,
     pub animation_graph: Handle<AnimationGraph>,
 }
 
+// This one plays the blended clips or masked and so on. 
+#[derive(Resource, Reflect)]
+pub struct BlendAnimations {
+    pub node: Vec<AnimationNodeIndex>,
+    pub animation_graph: Handle<AnimationGraph>,
+}
+
 // Marker component serves to point out the unique animated entity of player
 #[derive(Reflect, Component, Debug)]
 pub struct AnimatedEntity;
+
+
+// Deine which animations to blend together, just add more here if you want more bone masked animations
+#[derive(Resource)]
+pub struct ConfigBoneMaskedAnimations(pub Vec<MaskNode>);
+
+impl Default for ConfigBoneMaskedAnimations{
+    fn default() -> Self {
+        let mut vec = Vec::new();
+        
+        let first_mask = MaskNode{
+            first_anim:"FrontWalk".to_string(),
+            second_anim:"FrontAttack".to_string(),
+            first_anim_clip: None,
+            second_anim_clip:None,
+        };
+
+        vec.push(first_mask);
+
+        ConfigBoneMaskedAnimations(vec)
+    }
+}
+
+// Config tell me which animation clips to blend and so on
+pub struct MaskNode{
+    pub first_anim: String,
+    pub second_anim: String,
+    pub first_anim_clip: Option<Handle<AnimationClip>>,
+    pub second_anim_clip: Option<Handle<AnimationClip>>,
+}
+
+
+
+// Marker component tells me which bones to override
+#[derive(Component,Debug)]
+pub struct BoneMask;

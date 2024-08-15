@@ -43,6 +43,7 @@ pub fn spawn_skeleton_and_attachments(
                         skeleton_entity_id = Some(
                             commands
                                 .spawn((
+                                    // Scenes tend to only have the  name scene
                                     SceneBundle {
                                         scene: gltf.named_scenes["Scene"].clone(),
                                         transform: Transform::from_xyz(0.0, 0.0, 0.0),
@@ -131,6 +132,7 @@ pub fn transfer_animation(
     names: Query<&Name>,
     mut commands: Commands,
 ) {
+
     for skeleton in skeletons.iter() {
         let old_entity =
             find_child_with_name_containing(&children_entities, &names, &skeleton, "Armature")
@@ -155,7 +157,6 @@ pub fn transfer_animation(
                 let old_animation_target = animation_target.get(*entity).expect("To have target");
 
                 let new_match_entity = new_bones.get(name).expect("To have matching bone");
-
                 commands.entity(*new_match_entity).insert(AnimationTarget {
                     id: old_animation_target.id,
                     player: new_entity,

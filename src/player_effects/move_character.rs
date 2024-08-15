@@ -143,40 +143,6 @@ pub fn keyboard_dash(
     }
 }
 
-pub fn keyboard_attack(
-    mouse: Res<ButtonInput<MouseButton>>,
-    keys: Res<ButtonInput<KeyCode>>,
-    mut animation_type_writer: EventWriter<AnimationType>,
-    q_1: Query<Entity,With<Player>>,
-    mut commands: Commands
-) {
-
-    let player = q_1.get_single().expect("FOr player to exist");
-
-    let mut movetype = AnimationType::None;
-
-    if mouse.pressed(MouseButton::Left) && keys.pressed(KeyCode::KeyW){
-        movetype = AnimationType::FrontAttack;
-    }
-    if mouse.pressed(MouseButton::Left) && keys.pressed(KeyCode::KeyS){
-        movetype = AnimationType::BackAttack;
-    }
-    if mouse.pressed(MouseButton::Left) && keys.pressed(KeyCode::KeyA){
-        movetype = AnimationType::LeftAttack;
-    }
-    if mouse.pressed(MouseButton::Left) && keys.pressed(KeyCode::KeyD){
-        movetype = AnimationType::RightAttack;
-    }
-    if movetype != AnimationType::None{
-        animation_type_writer.send(movetype);
-
-        commands.entity(player).insert(StatusEffectAttack(Timer::new(Duration::from_secs(1), TimerMode::Once)));
-    }
-    // Defend
-    if mouse.just_pressed(MouseButton::Right) {
-    }
-}
-
 pub fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,
     mut q_1: Query<(Has<Grounded>, &mut Limit), With<Player>>,

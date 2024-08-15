@@ -7,7 +7,7 @@ use bevy::prelude::*;
 
 // Loads from assets and put into our animations players must have for animation playing
 pub fn add_animation_graph(
-    animations: Res<Animations>,
+    animations: Res<BlendAnimations>,
     mut commands: Commands,
     mut players: Query<Entity, Added<AnimationPlayer>>,
 ) {
@@ -38,52 +38,55 @@ pub fn state_machine(
         (&mut AnimationPlayer, &mut AnimationTransitions),
         With<AnimatedEntity>,
     >,
-    animations: Res<Animations>,
+    animations: Res<BlendAnimations>,
     mut animation_to_play: EventReader<AnimationType>,
 ) {
     let (mut animation_player, mut active_transitions) = animation_components
         .get_single_mut()
         .expect("Expect to have animated armature");
 
-    if let Some(current_animation) = active_transitions.get_main_animation() {
-        for event in animation_to_play.read() {
-            let properties = event.properties();
 
-            let animation = animations
-                .named_nodes
-                .get(properties.name)
-                .expect("To find animation in resource");
+    animation_player.play( animations.node[0]);
 
-            if let Ok(mut stun) = stun_info.get_single_mut() {
-                if !stun.played_animation {
-                    active_transitions.play(&mut animation_player, *animation, properties.duration);
-                    stun.played_animation = true;
-                }
-                return;
-            } else {
-                // Handles scenario where the is no "stun"
-                if current_animation != *animation {
-                    println!("Playing animation {}",properties.name);
-                    if properties.repeat {
-                        active_transitions
-                            .play(&mut animation_player, *animation, properties.duration)
-                            .repeat();
-                    } else {
-                        active_transitions.play(
-                            &mut animation_player,
-                            *animation,
-                            properties.duration,
-                        );
-                    }
-                }
-            }
-        }
-    } else {
-        println!("Adding first animation");
-        let first_anim = animations
-            .named_nodes
-            .get("StartPose")
-            .expect("First animation to exist");
-        active_transitions.play(&mut animation_player, *first_anim, Duration::ZERO);
-    }
+    // if let Some(current_animation) = active_transitions.get_main_animation() {
+    //     for event in animation_to_play.read() {
+    //         let properties = event.properties();
+
+    //         let animation = animations
+    //             .named_nodes
+    //             .get(properties.name)
+    //             .expect("To find animation in resource");
+
+    //         if let Ok(mut stun) = stun_info.get_single_mut() {
+    //             if !stun.played_animation {
+    //                 active_transitions.play(&mut animation_player, *animation, properties.duration);
+    //                 stun.played_animation = true;
+    //             }
+    //             return;
+    //         } else {
+    //             // Handles scenario where the is no "stun"
+    //             if current_animation != *animation {
+    //                 println!("Playing animation {}",properties.name);
+    //                 if properties.repeat {
+    //                     active_transitions
+    //                         .play(&mut animation_player, *animation, properties.duration)
+    //                         .repeat();
+    //                 } else {
+    //                     active_transitions.play(
+    //                         &mut animation_player,
+    //                         *animation,
+    //                         properties.duration,
+    //                     );
+    //                 }
+    //             }
+    //         }
+    //     }
+    // } else {
+    //     println!("Adding first animation");
+    //     let first_anim = animations
+    //         .named_nodes
+    //         .get("StartPose")
+    //         .expect("First animation to exist");
+    //     active_transitions.play(&mut animation_player, *first_anim, Duration::ZERO);
+    // }
 }

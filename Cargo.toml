@@ -6,10 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = {version = "0.14",features =["jpeg"]}
+bevy = { version = "0.14", features = ["jpeg"] }
 bevy_rapier3d = "0.27"
 bevy_asset_loader = "0.21"
 bevy-inspector-egui = "0.25"
 bevy_atmosphere = "0.10"
 iyes_perf_ui = "0.3"
 regex = "*"
+log = { version = "*", features = ["max_level_debug", "release_max_level_warn"] }
+
+# VRUM VRUM
+[profile.dev.package."*"]
+opt-level = 3

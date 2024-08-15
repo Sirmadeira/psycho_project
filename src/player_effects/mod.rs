@@ -41,16 +41,13 @@ impl Plugin for PlayerEffects {
                 .run_if(in_state(MyAppState::InGame)),
         );
 
-        // Detectsthe rotation must occur before rotate_character
-        app.add_systems(FixedPreUpdate,detect_rotation.run_if(in_state(MyAppState::InGame)).run_if(player_exists));
-
         // Moves character around
         app.add_systems(
             FixedUpdate,
             (
                 move_character,
+                detect_rotation,
                 rotate_character,
-                spine_look_at,
             )
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),

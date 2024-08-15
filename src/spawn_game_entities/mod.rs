@@ -22,7 +22,6 @@ impl Plugin for SpawnGameEntities {
     fn build(&self, app: &mut App) {
         // Creating world
         app.add_systems(OnEnter(MyAppState::InGame), (spawn_floor, spawn_wall));
-
         // Creating camera
         app.add_systems(OnEnter(MyAppState::InGame), spawn_camera_light);
         // Creating modular character
@@ -30,6 +29,9 @@ impl Plugin for SpawnGameEntities {
             OnEnter(MyAppState::InGame),
             spawn_skeleton_and_attachments.chain(),
         );
+
+        //Create administrative state
+        app.insert_state(StateSpawnScene::Spawning);
         // Transfer old bones animations to new bones and spit out character to be player
         app.add_systems(
             OnEnter(StateSpawnScene::Spawned),
@@ -41,24 +43,19 @@ impl Plugin for SpawnGameEntities {
                 .run_if(all_chars_created)
                 .chain(),
         );
-        //Create player
+        // Create player
         app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
         // Create hitbox
         app.add_systems(
             OnEnter(StateSpawnScene::Done),
             (spawn_simple_colliders, spawn_hitbox_weapon),
         );
-        //Creates animation graphs
-        app.add_systems(OnEnter(MyAppState::InGame), spawn_animation_graph);
-        // Debug camera
-        app.register_type::<Zoom>();
-        app.register_type::<CamInfo>();
-        // Spawn mod char debug
-        app.register_type::<Attachments>();
-        app.register_type::<ConfigModularCharacters>();
-        app.insert_state(StateSpawnScene::Spawning);
-        // Config resources
+        //Creates things for animation
+        // app.add_systems(OnEnter(MyAppState::InGame), spawn_animation_graph);
+        app.add_systems(OnEnter(StateSpawnScene::Done), (mark_bones,blend_animations).chain());
+        // Amount of player configuration - Tells me how many to spawn
         app.insert_resource(AmountPlayers { quantity: 2 });
+        // Tell me what visual and weapons to attack
         app.insert_resource(ConfigModularCharacters {
             visuals_to_be_attached: vec![String::from("rigge_female")],
             weapons_to_be_attached: vec![String::from("katana")],
@@ -68,10 +65,18 @@ impl Plugin for SpawnGameEntities {
             sun_intensity: 11.0,
             ..default()
         }));
+        app.insert_resource(ConfigBoneMaskedAnimations::default());
+        // Cicle of the sun configuration
         app.insert_resource(CycleTimer(Timer::new(
             Duration::from_secs(3600),
             TimerMode::Repeating,
         )));
+        // Debug camera
+        app.register_type::<Zoom>();
+        app.register_type::<CamInfo>();
+        // Spawn mod char debug
+        app.register_type::<Attachments>();
+        app.register_type::<ConfigModularCharacters>();
         // Spawn player debug
         app.register_type::<PdInfo>();
         app.register_type::<Timers>();
