@@ -1,5 +1,5 @@
 use crate::form_camera::setup_entities::CamInfo;
-use crate::spawn_game_entities::lib::*;
+use crate::form_player::setup_entities::*;
 use bevy::prelude::*;
 
 pub fn sync_player_camera(

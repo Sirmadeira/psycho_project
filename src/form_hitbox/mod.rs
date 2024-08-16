@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy::transform::TransformSystem;
 
 pub mod setup_entities;
-pub mod follow_along;
-pub mod helpers;
+mod follow_along;
+mod helpers;
 
 use self::{setup_entities::*,follow_along::*};
 use crate::spawn_game_entities::all_chars_created;

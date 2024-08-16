@@ -5,9 +5,9 @@ use std::f32::consts::PI;
 use crate::player_effects::lib::RotateAction;
 use crate::form_camera::setup_entities::CamInfo;
 use crate::spawn_game_entities::helpers::find_child_with_name_containing;
-use crate::spawn_game_entities::lib::*;
+use crate::form_player::setup_entities::*;
 
-// Guy who is gonna send animation nevents according to rotation also is gonna tell to rotate the dynamic player
+// Guy who is gonna send animation events according to rotation also is gonna tell to rotate the dynamic player
 pub fn detect_rotation(
     q_1: Query<&Transform, With<CamInfo>>,
     q_2: Query<&Transform, With<Player>>,

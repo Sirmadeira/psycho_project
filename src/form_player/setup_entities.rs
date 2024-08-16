@@ -1,9 +1,52 @@
+// Creating the player entity, and entity that will have the ability to move itself that is controlled via key inputs
+
 use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use bevy_rapier3d::prelude::*;
 
-use crate::spawn_game_entities::helpers::find_child_with_name_containing;
 use crate::spawn_game_entities::lib::*;
+use crate::treat_animations::lib::AnimatedEntity;
+use crate::spawn_game_entities::helpers::find_child_with_name_containing;
+
+
+//Player
+// Marker component - Basically the rigid body that will move the player
+#[derive(Component)]
+pub struct Player;
+
+// Marker just to easily check other players
+#[derive(Component)]
+pub struct SidePlayer;
+
+// Amount of jumps you can have
+#[derive(Reflect, Component, Debug)]
+pub struct Limit {
+    pub jump_limit: u8,
+}
+
+impl Default for Limit {
+    fn default() -> Self {
+        Self { jump_limit: 2 }
+    }
+}
+
+#[derive(Component, Reflect, Debug)]
+pub struct Health(pub i8);
+
+// Kind of a simple pid
+#[derive(Reflect, Component, Debug)]
+pub struct PdInfo {
+    pub kp: f32,
+}
+
+// Times the dash for each key
+#[derive(Reflect, Component, Debug)]
+pub struct Timers {
+    pub up: Stopwatch,
+    pub down: Stopwatch,
+    pub left: Stopwatch,
+    pub right: Stopwatch,
+}
 
 // Adding physical body that will move our modular character dynamically
 // Also adding usefull attachments

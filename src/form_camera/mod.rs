@@ -2,13 +2,16 @@ use bevy::prelude::*;
 use bevy_rapier3d::plugin::PhysicsSet;
 use std::time::Duration;
 
-use crate::{spawn_game_entities::player_exists, MyAppState};
+use crate:: MyAppState;
 
 pub mod camera_mechanics;
 pub mod sync_camera;
 pub mod setup_entities;
 
 use self::{setup_entities::*,camera_mechanics::*, sync_camera::*};
+
+use crate::form_player::*;
+
 
 pub struct IngameCamera;
 

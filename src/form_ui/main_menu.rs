@@ -1,8 +1,18 @@
-use crate::ui_plugin::{OnMainMenu, UiCamera};
-use crate::MyAppState;
-use bevy::prelude::*;
 
-use super::DuelButton;
+use bevy::prelude::*;
+use crate::MyAppState;
+
+
+#[derive(Component)]
+pub struct UiCamera;
+
+// Marker component for the start button
+#[derive(Component)]
+pub struct DuelButton;
+
+// Tell me who is on the
+#[derive(Component)]
+pub struct OnMainMenu;
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);

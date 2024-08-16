@@ -1,5 +1,5 @@
 use crate::player_effects::lib::StatusEffectStun;
-use crate::spawn_game_entities::lib::*;
+use crate::form_player::setup_entities::*;
 use crate::treat_animations::lib::*;
 use bevy::prelude::*;
 

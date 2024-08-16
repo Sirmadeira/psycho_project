@@ -2,33 +2,38 @@ use bevy::prelude::*;
 use bevy_atmosphere::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
-use form_hitbox::FormHitbox;
 use iyes_perf_ui::prelude::*;
 
-mod form_hitbox;
+mod form_ui;
 mod form_world;
 mod form_camera;
+mod form_hitbox;
+mod form_player;
+
 mod load_assets_plugin;
 mod player_effects;
 mod resolution_plugin;
 mod spawn_game_entities;
 mod treat_animations;
-mod ui_plugin;
+
 
 use form_world::WorldPlugin;
 use form_camera::IngameCamera;
+use form_hitbox::FormHitbox;
+use form_player::FormPlayer;
 use load_assets_plugin::LoadingAssetsPlugin;
 use player_effects::PlayerEffects;
 use resolution_plugin::ResolutionPlugin;
 use spawn_game_entities::SpawnGameEntities;
 use treat_animations::TreatAnimations;
-use ui_plugin::UiPlugin;
+use form_ui::FormUi;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub enum MyAppState {
     #[default]
     Loading,
     MainMenu,
+    CharacterCreated,
     InGame,
 }
 
@@ -51,8 +56,9 @@ fn main() {
         // Physics plugin
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
+
         // Main menu and debugger
-        .add_plugins(UiPlugin)
+        .add_plugins(FormUi)
         // Loads our assets with handles
         .add_plugins(LoadingAssetsPlugin)
         // Plugin to form a cube that render cool atmosphere shaders
@@ -63,6 +69,7 @@ fn main() {
         .add_plugins(SpawnGameEntities)
         // Forms physical dynamic colliders that will folllow along the transform of the player
         .add_plugins(FormHitbox)
+        .add_plugins(FormPlayer)
         // Player movement plugin
         .add_plugins(PlayerEffects)
         // Reads animations according to events and make they smooth
