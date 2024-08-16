@@ -1,4 +1,4 @@
-use crate::form_camera::setup_entities::CamInfo;
+use crate::form_ingame_camera::setup_entities::CamInfo;
 use crate::form_player::setup_entities::*;
 use bevy::prelude::*;
 

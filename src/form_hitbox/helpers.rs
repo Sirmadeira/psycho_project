@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use crate::spawn_game_entities::lib::AmountPlayers;
+use crate::form_modular_char::lib::AmountPlayers;
 
 pub fn create_dynamic_collider_groups(
     player_amount: &Res<AmountPlayers>,

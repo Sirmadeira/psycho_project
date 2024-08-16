@@ -3,8 +3,8 @@ use bevy::{animation::AnimationTarget, prelude::*};
 use crate::load_assets_plugin::MyAssets;
 use crate::treat_animations::lib::*;
 
-use crate::spawn_game_entities::helpers::find_child_with_name_containing;
-use crate::spawn_game_entities::lib::Skeleton;
+use crate::form_modular_char::helpers::find_child_with_name_containing;
+use crate::form_modular_char::lib::Skeleton;
 
 
 // This will mark every single bone in both entities with bone mask struct

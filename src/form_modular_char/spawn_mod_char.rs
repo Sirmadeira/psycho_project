@@ -8,8 +8,8 @@ use bevy::{
 use regex::Regex;
 
 use crate::load_assets_plugin::MyAssets;
-use crate::spawn_game_entities::helpers::*;
-use crate::spawn_game_entities::lib::*;
+use crate::form_modular_char::helpers::*;
+use crate::form_modular_char::lib::*;
 
 // Spawn main skeleton and his attachments/visual bones. According to given scene name in resource configs
 pub fn spawn_skeleton_and_attachments(

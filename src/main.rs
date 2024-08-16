@@ -6,25 +6,24 @@ use iyes_perf_ui::prelude::*;
 
 mod form_ui;
 mod form_world;
-mod form_camera;
+mod form_ingame_camera;
 mod form_hitbox;
 mod form_player;
 
-mod load_assets_plugin;
-mod player_effects;
+mod player_mechanics;
 mod resolution_plugin;
-mod spawn_game_entities;
+mod form_modular_char;
 mod treat_animations;
-
+mod load_assets_plugin;
 
 use form_world::WorldPlugin;
-use form_camera::IngameCamera;
+use form_ingame_camera::FormIngameCamera;
 use form_hitbox::FormHitbox;
 use form_player::FormPlayer;
 use load_assets_plugin::LoadingAssetsPlugin;
-use player_effects::PlayerEffects;
+use player_mechanics::PlayerEffects;
 use resolution_plugin::ResolutionPlugin;
-use spawn_game_entities::SpawnGameEntities;
+use form_modular_char::FormModularChar;
 use treat_animations::TreatAnimations;
 use form_ui::FormUi;
 
@@ -66,7 +65,7 @@ fn main() {
         // Contruct the world
         .add_plugins(WorldPlugin)
         // Formulates all the game entities to be used
-        .add_plugins(SpawnGameEntities)
+        .add_plugins(FormModularChar)
         // Forms physical dynamic colliders that will folllow along the transform of the player
         .add_plugins(FormHitbox)
         .add_plugins(FormPlayer)
@@ -75,6 +74,6 @@ fn main() {
         // Reads animations according to events and make they smooth
         .add_plugins(TreatAnimations)
         // Camera Plugin
-        .add_plugins(IngameCamera)
+        .add_plugins(FormIngameCamera)
         .run();
 }

@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::player_effects::*;
-use crate::form_camera::setup_entities::CamInfo;
+use crate::player_mechanics::*;
+use crate::form_ingame_camera::setup_entities::CamInfo;
 use crate::form_player::setup_entities::*;
 use crate::treat_animations::lib::AnimationType;
 

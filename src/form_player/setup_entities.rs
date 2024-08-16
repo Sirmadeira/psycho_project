@@ -4,9 +4,9 @@ use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use bevy_rapier3d::prelude::*;
 
-use crate::spawn_game_entities::lib::*;
+use crate::form_modular_char::lib::*;
 use crate::treat_animations::lib::AnimatedEntity;
-use crate::spawn_game_entities::helpers::find_child_with_name_containing;
+use crate::form_modular_char::helpers::find_child_with_name_containing;
 
 
 //Player

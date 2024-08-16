@@ -6,8 +6,8 @@ mod follow_along;
 mod helpers;
 
 use self::{setup_entities::*,follow_along::*};
-use crate::spawn_game_entities::all_chars_created;
-use crate::spawn_game_entities::lib::StateSpawnScene;
+use crate::form_modular_char::all_chars_created;
+use crate::form_modular_char::lib::StateSpawnScene;
 
 
 pub struct FormHitbox;

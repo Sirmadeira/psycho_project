@@ -10,9 +10,9 @@ use self::{
 };
 
 
-pub struct SpawnGameEntities;
+pub struct FormModularChar;
 
-impl Plugin for SpawnGameEntities {
+impl Plugin for FormModularChar {
     fn build(&self, app: &mut App) {
         // Creating modular character
         app.add_systems(

@@ -1,3 +1,5 @@
+// Player mechanics will be solely here- Movement rotatinon detect it is hits and so on.
+
 use bevy::prelude::*;
 
 use self::{detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*};

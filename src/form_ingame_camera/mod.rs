@@ -13,9 +13,9 @@ use self::{setup_entities::*,camera_mechanics::*, sync_camera::*};
 use crate::form_player::*;
 
 
-pub struct IngameCamera;
+pub struct FormIngameCamera;
 
-impl Plugin for IngameCamera {
+impl Plugin for FormIngameCamera {
     fn build(&self, app: &mut App) {
         // Cicle of the sun configuration
         app.insert_resource(CycleTimer(Timer::new(

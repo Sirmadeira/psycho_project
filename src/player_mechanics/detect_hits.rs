@@ -5,7 +5,7 @@ use bevy_rapier3d::prelude::*;
 use crate::form_player::setup_entities::*;
 
 use crate::form_world::setup_entities::*;
-use crate::player_effects::lib::StatusEffectWallBounce;
+use crate::player_mechanics::lib::StatusEffectWallBounce;
 use crate::form_hitbox::setup_entities::*;
 use std::borrow::BorrowMut;
 

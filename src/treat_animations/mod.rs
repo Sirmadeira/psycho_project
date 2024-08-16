@@ -10,7 +10,7 @@ pub mod setup_entities;
 
 use self::{setup_entities::*,lib::*, treat_animations::*};
 
-use crate::spawn_game_entities::lib::StateSpawnScene;
+use crate::form_modular_char::lib::StateSpawnScene;
 
 use crate::form_player::*;
 

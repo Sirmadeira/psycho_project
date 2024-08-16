@@ -3,8 +3,8 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::spawn_game_entities::helpers::find_child_with_name_containing;
-use crate::spawn_game_entities::lib::{AmountPlayers, Attachments, Skeleton};
+use crate::form_modular_char::helpers::find_child_with_name_containing;
+use crate::form_modular_char::lib::{AmountPlayers, Attachments, Skeleton};
 use crate::form_hitbox::helpers::*;
 
 

@@ -1,4 +1,4 @@
-use crate::player_effects::lib::StatusEffectStun;
+use crate::player_mechanics::lib::StatusEffectStun;
 use crate::form_player::setup_entities::*;
 use crate::treat_animations::lib::*;
 use bevy::prelude::*;

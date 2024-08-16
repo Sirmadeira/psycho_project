@@ -3,7 +3,7 @@ use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
 use core::f32::consts::PI;
-use crate::form_camera::setup_entities::*;
+use crate::form_ingame_camera::setup_entities::*;
 
 // Turns on the ability to control the camera
 pub fn toggle_cursor(

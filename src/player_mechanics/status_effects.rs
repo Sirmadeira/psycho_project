@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::spawn_game_entities::lib::*;
+use crate::form_modular_char::lib::*;
 use crate::form_player::setup_entities::*;
 use crate::treat_animations::lib::AnimationType;
 use crate::form_world::setup_entities::*;
-use crate::player_effects::*;
+use crate::player_mechanics::*;
 
 
 use super::StatusEffectWallBounce;

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 pub mod setup_entities;
 
-use crate::spawn_game_entities::lib::StateSpawnScene;
+use crate::form_modular_char::lib::StateSpawnScene;
 
 use self::setup_entities::*;
 pub struct FormPlayer;
