@@ -19,7 +19,7 @@ impl Plugin for PlayerEffects {
         app.register_type::<StatusEffectDash>();
         app.register_type::<StatusEffectWallBounce>();
         app.register_type::<StatusEffectStun>();
-        
+
         // Send movement events
         app.add_systems(
             PreUpdate,
@@ -44,11 +44,7 @@ impl Plugin for PlayerEffects {
         // Moves character around
         app.add_systems(
             FixedUpdate,
-            (
-                move_character,
-                detect_rotation,
-                rotate_character,
-            )
+            (move_character, detect_rotation, rotate_character)
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );

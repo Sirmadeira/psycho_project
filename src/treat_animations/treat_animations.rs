@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::player_effects::lib::StatusEffectStun;
 use crate::spawn_game_entities::lib::*;
 use crate::treat_animations::lib::*;
@@ -45,8 +43,7 @@ pub fn state_machine(
         .get_single_mut()
         .expect("Expect to have animated armature");
 
-
-    animation_player.play( animations.node[0]);
+    animation_player.play(animations.node[0]);
 
     // if let Some(current_animation) = active_transitions.get_main_animation() {
     //     for event in animation_to_play.read() {

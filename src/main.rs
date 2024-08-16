@@ -6,6 +6,7 @@ use form_hitbox::FormHitbox;
 use iyes_perf_ui::prelude::*;
 
 mod form_hitbox;
+mod form_world;
 mod ingame_camera;
 mod lighting_plugin;
 mod load_assets_plugin;
@@ -15,8 +16,8 @@ mod spawn_game_entities;
 mod treat_animations;
 mod ui_plugin;
 
+use form_world::WorldPlugin;
 use ingame_camera::IngameCamera;
-use lighting_plugin::LightingPlugin;
 use load_assets_plugin::LoadingAssetsPlugin;
 use player_effects::PlayerEffects;
 use resolution_plugin::ResolutionPlugin;
@@ -57,8 +58,8 @@ fn main() {
         .add_plugins(LoadingAssetsPlugin)
         // Plugin to form a cube that render cool atmosphere shaders
         .add_plugins(AtmospherePlugin)
-        // Starting the scene and lighting
-        .add_plugins(LightingPlugin)
+        // Contruct the world
+        .add_plugins(WorldPlugin)
         // Formulates all the game entities to be used
         .add_plugins(SpawnGameEntities)
         // Forms physical dynamic colliders that will folllow along the transform of the player

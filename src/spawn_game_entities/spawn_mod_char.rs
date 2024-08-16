@@ -132,7 +132,6 @@ pub fn transfer_animation(
     names: Query<&Name>,
     mut commands: Commands,
 ) {
-
     for skeleton in skeletons.iter() {
         let old_entity =
             find_child_with_name_containing(&children_entities, &names, &skeleton, "Armature")

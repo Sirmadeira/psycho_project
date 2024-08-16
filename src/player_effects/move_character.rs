@@ -6,17 +6,24 @@ use crate::player_effects::*;
 use crate::spawn_game_entities::lib::*;
 use crate::treat_animations::lib::AnimationType;
 
-
 pub fn keyboard_walk(
     keys: Res<ButtonInput<KeyCode>>, // Res<Input<KeyCode>> is used instead of ButtonInput<KeyCode>
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<(Has<StatusEffectDash>, Has<StatusEffectStun>,Has<StatusEffectAttack>, Has<Grounded>), With<Player>>,
+    q_2: Query<
+        (
+            Has<StatusEffectDash>,
+            Has<StatusEffectStun>,
+            Has<StatusEffectAttack>,
+            Has<Grounded>,
+        ),
+        With<Player>,
+    >,
 ) {
     let cam = q_1.get_single().expect("Expected to have a camera");
 
-    let (has_dash, has_stun,has_attack, has_grounded) = q_2
+    let (has_dash, has_stun, has_attack, has_grounded) = q_2
         .get_single()
         .expect("Expected to be able to check if player has dashed");
 
@@ -26,16 +33,14 @@ pub fn keyboard_walk(
 
     let mut direction = Vec2::ZERO;
     let mut movetype = AnimationType::None;
-    let mut key_to_direction = |key: KeyCode,
-                                cam_dir: Vec3,
-                                walk_anim: AnimationType,
-                                air_anim: AnimationType| {
-        if keys.pressed(key) {
-            direction.x = cam_dir.x;
-            direction.y = cam_dir.z;
-            movetype = if has_grounded { walk_anim } else { air_anim };
-        }
-    };
+    let mut key_to_direction =
+        |key: KeyCode, cam_dir: Vec3, walk_anim: AnimationType, air_anim: AnimationType| {
+            if keys.pressed(key) {
+                direction.x = cam_dir.x;
+                direction.y = cam_dir.z;
+                movetype = if has_grounded { walk_anim } else { air_anim };
+            }
+        };
 
     key_to_direction(
         KeyCode::KeyW,

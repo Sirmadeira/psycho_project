@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
+use crate::form_world::setup_entities::*;
 use crate::player_effects::lib::StatusEffectWallBounce;
 use crate::spawn_game_entities::lib::*;
 use std::borrow::BorrowMut;

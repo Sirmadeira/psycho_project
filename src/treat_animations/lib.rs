@@ -20,10 +20,6 @@ pub enum AnimationType {
     LeftAir,
     RightAir,
     Landing,
-    FrontAttack,
-    BackAttack,
-    LeftAttack,
-    RightAttack,
 }
 
 pub struct AnimationProperties {
@@ -89,18 +85,6 @@ impl AnimationType {
             }
             AnimationType::Landing => {
                 AnimationProperties::new("Landing", Duration::from_millis(0), false)
-            }
-            AnimationType::FrontAttack => {
-                AnimationProperties::new("FrontAttack", Duration::from_millis(0), false)
-            }
-            AnimationType::BackAttack => {
-                AnimationProperties::new("BackAttack", Duration::from_millis(0), false)
-            }
-            AnimationType::LeftAttack => {
-                AnimationProperties::new("LeftAttack", Duration::from_millis(0), false)
-            }
-            AnimationType::RightAttack => {
-                AnimationProperties::new("RightAttack", Duration::from_millis(0), false)
             }
             AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false),
         }

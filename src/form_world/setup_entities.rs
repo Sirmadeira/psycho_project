@@ -1,9 +1,17 @@
+// Setuping world entities - World entities are entities correlated to the whole scenario
 use crate::load_assets_plugin::MyAssets;
-use crate::spawn_game_entities::lib::*;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-// Spawns the main collider floor and a ugly mesh
+//World
+// Marks ground entities
+#[derive(Component)]
+pub struct Ground;
+// Marks wall entities
+#[derive(Component)]
+pub struct Wall;
+
+// Spawns the main collider floor
 pub fn spawn_floor(
     mut commands: Commands,
     asset_pack: Res<MyAssets>,
@@ -43,6 +51,7 @@ pub fn spawn_floor(
     commands.spawn(collider);
 }
 
+// Spawns simple collider wall for testing
 pub fn spawn_wall(mut commands: Commands) {
     let wall_collider = (
         Collider::cuboid(1.0, 10.0, 10.0),

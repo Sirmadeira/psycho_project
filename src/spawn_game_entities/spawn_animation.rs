@@ -1,37 +1,32 @@
-use bevy::{prelude::*,animation::AnimationTarget};
+use bevy::{animation::AnimationTarget, prelude::*};
 
 use crate::load_assets_plugin::MyAssets;
 use crate::spawn_game_entities::lib::*;
 
 use super::helpers::find_child_with_name_containing;
 
-
-
 // This will mark every single bone in both entities with bone mask struct
 pub fn mark_bones(
     mut commands: Commands,
-    q_1: Query<Entity,With<Skeleton>>,
+    q_1: Query<Entity, With<Skeleton>>,
     children_entities: Query<&Children>,
-    names: Query<&Name>
-
-){  
-    for root_armature in q_1.iter(){
+    names: Query<&Name>,
+) {
+    for root_armature in q_1.iter() {
         // Bone you want to start marking it is descendants in this case since I want all upperbody to be blended mask SPINE it is
-        let starting_bone = find_child_with_name_containing(&children_entities, &names, &root_armature, "Spine_1").expect("To have skeleton bone");
+        let starting_bone =
+            find_child_with_name_containing(&children_entities, &names, &root_armature, "Spine_1")
+                .expect("To have skeleton bone");
         let mut entities_to_mark = vec![starting_bone];
 
-
-        for upper_bones in children_entities.iter_descendants(starting_bone){
+        for upper_bones in children_entities.iter_descendants(starting_bone) {
             entities_to_mark.push(upper_bones);
-
         }
-        
+
         for entity in entities_to_mark {
             commands.entity(entity).insert(BoneMask);
         }
-
     }
-
 }
 pub fn blend_animations(
     asset_pack: Res<MyAssets>,
@@ -40,15 +35,13 @@ pub fn blend_animations(
     mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
     mut config_blend_animations: ResMut<ConfigBoneMaskedAnimations>,
     masked_bones: Query<&AnimationTarget, With<BoneMask>>,
-    not_masked: Query<&AnimationTarget,(With<AnimationTarget>,Without<BoneMask>)>,
+    not_masked: Query<&AnimationTarget, (With<AnimationTarget>, Without<BoneMask>)>,
     mut commands: Commands,
 ) {
     let skeleton_handle = asset_pack
         .gltf_files
         .get("skeleton.glb")
         .expect("To have skeleton gltf handle");
-
-
 
     let gltf = assets_gltf
         .get(skeleton_handle)
@@ -85,7 +78,7 @@ pub fn blend_animations(
 
                 // Add curves for masked bones
                 for target in masked_bones.iter() {
-                    println!("{:?}",target.id);
+                    println!("{:?}", target.id);
                     if let Some(override_curves) = loaded_second_clip.curves_for_target(target.id) {
                         for curve in override_curves.iter() {
                             new_clip.add_curve_to_target(target.id, curve.clone());
@@ -95,8 +88,10 @@ pub fn blend_animations(
 
                 // Add curves for not masked bones
                 for other_target in not_masked.iter() {
-                    println!("{:?}",other_target.id);
-                    if let Some(current_curves) = loaded_first_clip.curves_for_target(other_target.id) {
+                    println!("{:?}", other_target.id);
+                    if let Some(current_curves) =
+                        loaded_first_clip.curves_for_target(other_target.id)
+                    {
                         for curve in current_curves.iter() {
                             new_clip.add_curve_to_target(other_target.id, curve.clone());
                         }
@@ -122,8 +117,6 @@ pub fn blend_animations(
         node: new_nodes,
     });
 }
-
-
 
 // // Simple animation graph based on glt no fuss whatsoever just a bunch of nodes to be played
 // pub fn spawn_animation_graph(
