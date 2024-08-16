@@ -4,12 +4,11 @@ use bevy::prelude::*;
 pub mod helpers;
 pub mod lib;
 pub mod spawn_animation;
-pub mod spawn_hitbox;
 pub mod spawn_mod_char;
 pub mod spawn_player;
 
 use self::{
-    lib::*, spawn_animation::*, spawn_hitbox::*, spawn_mod_char::*,
+    lib::*, spawn_animation::*, spawn_mod_char::*,
     spawn_player::*,
 };
 
@@ -38,11 +37,6 @@ impl Plugin for SpawnGameEntities {
         );
         // Create player
         app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
-        // Create hitbox
-        app.add_systems(
-            OnEnter(StateSpawnScene::Done),
-            (spawn_simple_colliders, spawn_hitbox_weapon),
-        );
         //Creates things for animation
         // app.add_systems(OnEnter(MyAppState::InGame), spawn_animation_graph);
         app.add_systems(
@@ -65,11 +59,6 @@ impl Plugin for SpawnGameEntities {
         app.register_type::<Timers>();
         app.register_type::<Limit>();
         app.register_type::<Health>();
-        //Hitbox debug
-        app.register_type::<Hitbox>();
-        app.register_type::<BaseEntities>();
-        app.register_type::<PidInfo>();
-        app.register_type::<Offset>();
         // Animation debug
         app.register_type::<Animations>();
     }

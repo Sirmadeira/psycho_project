@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::spawn_game_entities::lib::*;
+use crate::form_hitbox::setup_entities::*;
 
 pub fn colliders_look_at(
     mut collider_info: Query<
