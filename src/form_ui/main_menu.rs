@@ -1,7 +1,5 @@
-
-use bevy::prelude::*;
 use crate::MyAppState;
-
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct UiCamera;
@@ -139,7 +137,7 @@ pub fn start_button(
                 text.sections[0].value = "LETS DUEL!".to_string();
                 *color = PRESSED_BUTTON.into();
                 border_color.0 = Color::srgb(255.0, 0.0, 0.0);
-                my_app_state.set(MyAppState::InGame);
+                my_app_state.set(MyAppState::CreatingCharacter);
                 let cam = ui_camera.get_single_mut().unwrap();
                 let menu = on_main_menu.get_single_mut().unwrap();
                 commands.entity(cam).despawn();

@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use bevy_atmosphere::plugin::AtmosphereCamera;
 use std::f32::consts::PI;
 
-
 // Camera
 // Info for camera mechanics
 #[derive(Reflect, Component, Debug)]

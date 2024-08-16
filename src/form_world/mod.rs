@@ -9,9 +9,9 @@ pub mod setup_entities;
 
 use self::{lighting_mechanics::*, setup_entities::*};
 
-pub struct WorldPlugin;
+pub struct FormWorld;
 
-impl Plugin for WorldPlugin {
+impl Plugin for FormWorld {
     fn build(&self, app: &mut App) {
         // Creating world
         app.add_systems(OnEnter(MyAppState::InGame), (spawn_floor, spawn_wall));

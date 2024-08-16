@@ -1,11 +1,11 @@
+use crate::form_ingame_camera::setup_entities::CamInfo;
+use crate::form_modular_char::helpers::find_child_with_name_containing;
+use crate::form_player::setup_entities::*;
+use crate::player_mechanics::lib::RotateAction;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
-use crate::player_mechanics::lib::RotateAction;
-use crate::form_ingame_camera::setup_entities::CamInfo;
-use crate::form_modular_char::helpers::find_child_with_name_containing;
-use crate::form_player::setup_entities::*;
 
 // Guy who is gonna send animation events according to rotation also is gonna tell to rotate the dynamic player
 pub fn detect_rotation(

@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use bevy::utils::{Duration,HashMap};
-
-
+use bevy::utils::{Duration, HashMap};
 
 //Animation
 // This is a resource, that I am gonna use to play the pre imported clips

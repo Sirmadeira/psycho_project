@@ -2,16 +2,15 @@ use bevy::prelude::*;
 use bevy_rapier3d::plugin::PhysicsSet;
 use std::time::Duration;
 
-use crate:: MyAppState;
+use crate::MyAppState;
 
 pub mod camera_mechanics;
-pub mod sync_camera;
 pub mod setup_entities;
+pub mod sync_camera;
 
-use self::{setup_entities::*,camera_mechanics::*, sync_camera::*};
+use self::{camera_mechanics::*, setup_entities::*, sync_camera::*};
 
 use crate::form_player::*;
-
 
 pub struct FormIngameCamera;
 
@@ -25,7 +24,10 @@ impl Plugin for FormIngameCamera {
         // Debug camera
         app.register_type::<Zoom>();
         app.register_type::<CamInfo>();
-        app.add_systems(OnEnter(MyAppState::InGame), spawn_camera_atmosphere);
+        app.add_systems(
+            OnEnter(MyAppState::CharacterCreated),
+            spawn_camera_atmosphere,
+        );
         app.add_systems(
             Update,
             (

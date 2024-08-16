@@ -1,14 +1,13 @@
 use bevy::prelude::*;
 use bevy::transform::TransformSystem;
 
-pub mod setup_entities;
 mod follow_along;
 mod helpers;
+pub mod setup_entities;
 
-use self::{setup_entities::*,follow_along::*};
-use crate::form_modular_char::all_chars_created;
-use crate::form_modular_char::lib::StateSpawnScene;
+use crate::MyAppState;
 
+use self::{follow_along::*, setup_entities::*};
 
 pub struct FormHitbox;
 
@@ -21,14 +20,12 @@ impl Plugin for FormHitbox {
         app.register_type::<Offset>();
         // Create hitbox
         app.add_systems(
-            OnEnter(StateSpawnScene::Done),
+            OnEnter(MyAppState::CharacterCreated),
             (spawn_simple_colliders, spawn_hitbox_weapon),
         );
         app.add_systems(
             FixedPostUpdate,
-            colliders_look_at
-                .run_if(all_chars_created)
-                .after(TransformSystem::TransformPropagate),
+            colliders_look_at.after(TransformSystem::TransformPropagate),
         );
     }
 }

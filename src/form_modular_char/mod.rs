@@ -3,12 +3,9 @@ use bevy::prelude::*;
 
 pub mod helpers;
 pub mod lib;
-pub mod spawn_mod_char;
+pub mod setup_entities;
 
-use self::{
-    lib::*,spawn_mod_char::*,
-};
-
+use self::{lib::*, setup_entities::*};
 
 pub struct FormModularChar;
 
@@ -16,22 +13,16 @@ impl Plugin for FormModularChar {
     fn build(&self, app: &mut App) {
         // Creating modular character
         app.add_systems(
-            OnEnter(MyAppState::InGame),
+            OnEnter(MyAppState::CreatingCharacter),
             spawn_skeleton_and_attachments.chain(),
         );
-
-        //Create administrative state
-        app.insert_state(StateSpawnScene::Spawning);
-        // Transfer old bones animations to new bones and spit out character to be player
         app.add_systems(
-            OnEnter(StateSpawnScene::Spawned),
+            OnEnter(MyAppState::TranferingAnimations),
             (
                 transfer_animation,
                 make_end_entity,
                 disable_culling_for_skinned_meshes,
-            )
-                .run_if(all_chars_created)
-                .chain(),
+            ),
         );
         // Amount of player configuration - Tells me how many to spawn
         app.insert_resource(AmountPlayers { quantity: 2 });
@@ -42,18 +33,3 @@ impl Plugin for FormModularChar {
         });
     }
 }
-
-pub fn all_chars_created(
-    skeleton_query: Query<Entity, With<Skeleton>>,
-    amount_players: Res<AmountPlayers>,
-) -> bool {
-    let mut count = 1;
-    for _ in skeleton_query.iter() {
-        count += 1;
-        if count >= amount_players.quantity {
-            return true;
-        }
-    }
-    return false;
-}
-

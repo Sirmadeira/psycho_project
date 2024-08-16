@@ -7,9 +7,9 @@ use bevy::{
 };
 use regex::Regex;
 
-use crate::load_assets_plugin::MyAssets;
 use crate::form_modular_char::helpers::*;
 use crate::form_modular_char::lib::*;
+use crate::{load_assets_plugin::MyAssets, MyAppState};
 
 // Spawn main skeleton and his attachments/visual bones. According to given scene name in resource configs
 pub fn spawn_skeleton_and_attachments(
@@ -18,7 +18,7 @@ pub fn spawn_skeleton_and_attachments(
     assets_gltf: Res<Assets<Gltf>>,
     amount_players: Res<AmountPlayers>,
     modular_config: Res<ConfigModularCharacters>,
-    mut next_state: ResMut<NextState<StateSpawnScene>>,
+    mut my_app_state: ResMut<NextState<MyAppState>>,
 ) {
     for number_of_player in 1..=amount_players.quantity {
         let mut skeleton_entity_id: Option<Entity> = None;
@@ -120,7 +120,7 @@ pub fn spawn_skeleton_and_attachments(
             });
         }
     }
-    next_state.set(StateSpawnScene::Spawned);
+    my_app_state.set(MyAppState::TranferingAnimations)
 }
 
 // Transfer the animations to all the visual bones
@@ -172,7 +172,7 @@ pub fn make_end_entity(
     names: Query<&Name>,
     mut transforms: Query<&mut Transform>,
     mut commands: Commands,
-    mut next_state: ResMut<NextState<StateSpawnScene>>,
+    mut next_state: ResMut<NextState<MyAppState>>,
 ) {
     for (skeleton, attachments) in skeleton.iter() {
         // This isnt despawned earlier because of apply_deffered
@@ -214,7 +214,7 @@ pub fn make_end_entity(
             }
         }
     }
-    next_state.set(StateSpawnScene::Done);
+    next_state.set(MyAppState::CharacterCreated);
 }
 
 // Debugger function in animations

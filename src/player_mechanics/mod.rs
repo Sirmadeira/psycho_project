@@ -10,14 +10,13 @@ pub mod move_character;
 pub mod rotate_character;
 pub mod status_effects;
 
-
-use crate:: MyAppState;
+use crate::MyAppState;
 
 use crate::form_player::*;
 
-pub struct PlayerEffects;
+pub struct PlayerMechanics;
 
-impl Plugin for PlayerEffects {
+impl Plugin for PlayerMechanics {
     fn build(&self, app: &mut App) {
         app.add_event::<MovementAction>();
         app.add_event::<RotateAction>();

@@ -4,10 +4,10 @@ use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use bevy_rapier3d::prelude::*;
 
+use crate::form_modular_char::helpers::find_child_with_name_containing;
 use crate::form_modular_char::lib::*;
 use crate::treat_animations::lib::AnimatedEntity;
-use crate::form_modular_char::helpers::find_child_with_name_containing;
-
+use crate::MyAppState;
 
 //Player
 // Marker component - Basically the rigid body that will move the player
@@ -55,6 +55,7 @@ pub fn spawn_main_rigidbody(
     mod_characters: Query<(Entity, &Name), With<Skeleton>>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
+    mut my_app_state: ResMut<NextState<MyAppState>>,
 ) {
     for ((player_character, scene_name), player_count) in mod_characters.iter().zip(1..) {
         // Spawning main physical body
@@ -164,4 +165,6 @@ pub fn spawn_main_rigidbody(
             commands.entity(player_character).set_parent(other_details);
         }
     }
+    my_app_state.set(MyAppState::PlayerCreated);
+    my_app_state.set(MyAppState::InGame);
 }

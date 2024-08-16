@@ -13,29 +13,19 @@ I aspire for this game to become both competitive and immensely enjoyable.
   * Extremely dynamic movement - Dashes, parry gun play and sword play 
 
 ## CURRENT DESIGN ORDER
-1. **Asset Loader Plugin**
-   - This plugin is responsible for loading all of our assets.
+1. **Asset Loading**:
+   - The game begins by loading all necessary assets using `bevy_asset_loader`.
 
-2. **Ui Plugin**
-   - Initializes the main menu.
+2. **Main Menu**:
+   - After assets are loaded, the player is taken to the main menu.
+   - Here, the player can configure settings and navigate between different menu states.
 
-3. **Modular Character Plugin**
-   - Structures the base skeleton for our modular characters.
+3. **Character Creation**:
+   - Once the player opts to start the game, the character creation process begins in the `mod_char` module.
+   - This step involves creating the player character, setting up animations, and triggering the player creation module.
 
-4. **Main Physical Rigidbody Plugin**
-   - Creates our main physical rigidbody which controls movement.
-
-5. **Player Effects Plugin**
-   - Creates the Player entity, incorporating various details and properties.
-
-6. **Form Hitbox Plugin**
-   - Handles the ragdoll state and manages hitboxes.
-
-7. **Camera ingame Plugin**
-   - Ensures the camera follows our player.
-
-8. **Other Stateless Plugins**
-   - Plugins that have not put too much work on
+4. **Gameplay**:
+   - With the player character created, the game transitions into the gameplay(MyAppState::Ingame) phase where the action begins.
 
 Cheerios,
 Sirmadeira!

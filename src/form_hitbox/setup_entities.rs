@@ -3,11 +3,9 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
+use crate::form_hitbox::helpers::*;
 use crate::form_modular_char::helpers::find_child_with_name_containing;
 use crate::form_modular_char::lib::{AmountPlayers, Attachments, Skeleton};
-use crate::form_hitbox::helpers::*;
-
-
 
 //Hitboxes
 // Marker component good to check if any of the colliders are touching the ground collider
@@ -46,7 +44,6 @@ pub struct PidInfo {
     pub integral: Vec3,
     pub previous_error: Vec3,
 }
-
 
 pub fn spawn_simple_colliders(
     mut commands: Commands,

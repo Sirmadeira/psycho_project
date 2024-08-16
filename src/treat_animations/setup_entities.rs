@@ -6,7 +6,6 @@ use crate::treat_animations::lib::*;
 use crate::form_modular_char::helpers::find_child_with_name_containing;
 use crate::form_modular_char::lib::Skeleton;
 
-
 // This will mark every single bone in both entities with bone mask struct
 pub fn mark_bones(
     mut commands: Commands,

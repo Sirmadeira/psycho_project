@@ -1,16 +1,13 @@
-use bevy::prelude::*;
 use crate::MyAppState;
-
+use bevy::prelude::*;
 
 pub struct TreatAnimations;
 
 pub mod lib;
-pub mod treat_animations;
 pub mod setup_entities;
+pub mod treat_animations;
 
-use self::{setup_entities::*,lib::*, treat_animations::*};
-
-use crate::form_modular_char::lib::StateSpawnScene;
+use self::{lib::*, setup_entities::*, treat_animations::*};
 
 use crate::form_player::*;
 
@@ -23,7 +20,7 @@ impl Plugin for TreatAnimations {
         app.register_type::<Animations>();
         // app.add_systems(OnEnter(MyAppState::InGame), spawn_animation_graph);
         app.add_systems(
-            OnEnter(StateSpawnScene::Done),
+            OnEnter(MyAppState::CharacterCreated),
             (mark_bones, blend_animations).chain(),
         );
         app.add_systems(

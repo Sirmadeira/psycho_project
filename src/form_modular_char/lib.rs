@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-
 // Mod char
 // Tell me quantity of players
 #[derive(Resource, Reflect)]
@@ -29,18 +28,6 @@ pub struct Skeleton;
 #[derive(Component)]
 pub struct Visual;
 
-// Tell me in which state the scene is
-#[derive(States, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub enum StateSpawnScene {
-    #[default]
-    Spawning,
-    Spawned,
-    Done,
-}
-
-
-
 // Marker component - Tells me which is the collider to check for ground
 #[derive(Component)]
 pub struct PlayerGroundCollider;
-

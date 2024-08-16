@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 pub mod setup_entities;
 
-use crate::form_modular_char::lib::StateSpawnScene;
+use crate::MyAppState;
 
 use self::setup_entities::*;
 pub struct FormPlayer;
@@ -15,7 +15,7 @@ impl Plugin for FormPlayer {
         app.register_type::<Limit>();
         app.register_type::<Health>();
         // Create player
-        app.add_systems(OnEnter(StateSpawnScene::Done), spawn_main_rigidbody);
+        app.add_systems(OnEnter(MyAppState::CharacterCreated), spawn_main_rigidbody);
     }
 }
 
