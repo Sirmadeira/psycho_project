@@ -1,16 +1,15 @@
 use crate::MyAppState;
-use bevy::{prelude::*, utils::Duration};
+use bevy::prelude::*;
 
 pub mod helpers;
 pub mod lib;
 pub mod spawn_animation;
-pub mod spawn_camera_atmosphere;
 pub mod spawn_hitbox;
 pub mod spawn_mod_char;
 pub mod spawn_player;
 
 use self::{
-    lib::*, spawn_animation::*, spawn_camera_atmosphere::*, spawn_hitbox::*, spawn_mod_char::*,
+    lib::*, spawn_animation::*, spawn_hitbox::*, spawn_mod_char::*,
     spawn_player::*,
 };
 
@@ -18,8 +17,6 @@ pub struct SpawnGameEntities;
 
 impl Plugin for SpawnGameEntities {
     fn build(&self, app: &mut App) {
-        // Creating camera
-        app.add_systems(OnEnter(MyAppState::InGame), spawn_camera_light);
         // Creating modular character
         app.add_systems(
             OnEnter(MyAppState::InGame),
@@ -60,14 +57,6 @@ impl Plugin for SpawnGameEntities {
             weapons_to_be_attached: vec![String::from("katana")],
         });
         app.insert_resource(ConfigBoneMaskedAnimations::default());
-        // Cicle of the sun configuration
-        app.insert_resource(CycleTimer(Timer::new(
-            Duration::from_secs(3600),
-            TimerMode::Repeating,
-        )));
-        // Debug camera
-        app.register_type::<Zoom>();
-        app.register_type::<CamInfo>();
         // Spawn mod char debug
         app.register_type::<Attachments>();
         app.register_type::<ConfigModularCharacters>();

@@ -7,8 +7,7 @@ use iyes_perf_ui::prelude::*;
 
 mod form_hitbox;
 mod form_world;
-mod ingame_camera;
-mod lighting_plugin;
+mod form_camera;
 mod load_assets_plugin;
 mod player_effects;
 mod resolution_plugin;
@@ -17,7 +16,7 @@ mod treat_animations;
 mod ui_plugin;
 
 use form_world::WorldPlugin;
-use ingame_camera::IngameCamera;
+use form_camera::IngameCamera;
 use load_assets_plugin::LoadingAssetsPlugin;
 use player_effects::PlayerEffects;
 use resolution_plugin::ResolutionPlugin;

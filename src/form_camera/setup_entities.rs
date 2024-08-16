@@ -1,10 +1,50 @@
-use crate::spawn_game_entities::lib::{CamInfo, Sun, Zoom};
 use bevy::pbr::CascadeShadowConfigBuilder;
 use bevy::prelude::*;
 use bevy_atmosphere::plugin::AtmosphereCamera;
 use std::f32::consts::PI;
 
-pub fn spawn_camera_light(mut commands: Commands) {
+
+// Camera
+// Info for camera mechanics
+#[derive(Reflect, Component, Debug)]
+pub struct CamInfo {
+    pub mouse_sens: f32,
+    pub zoom_enabled: bool,
+    pub zoom: Zoom,
+    pub zoom_sens: f32,
+    pub cursor_lock_activation_key: KeyCode,
+    pub cursor_lock_active: bool,
+}
+
+// Sets the zoom bounds (min & max)
+#[derive(Reflect, Component, Debug)]
+pub struct Zoom {
+    pub min: f32,
+    pub max: f32,
+    pub radius: f32,
+}
+
+impl Zoom {
+    pub fn new(min: f32, max: f32) -> Self {
+        Self {
+            min,
+            max,
+            radius: (min + max) / 2.0,
+        }
+    }
+}
+
+// Atmospher/Lighting
+
+// Marker component
+#[derive(Component)]
+pub struct Sun;
+
+// Timer to update it is gonna be a biggie while i am debuggin
+#[derive(Resource)]
+pub struct CycleTimer(pub Timer);
+
+pub fn spawn_camera_atmosphere(mut commands: Commands) {
     let camera = (
         Camera3dBundle {
             transform: Transform::from_xyz(0.0, 3.0, 2.0).looking_at(Vec3::ZERO, Vec3::Y),

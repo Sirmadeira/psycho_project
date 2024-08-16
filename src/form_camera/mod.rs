@@ -1,18 +1,28 @@
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::PhysicsSet;
+use std::time::Duration;
 
-use crate::spawn_game_entities::lib::CamInfo;
-use crate::spawn_game_entities::player_exists;
+use crate::{spawn_game_entities::player_exists, MyAppState};
 
 pub mod camera_mechanics;
 pub mod sync_camera;
+pub mod setup_entities;
 
-use self::{camera_mechanics::*, sync_camera::*};
+use self::{setup_entities::*,camera_mechanics::*, sync_camera::*};
 
 pub struct IngameCamera;
 
 impl Plugin for IngameCamera {
     fn build(&self, app: &mut App) {
+        // Cicle of the sun configuration
+        app.insert_resource(CycleTimer(Timer::new(
+            Duration::from_secs(3600),
+            TimerMode::Repeating,
+        )));
+        // Debug camera
+        app.register_type::<Zoom>();
+        app.register_type::<CamInfo>();
+        app.add_systems(OnEnter(MyAppState::InGame), spawn_camera_atmosphere);
         app.add_systems(
             Update,
             (

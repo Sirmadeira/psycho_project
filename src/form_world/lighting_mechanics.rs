@@ -3,7 +3,7 @@
 use bevy::{pbr::light_consts::lux::OVERCAST_DAY, prelude::*};
 use bevy_atmosphere::prelude::*;
 
-use crate::spawn_game_entities::lib::{CycleTimer, Sun};
+use crate::form_camera::setup_entities::{CycleTimer, Sun};
 
 pub fn daylight_cycle(
     mut atmosphere: AtmosphereMut<Nishita>,
