@@ -10,12 +10,12 @@ use std::f32::consts::PI;
 // Guy who is gonna send animation events according to rotation also is gonna tell to rotate the dynamic player
 pub fn detect_rotation(
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<&Transform, With<Player>>,
+    q_2: Query<(&Transform,&PlayerVel), With<Player>>,
     mut event_writer: EventWriter<RotateAction>,
 ) {
     let camera_transform = q_1.get_single().expect("Cam to have transform");
 
-    let player_transform = q_2.get_single().expect("Player to have transform");
+    let (player_transform,player_vel) = q_2.get_single().expect("Player to have transform");
 
     let rot_error = (camera_transform.rotation * player_transform.rotation.inverse()).normalize();
 
@@ -23,11 +23,12 @@ pub fn detect_rotation(
 
     let angle_error_rad = angle_error.to_radians();
 
-    let angvel = 650.0 * angle_error_rad * axis_error;
+    let angvel = player_vel.ang_vel * angle_error_rad * axis_error;
 
     let only_y = Vec3::new(0.0, angvel.y, 0.0);
 
-    if angvel != Vec3::ZERO {
+    if only_y.y > 0.18 || only_y.y < -0.18 {
+        println!("{}",only_y);
         event_writer.send(RotateAction::EaseRotation(only_y));
     }
 }

@@ -35,12 +35,13 @@ impl Default for Limit {
 pub struct PlayerVel {
     pub ang_vel: f32,
     pub linvel: f32,
-    pub jump_vel: f32
+    pub jump_vel: f32,
+    pub dash_vel: f32
 }
 
 impl Default for PlayerVel {
     fn default() -> Self {
-        Self { ang_vel: 500.0,linvel: 20.0,jump_vel: 20.0 }
+        Self { ang_vel: 600.0,linvel: 20.0,jump_vel: 20.0,dash_vel: 200.0 }
     }
 }
 
