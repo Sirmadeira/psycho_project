@@ -36,12 +36,17 @@ pub struct PlayerVel {
     pub ang_vel: f32,
     pub linvel: f32,
     pub jump_vel: f32,
-    pub dash_vel: f32
+    pub dash_vel: f32,
 }
 
 impl Default for PlayerVel {
     fn default() -> Self {
-        Self { ang_vel: 600.0,linvel: 20.0,jump_vel: 20.0,dash_vel: 200.0 }
+        Self {
+            ang_vel: 600.0,
+            linvel: 20.0,
+            jump_vel: 20.0,
+            dash_vel: 200.0,
+        }
     }
 }
 
@@ -54,7 +59,6 @@ impl Default for Health {
     }
 }
 
-
 // Times the dash for each key
 #[derive(Reflect, Component, Debug)]
 pub struct DashTimers {
@@ -66,11 +70,11 @@ pub struct DashTimers {
 
 impl Default for DashTimers {
     fn default() -> Self {
-        Self{
+        Self {
             up: Stopwatch::new(),
             down: Stopwatch::new(),
-            left : Stopwatch::new(),
-            right: Stopwatch::new()
+            left: Stopwatch::new(),
+            right: Stopwatch::new(),
         }
     }
 }

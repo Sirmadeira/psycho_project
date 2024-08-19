@@ -1,21 +1,21 @@
 use crate::form_ingame_camera::setup_entities::CamInfo;
 use crate::form_modular_char::helpers::find_child_with_name_containing;
 use crate::form_player::setup_entities::*;
-use crate::player_mechanics::lib::RotateAction;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
 // Guy who is gonna send animation events according to rotation also is gonna tell to rotate the dynamic player
-pub fn detect_rotation(
+pub fn rotate_character(
     q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<(&Transform,&PlayerVel), With<Player>>,
-    mut event_writer: EventWriter<RotateAction>,
+    q_2: Query<(&Transform, &PlayerVel), With<Player>>,
+    mut q_3: Query<&mut Velocity, With<Player>>,
 ) {
     let camera_transform = q_1.get_single().expect("Cam to have transform");
 
-    let (player_transform,player_vel) = q_2.get_single().expect("Player to have transform");
+    let (player_transform, player_vel) = q_2.get_single().expect("Player to have transform");
+
 
     let rot_error = (camera_transform.rotation * player_transform.rotation.inverse()).normalize();
 
@@ -28,22 +28,8 @@ pub fn detect_rotation(
     let only_y = Vec3::new(0.0, angvel.y, 0.0);
 
     if only_y.y > 0.18 || only_y.y < -0.18 {
-        println!("{}",only_y);
-        event_writer.send(RotateAction::EaseRotation(only_y));
-    }
-}
-
-pub fn rotate_character(
-    mut rotate_event_reader: EventReader<RotateAction>,
-    mut q_1: Query<&mut Velocity, With<Player>>,
-) {
-    for mut v in q_1.iter_mut() {
-        for event in rotate_event_reader.read() {
-            match event {
-                RotateAction::EaseRotation(angvel) => {
-                    v.angvel = *angvel;
-                }
-            }
+        for mut vel in q_3.iter_mut(){
+            vel.angvel = only_y;
         }
     }
 }

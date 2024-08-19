@@ -10,11 +10,6 @@ pub enum MovementAction {
     Jump,
 }
 
-#[derive(Event, Debug)]
-pub enum RotateAction {
-    EaseRotation(Vec3),
-}
-
 // Check if is on ground
 #[derive(Component)]
 #[component(storage = "SparseSet")]

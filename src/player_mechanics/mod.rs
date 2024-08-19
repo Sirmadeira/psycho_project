@@ -19,7 +19,6 @@ pub struct PlayerMechanics;
 impl Plugin for PlayerMechanics {
     fn build(&self, app: &mut App) {
         app.add_event::<MovementAction>();
-        app.add_event::<RotateAction>();
         app.register_type::<StatusEffectDash>();
         app.register_type::<StatusEffectWallBounce>();
         app.register_type::<StatusEffectStun>();
@@ -48,10 +47,19 @@ impl Plugin for PlayerMechanics {
         // Moves character around
         app.add_systems(
             FixedUpdate,
-            (move_character, detect_rotation, rotate_character)
+            (move_character, rotate_character)
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
+
+        // Adjust the spine of the character to slightly look up and down
+        app.add_systems(
+            Update,
+            spine_look_at
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame)),
+        );
+
         // Detect collision
         app.add_systems(
             FixedUpdate,
