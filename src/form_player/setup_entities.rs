@@ -143,6 +143,14 @@ pub fn spawn_main_rigidbody(
             PlayerGroundCollider,
         );
 
+        let side_collider = (
+            Collider::cuboid(0.65, 1.0, 0.25),
+            CollisionGroups::new(Group::GROUP_11, Group::GROUP_10),
+            ActiveEvents::COLLISION_EVENTS,
+            TransformBundle::from(Transform::from_xyz(0.0, 1.0, 0.0)),
+        );
+
+
         // Character health
         let health = Health::default();
 
@@ -185,7 +193,7 @@ pub fn spawn_main_rigidbody(
                 .insert(limit)
                 .insert(health)
                 .with_children(|children: &mut ChildBuilder| {
-                    children.spawn(main_collider);
+                    children.spawn(side_collider);
                 })
                 .id();
 

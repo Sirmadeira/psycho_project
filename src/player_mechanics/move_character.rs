@@ -159,16 +159,22 @@ pub fn keyboard_jump(
         .get_single_mut()
         .expect("Player to only have one grounded flag and limit");
 
-    if is_grounded {
-        amount_jumps.jump_limit = Limit {
-            ..Default::default()
-        }
-        .jump_limit
-    }
-    if keys.just_pressed(KeyCode::Space) && amount_jumps.jump_limit != 0 {
+
+    // Forgot to handle just jumped
+    if is_grounded && keys.just_pressed(KeyCode::Space) {
+        println!("{}",amount_jumps.jump_limit);
         amount_jumps.jump_limit -= 1;
         movement_event_writer.send(MovementAction::Jump);
         animation_type_writer.send(AnimationType::Jump);
+    }
+    else if keys.just_pressed(KeyCode::Space) && amount_jumps.jump_limit != 0 {
+        println!("{}",amount_jumps.jump_limit);
+        amount_jumps.jump_limit -= 1;
+        movement_event_writer.send(MovementAction::Jump);
+        animation_type_writer.send(AnimationType::Jump);
+    }
+    else if is_grounded && amount_jumps.jump_limit == 0 {
+        amount_jumps.jump_limit = Limit::default().jump_limit;
     }
 }
 

@@ -28,7 +28,7 @@ pub fn check_status_ticker(
             status_dash
                 .dash_cooldown
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
-            if status_dash.dash_cooldown.finished() {
+            if status_dash.dash_cooldown.just_finished() {
                 commands.entity(ent).remove::<StatusEffectDash>();
             }
         }
@@ -37,7 +37,7 @@ pub fn check_status_ticker(
             cooldown
                 .timer
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
-            if cooldown.timer.finished() {
+            if cooldown.timer.just_finished() {
                 println!("NO longer stunned");
                 commands.entity(ent).remove::<StatusEffectStun>();
             }
@@ -47,7 +47,7 @@ pub fn check_status_ticker(
             status_attack
                 .0
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
-            if status_attack.0.finished() {
+            if status_attack.0.just_finished() {
                 println!("No longer attacking");
                 commands.entity(ent).remove::<StatusEffectAttack>();
             }
