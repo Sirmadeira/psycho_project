@@ -27,7 +27,3 @@ pub struct Skeleton;
 // Marker compoenent for visual
 #[derive(Component)]
 pub struct Visual;
-
-// Marker component - Tells me which is the collider to check for ground
-#[derive(Component)]
-pub struct PlayerGroundCollider;

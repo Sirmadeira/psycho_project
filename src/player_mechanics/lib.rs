@@ -15,12 +15,6 @@ pub enum MovementAction {
 #[component(storage = "SparseSet")]
 pub struct Grounded;
 
-// Checks if has wallbounced
-#[derive(Reflect, Component, Debug)]
-#[component(storage = "SparseSet")]
-pub struct StatusEffectWallBounce {
-    pub bounce_duration: Timer,
-}
 
 // Check if has dashed
 #[derive(Reflect, Component, Debug)]

@@ -30,7 +30,7 @@ impl Plugin for TreatAnimations {
                 .run_if(in_state(MyAppState::InGame)),
         );
         app.add_systems(
-            Update,
+            PostUpdate,
             state_machine
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))

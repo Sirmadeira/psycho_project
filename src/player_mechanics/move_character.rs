@@ -173,6 +173,7 @@ pub fn keyboard_jump(
         movement_event_writer.send(MovementAction::Jump);
         animation_type_writer.send(AnimationType::Jump);
     }
+    
     else if is_grounded && amount_jumps.jump_limit == 0 {
         amount_jumps.jump_limit = Limit::default().jump_limit;
     }

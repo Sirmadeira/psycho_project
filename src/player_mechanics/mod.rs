@@ -2,13 +2,13 @@
 
 use bevy::prelude::*;
 
-use self::{detect_hits::*, lib::*, move_character::*, rotate_character::*, status_effects::*};
+use self::{lib::*, move_character::*, rotate_character::*, tick_status::*,detect_system::*};
 
-pub mod detect_hits;
+pub mod detect_system;
 pub mod lib;
 pub mod move_character;
 pub mod rotate_character;
-pub mod status_effects;
+pub mod tick_status;
 
 use crate::MyAppState;
 
@@ -18,41 +18,57 @@ pub struct PlayerMechanics;
 
 impl Plugin for PlayerMechanics {
     fn build(&self, app: &mut App) {
+        // Events
         app.add_event::<MovementAction>();
+        // Debugin
         app.register_type::<StatusEffectDash>();
-        app.register_type::<StatusEffectWallBounce>();
         app.register_type::<StatusEffectStun>();
 
-        // Send movement events
+        // Detect systems - They run in fixed preupdate because they define game logic. For example if idle, send idle animation and if ground dont fly, so on on
         app.add_systems(
-            PreUpdate,
-            (keyboard_walk, keyboard_dash, keyboard_jump)
-                .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)),
-        );
-        // Gives status effects
-        app.add_systems(
-            FixedUpdate,
+            FixedPreUpdate,
             (
-                check_status_grounded,
-                check_status_ticker,
-                check_status_wallbounce,
-                check_status_idle,
-                check_dead,
+                detect_hits_body_weapon,
+                detect_hits_wall_weapon,
+                detect_hits_weapon_weapon,
+                detect_hits_body_ground,
+                detect_if_idle,
+                detect_dead
             )
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
 
-        // Moves character around
+
+        // Send movement events and anImation events
         app.add_systems(
-            FixedUpdate,
-            (move_character, rotate_character)
+            Update,
+            (keyboard_walk, keyboard_dash, keyboard_jump)
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
 
-        // Adjust the spine of the character to slightly look up and down
+        // Moves character around - Runs in update- Because they just dont care about status
+        app.add_systems(
+            Update,
+            (move_character, rotate_character)
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame))
+        );
+
+
+        // Ticker related systems - They just remove components it would be ideal to put them in post, because them new status can be applied and evaluated correctly.
+        // Since they are a lot of timers runs in fixed to avoid fps related issues and so on
+        app.add_systems(
+            FixedPostUpdate,
+            (
+                check_status_ticker,
+            )
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame)),
+        );
+
+        // Just an aditional visual mechanic - Doesnt really matter as long as it happens before camera sync player camera.
         app.add_systems(
             Update,
             spine_look_at
@@ -60,16 +76,5 @@ impl Plugin for PlayerMechanics {
                 .run_if(in_state(MyAppState::InGame)),
         );
 
-        // Detect collision
-        app.add_systems(
-            FixedUpdate,
-            (
-                detect_hits_body_weapon,
-                detect_hits_wall_weapon,
-                detect_hits_weapon_weapon,
-            )
-                .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)),
-        );
     }
 }

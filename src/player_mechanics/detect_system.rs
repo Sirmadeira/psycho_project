@@ -3,13 +3,17 @@ use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
 use crate::form_player::setup_entities::*;
-
+use crate::player_mechanics::{Grounded, StatusEffectDash, StatusEffectStun,StatusIdle};
+use crate::treat_animations::lib::AnimationType;
 use crate::form_hitbox::setup_entities::*;
 use crate::form_world::setup_entities::*;
-use crate::player_mechanics::lib::StatusEffectWallBounce;
 use std::borrow::BorrowMut;
 
-// I only need this because CollidingEntities, is broken. And i dont need the collisions info. For now
+// These system can add and remove status as long as they are not time based
+
+
+
+
 pub fn detect_hits_body_weapon(
     mut collision_events: EventReader<CollisionEvent>,
     weapon_col: Query<&WeaponCollider>,
@@ -77,18 +81,15 @@ pub fn detect_hits_wall_weapon(
                             .get(*weapon_entity)
                             .expect("To be pointing to a skeleton")
                             .0;
+
                         let player = parent
                             .get(skeleton)
                             .expect("Skeleton to have player parented")
                             .get();
 
                         // WHEN WALLBOUNCING YOU RESET JUMP AND DASH
-                        commands.entity(player).insert(StatusEffectWallBounce {
-                            bounce_duration: Timer::new(
-                                Duration::from_secs_f32(2.0),
-                                TimerMode::Once,
-                            ),
-                        });
+                        commands.entity(player).remove::<StatusEffectDash>();
+                        // TODO - RESET JUMP
 
                         println!("WALLBOUNCE");
                     }
@@ -117,4 +118,86 @@ pub fn detect_hits_weapon_weapon(
             CollisionEvent::Stopped(_, _, _) => {}
         }
     }
+}
+
+
+pub fn detect_hits_body_ground(
+    rapier_context: Res<RapierContext>,
+    mut commands: Commands,
+    q_1: Query<Entity, With<PlayerGroundCollider>>,
+    q_2: Query<Entity, With<Ground>>,
+    q_3: Query<(Entity, Has<Grounded>), With<Player>>,
+    mut animation_writer: EventWriter<AnimationType>,
+) {
+    // Player
+    let (player, is_grounded) = q_3.get_single().expect("Player to exist");
+    // Grabs main collider from player and check if it is colliding with ground
+    for entity1 in q_1.iter() {
+        let entity2 = q_2.get_single().expect("Ground to exist");
+        /* Find the contact pair, if it exists, between two colliders. */
+        if let Some(contact_pair) = rapier_context.contact_pair(entity1, entity2) {
+            // The contact pair exists meaning that the broad-phase identified a potential contact.
+            if contact_pair.has_any_active_contact() {
+                if is_grounded {
+                    return;
+                } else {
+                    // Tell me player is grounded
+                    commands.entity(player).insert(Grounded);
+                    commands.entity(player).insert(StatusEffectStun {
+                        timer: Timer::new(Duration::from_micros(50), TimerMode::Once),
+                        played_animation: false,
+                    });
+                    animation_writer.send(AnimationType::Landing);
+                }
+            }
+        } else {
+            commands.entity(player).remove::<Grounded>(); 
+        }
+    }
+}
+
+
+// Check if player is idle if so it send animation type and adds a component
+pub fn detect_if_idle(
+    mut q_1: Query<(Entity, &Velocity, &ExternalImpulse, Option<&mut StatusIdle>), With<Player>>,
+    mut commands: Commands,
+    mut animation_writer: EventWriter<AnimationType>,
+    time: Res<Time>,
+) {
+    for (player, vel, imp, opt_status_idle) in q_1.iter_mut() {
+        if vel.linvel.length() < 0.01 && imp.impulse.length() < 0.01 {
+            if let Some(mut status_idle) = opt_status_idle {
+                status_idle
+                    .0
+                    .tick(Duration::from_secs_f32(time.delta_seconds()));
+                if status_idle.0.finished() {
+                    animation_writer.send(AnimationType::Idle);
+                }
+            } else {
+                commands.entity(player).insert(StatusIdle(Timer::new(
+                    Duration::from_micros(100),
+                    TimerMode::Once,
+                )));
+            }
+        } else {
+            commands.entity(player).remove::<StatusIdle>(); // Remove the idle marker if the player is moving
+        }
+    }
+}
+
+pub fn detect_dead(
+    hp_entities: Query<(Entity, &Health)>,
+    // mut animation_type_writer: EventWriter<AnimationType>,
+) {
+    for (entity, &Health(hp)) in hp_entities.iter() {
+        if hp == 0 {
+            println!("THIS DUDE IS DEAD {:?}", entity);
+            // animation_type_writer.send(AnimationType::Dead);
+        }
+    }
+}
+
+// Tells me the end result of detect hits
+fn final_state(){
+    todo!()
 }

@@ -5,7 +5,7 @@ use bevy::time::Stopwatch;
 use bevy_rapier3d::prelude::*;
 
 use crate::form_modular_char::helpers::find_child_with_name_containing;
-use crate::form_modular_char::lib::*;
+use crate::form_modular_char::lib::Skeleton;
 use crate::treat_animations::lib::AnimatedEntity;
 use crate::MyAppState;
 
@@ -78,6 +78,10 @@ impl Default for DashTimers {
         }
     }
 }
+
+// Marker component - Tells me which is the collider to check for ground
+#[derive(Component)]
+pub struct PlayerGroundCollider;
 
 // Adding physical body that will move our modular character dynamically
 // Also adding usefull attachments
