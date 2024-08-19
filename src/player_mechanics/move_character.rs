@@ -80,7 +80,7 @@ pub fn keyboard_dash(
     mut commands: Commands,
     mut movement_event_writer: EventWriter<MovementAction>,
     mut animation_type_writer: EventWriter<AnimationType>,
-    mut q: Query<(&mut Timers, Entity, Has<StatusEffectDash>), With<Player>>,
+    mut q: Query<(&mut DashTimers, Entity, Has<StatusEffectDash>), With<Player>>,
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
     for (mut timers, player, has_dashed) in q.iter_mut() {

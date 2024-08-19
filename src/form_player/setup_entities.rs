@@ -30,22 +30,48 @@ impl Default for Limit {
     }
 }
 
+// Kind of a simple pid
+#[derive(Reflect, Component, Debug)]
+pub struct PlayerVel {
+    pub ang_vel: f32,
+    pub linvel: f32,
+    pub jump_vel: f32
+}
+
+impl Default for PlayerVel {
+    fn default() -> Self {
+        Self { ang_vel: 500.0,linvel: 20.0,jump_vel: 20.0 }
+    }
+}
+
 #[derive(Component, Reflect, Debug)]
 pub struct Health(pub i8);
 
-// Kind of a simple pid
-#[derive(Reflect, Component, Debug)]
-pub struct PdInfo {
-    pub kp: f32,
+impl Default for Health {
+    fn default() -> Self {
+        Self(10)
+    }
 }
+
 
 // Times the dash for each key
 #[derive(Reflect, Component, Debug)]
-pub struct Timers {
+pub struct DashTimers {
     pub up: Stopwatch,
     pub down: Stopwatch,
     pub left: Stopwatch,
     pub right: Stopwatch,
+}
+
+impl Default for DashTimers {
+    fn default() -> Self {
+        Self{
+            up: Stopwatch::new(),
+            down: Stopwatch::new(),
+            left : Stopwatch::new(),
+            right: Stopwatch::new()
+        }
+    }
 }
 
 // Adding physical body that will move our modular character dynamically
@@ -74,7 +100,7 @@ pub fn spawn_main_rigidbody(
                 impulse: Vec3::ZERO,
                 torque_impulse: Vec3::ZERO,
             },
-            PdInfo { kp: 500.0 },
+            PlayerVel::default(),
             Name::new(format!("Player_{}", player_count)),
             GravityScale(1.0),
             AdditionalMassProperties::Mass(10.0),
@@ -82,7 +108,7 @@ pub fn spawn_main_rigidbody(
         );
 
         let second_rigidbody = (
-            RigidBody::Fixed,
+            RigidBody::Dynamic,
             SpatialBundle {
                 transform: Transform::from_xyz(4.0, 0.25, 1.0),
                 ..Default::default()
@@ -96,7 +122,7 @@ pub fn spawn_main_rigidbody(
                 impulse: Vec3::ZERO,
                 torque_impulse: Vec3::ZERO,
             },
-            PdInfo { kp: 500.0 },
+            PlayerVel::default(),
             Name::new(format!("Player_{}", player_count)),
             GravityScale(1.0),
             AdditionalMassProperties::Mass(10.0),
@@ -112,25 +138,21 @@ pub fn spawn_main_rigidbody(
             PlayerGroundCollider,
         );
 
-        let health = Health(10);
+        // Character health
+        let health = Health::default();
 
-        let timers = (Timers {
-            up: Stopwatch::new(),
-            down: Stopwatch::new(),
-            left: Stopwatch::new(),
-            right: Stopwatch::new(),
-        },);
+        // The amount of time the player has if quickly taps to dash
+        let dash_timers = DashTimers::default();
 
-        let limit = (Limit {
-            ..Default::default()
-        },);
+        // A few of the player limits
+        let limit = Limit::default();
 
         if scene_name.to_string() == "skeleton_1" {
             // Main rigidbody + it is collider
             let player_details = commands
                 .spawn(main_rigidbody)
                 .insert(Player)
-                .insert(timers)
+                .insert(dash_timers)
                 .insert(limit)
                 .insert(health)
                 .with_children(|children: &mut ChildBuilder| {
@@ -154,7 +176,7 @@ pub fn spawn_main_rigidbody(
             let other_details = commands
                 .spawn(second_rigidbody)
                 .insert(SidePlayer)
-                .insert(timers)
+                .insert(dash_timers)
                 .insert(limit)
                 .insert(health)
                 .with_children(|children: &mut ChildBuilder| {
