@@ -6,7 +6,6 @@ use crate::treat_animations::lib::*;
 use crate::form_modular_char::helpers::find_child_with_name_containing;
 use crate::form_modular_char::lib::Skeleton;
 
-// This will mark every single bone in both entities with bone mask struct
 pub fn mark_bones(
     mut commands: Commands,
     q_1: Query<Entity, With<Skeleton>>,
@@ -39,11 +38,13 @@ pub fn blend_animations(
     not_masked: Query<&AnimationTarget, (With<AnimationTarget>, Without<BoneMask>)>,
     mut commands: Commands,
 ) {
+    // Grabbing skeleton asset
     let skeleton_handle = asset_pack
         .gltf_files
         .get("skeleton.glb")
         .expect("To have skeleton gltf handle");
 
+    // Checking for animations in gltf
     let gltf = assets_gltf
         .get(skeleton_handle)
         .expect("My asset pack to have GLTF");
@@ -67,6 +68,7 @@ pub fn blend_animations(
         // Masking according to given clips
         if let Some(anim_clip) = &blend_animation.first_anim_clip {
             if let Some(second_clip) = &blend_animation.second_anim_clip {
+                // Grab clips to be blended
                 let loaded_first_clip = assets_clips
                     .get(anim_clip)
                     .expect("The handle to grab the clip");
@@ -77,9 +79,8 @@ pub fn blend_animations(
                 // Create a new animation clip
                 let mut new_clip = AnimationClip::default();
 
-                // Add curves for masked bones
+                // Add curves for masked bones - Second animation in config
                 for target in masked_bones.iter() {
-                    println!("{:?}", target.id);
                     if let Some(override_curves) = loaded_second_clip.curves_for_target(target.id) {
                         for curve in override_curves.iter() {
                             new_clip.add_curve_to_target(target.id, curve.clone());
@@ -87,9 +88,8 @@ pub fn blend_animations(
                     }
                 }
 
-                // Add curves for not masked bones
+                // Add curves for not masked bones - First animation
                 for other_target in not_masked.iter() {
-                    println!("{:?}", other_target.id);
                     if let Some(current_curves) =
                         loaded_first_clip.curves_for_target(other_target.id)
                     {

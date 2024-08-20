@@ -2,12 +2,12 @@
 
 use bevy::prelude::*;
 
-use self::{lib::*, move_character::*, rotate_character::*, tick_status::*,detect_system::*};
+use self::{lib::*, keyboard_system::*, move_rotate::*, tick_status::*,detect_system::*};
 
 pub mod detect_system;
 pub mod lib;
-pub mod move_character;
-pub mod rotate_character;
+pub mod keyboard_system;
+pub mod move_rotate;
 pub mod tick_status;
 
 use crate::MyAppState;
@@ -43,7 +43,7 @@ impl Plugin for PlayerMechanics {
         // Send movement events and anImation events
         app.add_systems(
             Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump)
+            (keyboard_walk, keyboard_dash, keyboard_jump,keyboard_attack)
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );

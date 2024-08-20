@@ -26,17 +26,27 @@ pub struct ConfigBoneMaskedAnimations(pub Vec<MaskNode>);
 
 impl Default for ConfigBoneMaskedAnimations {
     fn default() -> Self {
+        // Define the "walk" and "attack" animations
+        let walk_anims = vec!["FrontWalk", "BackWalk", "LeftWalk", "RightWalk"];
+        let attack_anims = vec!["FrontAttack", "BackAttack", "LeftAttack", "RightAttack"];
+        
+        // Create a mutable vector to hold all combinations
         let mut vec = Vec::new();
-
-        let first_mask = MaskNode {
-            first_anim: "FrontWalk".to_string(),
-            second_anim: "FrontAttack".to_string(),
-            first_anim_clip: None,
-            second_anim_clip: None,
-        };
-
-        vec.push(first_mask);
-
+        
+        // Iterate over all combinations of "walk" and "attack" animations
+        for walk in &walk_anims {
+            for attack in &attack_anims {
+                let mask_node = MaskNode {
+                    first_anim: walk.to_string(),
+                    second_anim: attack.to_string(),
+                    first_anim_clip: None,
+                    second_anim_clip: None,
+                };
+                vec.push(mask_node);
+            }
+        }
+        
+        // Create and return the ConfigBoneMaskedAnimations with all combinations
         ConfigBoneMaskedAnimations(vec)
     }
 }

@@ -1,6 +1,8 @@
+use std::os::linux::raw::stat;
+
+use bevy::input::keyboard::Key;
 use bevy::prelude::*;
 use bevy::utils::Duration;
-use bevy_rapier3d::prelude::*;
 
 use crate::form_ingame_camera::setup_entities::CamInfo;
 use crate::form_player::setup_entities::*;
@@ -179,24 +181,32 @@ pub fn keyboard_jump(
     }
 }
 
-pub fn move_character(
-    mut movement_event_reader: EventReader<MovementAction>,
-    time: Res<Time>,
-    mut q_1: Query<(&mut Velocity, &mut ExternalImpulse, &PlayerVel), With<Player>>,
-) {
-    for event in movement_event_reader.read() {
-        for (mut vel, mut impulse, player_vel) in &mut q_1 {
-            match event {
-                MovementAction::Move(direction) => {
-                    vel.linvel.x += direction.x * player_vel.linvel * time.delta_seconds();
-                    vel.linvel.z += direction.y * player_vel.linvel * time.delta_seconds();
-                }
-                MovementAction::Dash(direction) => {
-                    impulse.impulse.x = direction.x * player_vel.dash_vel;
-                    impulse.impulse.z = direction.y * player_vel.dash_vel;
-                }
-                MovementAction::Jump => vel.linvel.y += player_vel.jump_vel,
-            }
+
+
+pub fn keyboard_attack( keys: Res<ButtonInput<KeyCode>>,
+    mut state_attack: Query<&mut StateOfAttack,With<Player>>){
+
+    let mut state_attack = state_attack.get_single_mut().expect("player to only have a single state of attack");
+    if keys.just_pressed(KeyCode::KeyE){
+        if state_attack.hor_state == Vec2::new(0.0, 1.0){
+            state_attack.hor_state = Vec2::new(1.0, 0.0);
         }
+        else {
+            state_attack.hor_state = Vec2::new(0.0, 1.0);
+        }
+    }
+    if keys.just_pressed(KeyCode::KeyQ){
+        if state_attack.hor_state == Vec2::new(1.0, 0.0){
+            state_attack.hor_state = Vec2::new(0.0, 1.0);
+        }
+        else {
+            state_attack.hor_state = Vec2::new(1.0, 0.0);
+        }
+    }
+    if keys.just_pressed(KeyCode::Tab){
+        if state_attack.vert_state ==  Vec2::new(0.0, 1.0){
+            state_attack.vert_state = Vec2::new(1.0, 0.0);
+        }
+        state_attack.vert_state = Vec2::new(0.0, 1.0);
     }
 }

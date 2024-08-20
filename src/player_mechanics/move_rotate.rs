@@ -1,10 +1,35 @@
 use crate::form_ingame_camera::setup_entities::CamInfo;
 use crate::form_modular_char::helpers::find_child_with_name_containing;
 use crate::form_player::setup_entities::*;
+use crate::player_mechanics::MovementAction;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
+
+
+pub fn move_character(
+    mut movement_event_reader: EventReader<MovementAction>,
+    time: Res<Time>,
+    mut q_1: Query<(&mut Velocity, &mut ExternalImpulse, &PlayerVel), With<Player>>,
+) {
+    for event in movement_event_reader.read() {
+        for (mut vel, mut impulse, player_vel) in &mut q_1 {
+            match event {
+                MovementAction::Move(direction) => {
+                    vel.linvel.x += direction.x * player_vel.linvel * time.delta_seconds();
+                    vel.linvel.z += direction.y * player_vel.linvel * time.delta_seconds();
+                }
+                MovementAction::Dash(direction) => {
+                    impulse.impulse.x = direction.x * player_vel.dash_vel;
+                    impulse.impulse.z = direction.y * player_vel.dash_vel;
+                }
+                MovementAction::Jump => vel.linvel.y += player_vel.jump_vel,
+            }
+        }
+    }
+}
+
 
 // Guy who is gonna send animation events according to rotation also is gonna tell to rotate the dynamic player
 pub fn rotate_character(

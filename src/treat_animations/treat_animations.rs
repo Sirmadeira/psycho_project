@@ -43,7 +43,7 @@ pub fn state_machine(
         .get_single_mut()
         .expect("Expect to have animated armature");
 
-    animation_player.play(animations.node[0]);
+    animation_player.play(animations.node[1]);
 
     // if let Some(current_animation) = active_transitions.get_main_animation() {
     //     for event in animation_to_play.read() {

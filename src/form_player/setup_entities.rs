@@ -79,6 +79,18 @@ impl Default for DashTimers {
     }
 }
 
+// // Gives me the direction of the player is supposed to be attacking from
+#[derive(Component,Reflect)]
+pub struct StateOfAttack{
+    pub hor_state: Vec2,
+    pub vert_state:Vec2
+}
+
+impl Default for StateOfAttack {
+    fn default() -> Self {
+        Self { hor_state: Vec2::new(1.0,0.0), vert_state:Vec2::new(1.0,0.0) }
+    }
+}
 // Marker component - Tells me which is the collider to check for ground
 #[derive(Component)]
 pub struct PlayerGroundCollider;
@@ -163,6 +175,8 @@ pub fn spawn_main_rigidbody(
 
         // A few of the player limits
         let limit = Limit::default();
+        
+        let state_of_attack = StateOfAttack::default();
 
         if scene_name.to_string() == "skeleton_1" {
             // Main rigidbody + it is collider
@@ -171,6 +185,7 @@ pub fn spawn_main_rigidbody(
                 .insert(Player)
                 .insert(dash_timers)
                 .insert(limit)
+                .insert(state_of_attack)
                 .insert(health)
                 .with_children(|children: &mut ChildBuilder| {
                     children.spawn(main_collider);
