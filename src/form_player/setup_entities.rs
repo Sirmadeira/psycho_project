@@ -82,15 +82,25 @@ impl Default for DashTimers {
 // // Gives me the direction of the player is supposed to be attacking from
 #[derive(Component,Reflect)]
 pub struct StateOfAttack{
-    pub hor_state: Vec2,
-    pub vert_state:Vec2
+    pub attack_states: Vec<&'static str>,
+    pub active_attack:&'static str,
+    pub index: u8 
 }
+
 
 impl Default for StateOfAttack {
     fn default() -> Self {
-        Self { hor_state: Vec2::new(1.0,0.0), vert_state:Vec2::new(1.0,0.0) }
+        Self { attack_states: vec!["LeftAttack", "RightAttack","FrontAttack", "BackAttack"],active_attack: "LeftAttack" ,index:0}
     }
 }
+
+impl StateOfAttack {
+    // Function to get attack value based on index
+    pub fn get_attack(&self) -> Option<&'static str> {
+        self.attack_states.get(self.index as usize).copied()
+    }
+}
+
 // Marker component - Tells me which is the collider to check for ground
 #[derive(Component)]
 pub struct PlayerGroundCollider;

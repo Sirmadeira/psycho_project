@@ -183,30 +183,43 @@ pub fn keyboard_jump(
 
 
 
-pub fn keyboard_attack( keys: Res<ButtonInput<KeyCode>>,
-    mut state_attack: Query<&mut StateOfAttack,With<Player>>){
-
+pub fn keyboard_attack(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut state_attack: Query<&mut StateOfAttack, With<Player>>,
+) {
     let mut state_attack = state_attack.get_single_mut().expect("player to only have a single state of attack");
-    if keys.just_pressed(KeyCode::KeyE){
-        if state_attack.hor_state == Vec2::new(0.0, 1.0){
-            state_attack.hor_state = Vec2::new(1.0, 0.0);
+
+    // Handling KeyCode::KeyE
+    if keys.just_pressed(KeyCode::KeyE) {
+        if state_attack.index == 0{
+           state_attack.index = 1
         }
-        else {
-            state_attack.hor_state = Vec2::new(0.0, 1.0);
+        else if state_attack.index == 1{
+            state_attack.index = 0
+        }
+        else if state_attack.index == 2{
+            state_attack.index = 0
+        }
+        else if state_attack.index == 3{
+            state_attack.index = 0
         }
     }
-    if keys.just_pressed(KeyCode::KeyQ){
-        if state_attack.hor_state == Vec2::new(1.0, 0.0){
-            state_attack.hor_state = Vec2::new(0.0, 1.0);
+
+    // Handling KeyCode::KeyQ
+    if keys.just_pressed(KeyCode::KeyQ) {
+        if state_attack.index == 0{
+            state_attack.index = 2
         }
-        else {
-            state_attack.hor_state = Vec2::new(1.0, 0.0);
+        else if state_attack.index == 1{
+            state_attack.index = 2
         }
+        else if state_attack.index == 2{
+            state_attack.index = 3
+        }
+        else if state_attack.index == 3{
+            state_attack.index = 2
+         }
     }
-    if keys.just_pressed(KeyCode::Tab){
-        if state_attack.vert_state ==  Vec2::new(0.0, 1.0){
-            state_attack.vert_state = Vec2::new(1.0, 0.0);
-        }
-        state_attack.vert_state = Vec2::new(0.0, 1.0);
-    }
+
+
 }
