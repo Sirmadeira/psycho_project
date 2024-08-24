@@ -21,7 +21,7 @@ impl Plugin for TreatAnimations {
         // app.add_systems(OnEnter(MyAppState::InGame), spawn_animation_graph);
         app.add_systems(
             OnEnter(MyAppState::CharacterCreated),
-            (mark_bones, blend_animations).chain(),
+            (mark_bones, blend_animations,gltf_animations).chain(),
         );
         app.add_systems(
             Update,
@@ -30,7 +30,7 @@ impl Plugin for TreatAnimations {
                 .run_if(in_state(MyAppState::InGame)),
         );
         app.add_systems(
-            PostUpdate,
+            Update,
             state_machine
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))

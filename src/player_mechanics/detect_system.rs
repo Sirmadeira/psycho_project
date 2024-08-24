@@ -11,9 +11,6 @@ use std::borrow::BorrowMut;
 
 // These system can add and remove status as long as they are not time based
 
-
-
-
 pub fn detect_hits_body_weapon(
     mut collision_events: EventReader<CollisionEvent>,
     weapon_col: Query<&WeaponCollider>,
