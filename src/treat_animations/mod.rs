@@ -33,8 +33,7 @@ impl Plugin for TreatAnimations {
             Update,
             state_machine
                 .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame))
-                .after(keyboard_attack),
+                .run_if(in_state(MyAppState::InGame)),
         );
     }
 }
