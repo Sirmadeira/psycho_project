@@ -132,12 +132,11 @@ pub fn create_blend_animations(
 pub fn gltf_animations(
     asset_pack: Res<MyAssets>,
     assets_gltf: Res<Assets<Gltf>>,
+    mut animations: ResMut<Animations>,
 ) {
         // Creating graphs according to amount of player
         let mut graph = AnimationGraph::new();
 
-        // Node with a string name
-        let mut named_nodes = HashMap::new();
 
         // Using bevy asset loader to easily access my assets
         for (_, gltf_handle) in &asset_pack.gltf_files {
@@ -152,12 +151,11 @@ pub fn gltf_animations(
                 let node = graph.add_clip(animation_clip.clone(), 1.0, graph.root);
 
                 // Creating named node
-                named_nodes.insert(name_animation.to_string(), node);
+                animations.named_nodes.insert(name_animation.to_string(), node);
                 println!(
                     "Current available animations are {} for player",
                     name_animation
                 );
             }
         }
-
 }

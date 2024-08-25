@@ -82,7 +82,7 @@ pub fn state_machine(
         println!("Adding first animation");
         let first_anim = animations
             .named_nodes
-            .get("StartPose")
+            .get("Idle")
             .expect("First animation to exist");
         active_transitions.play(&mut animation_player, *first_anim, Duration::ZERO);
     }
