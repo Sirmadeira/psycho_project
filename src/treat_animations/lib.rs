@@ -144,7 +144,7 @@ impl AnimationType {
                 AnimationProperties::new("Landing".to_string(), Duration::from_millis(0), false)
             }
             AnimationType::BlendAnimation(name) => {
-                AnimationProperties::new(name.to_string(), Duration::from_millis(0), false)
+                AnimationProperties::new(name.to_string(), Duration::from_millis(200), false)
             }
             AnimationType::None=> {
                 AnimationProperties::new("NOne".to_string(), Duration::from_millis(0), false)

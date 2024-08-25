@@ -60,14 +60,15 @@ pub fn state_machine(
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     stun.played_animation = true;
                 }
-                return;
+                return
             } 
             else if let Ok(mut attack) = attack_info.get_single_mut() {
                 if !attack.played_animation {
+                    println!("{}",properties.name);
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     attack.played_animation = true;
+                    return;
                 }
-                return;
                 
             }else {
                 // Handles scenario where the is no "stun"

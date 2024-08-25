@@ -54,7 +54,7 @@ pub fn spawn_camera_atmosphere(mut commands: Commands) {
             zoom_enabled: true,
             zoom: Zoom::new(5.0, 20.0),
             zoom_sens: 2.0,
-            cursor_lock_activation_key: KeyCode::KeyE,
+            cursor_lock_activation_key: KeyCode::KeyR,
             cursor_lock_active: false,
         },
     );
