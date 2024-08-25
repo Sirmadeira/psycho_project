@@ -8,6 +8,7 @@ pub mod setup_entities;
 pub mod treat_animations;
 
 use self::{lib::*, setup_entities::*, treat_animations::*};
+use crate::player_mechanics::keyboard_system::keyboard_attack;
 
 use crate::form_player::*;
 
@@ -33,7 +34,7 @@ impl Plugin for TreatAnimations {
             state_machine
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))
-                .after(setup_state_machine),
+                .after(setup_state_machine).after(keyboard_attack),
         );
     }
 }

@@ -41,9 +41,9 @@ pub fn check_status_ticker(
 
         if let Some(mut status_attack) = opt_attack {
             status_attack
-                .0
+                .timer
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
-            if status_attack.0.just_finished() {
+            if status_attack.timer.just_finished() {
                 println!("No longer attacking");
                 commands.entity(ent).remove::<StatusEffectAttack>();
             }

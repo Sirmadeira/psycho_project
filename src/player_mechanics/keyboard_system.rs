@@ -15,7 +15,6 @@ pub fn keyboard_walk(
         (
             Has<StatusEffectDash>,
             Has<StatusEffectStun>,
-            Has<StatusEffectAttack>,
             Has<Grounded>,
         ),
         With<Player>,
@@ -23,11 +22,11 @@ pub fn keyboard_walk(
 ) {
     let cam = q_1.get_single().expect("Expected to have a camera");
 
-    let (has_dash, has_stun, has_attack, has_grounded) = q_2
+    let (has_dash, has_stun, has_grounded) = q_2
         .get_single()
         .expect("Expected to be able to check if player has dashed");
 
-    if has_dash || has_stun || has_attack {
+    if has_dash || has_stun {
         return;
     }
 
@@ -221,7 +220,7 @@ pub fn keyboard_attack(
          }
     }
 
-    if keys.pressed(KeyCode::KeyW) && mouse.just_pressed(MouseButton::Middle){
+    if keys.pressed(KeyCode::KeyW) && mouse.just_pressed(MouseButton::Left){
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();
 
         let name = format!("FrontWalk_{}",state_of_attack);

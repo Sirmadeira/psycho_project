@@ -38,11 +38,16 @@ pub struct StatusEffectDefend {
 
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
-pub struct StatusEffectAttack(pub Timer);
+pub struct StatusEffectAttack{
+    pub timer: Timer,
+    pub played_animation:bool
+}
 
 impl Default for StatusEffectAttack {
     fn default() -> Self {
-        StatusEffectAttack(Timer::from_seconds(1.0, TimerMode::Once))  // Example default value
+        Self{timer : Timer::from_seconds(1.0, TimerMode::Once),
+        played_animation: false  // Example default value
+        }
     }
 }
 

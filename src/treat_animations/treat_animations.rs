@@ -1,5 +1,5 @@
 use crate::form_player::setup_entities::*;
-use crate::player_mechanics::lib::StatusEffectStun;
+use crate::player_mechanics::lib::{StatusEffectAttack, StatusEffectStun};
 use crate::treat_animations::lib::*;
 use bevy::utils::Duration;
 use bevy::prelude::*;
@@ -34,6 +34,7 @@ pub fn setup_state_machine(
 
 pub fn state_machine(
     mut stun_info: Query<&mut StatusEffectStun, With<Player>>,
+    mut attack_info: Query<&mut StatusEffectAttack, With<Player>>,
     mut animation_components: Query<
         (&mut AnimationPlayer, &mut AnimationTransitions),
         With<AnimatedEntity>,
@@ -60,7 +61,15 @@ pub fn state_machine(
                     stun.played_animation = true;
                 }
                 return;
-            } else {
+            } 
+            else if let Ok(mut attack) = attack_info.get_single_mut() {
+                if !attack.played_animation {
+                    active_transitions.play(&mut animation_player, *animation, properties.duration);
+                    attack.played_animation = true;
+                }
+                return;
+                
+            }else {
                 // Handles scenario where the is no "stun"
                 if current_animation != *animation {
                     println!("Playing animation {}",properties.name);
