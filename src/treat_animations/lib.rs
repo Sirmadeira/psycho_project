@@ -9,13 +9,6 @@ pub struct Animations {
     pub animation_graph: Handle<AnimationGraph>,
 }
 
-// This one plays the blended clips or masked and so on.
-#[derive(Resource, Reflect)]
-pub struct BlendAnimations {
-    pub node: Vec<AnimationNodeIndex>,
-    pub animation_graph: Handle<AnimationGraph>,
-}
-
 // Marker component serves to point out the unique animated entity of player
 #[derive(Reflect, Component, Debug)]
 pub struct AnimatedEntity;
@@ -100,6 +93,7 @@ impl AnimationProperties {
     }
 }
 
+
 impl AnimationType {
     pub fn properties(self) -> AnimationProperties {
         match self {
@@ -151,4 +145,12 @@ impl AnimationType {
             AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false),
         }
     }
+}
+
+
+// Pretty similar to animation proberties but instead of passing the whole animation we pass the name of blend animation
+#[derive(Event,Debug)]
+pub struct AnimationPropertiesBlend {
+    pub name: String,
+    pub duration: Duration,
 }

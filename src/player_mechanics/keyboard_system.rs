@@ -182,7 +182,9 @@ pub fn keyboard_jump(
 
 pub fn keyboard_attack(
     keys: Res<ButtonInput<KeyCode>>,
+    mouse: Res<ButtonInput<MouseButton>>,
     mut state_attack: Query<&mut StateOfAttack, With<Player>>,
+    mut animation_type_writer: EventWriter<AnimationType>
 ) {
     let mut state_attack = state_attack.get_single_mut().expect("player to only have a single state of attack");
 
@@ -218,5 +220,10 @@ pub fn keyboard_attack(
          }
     }
 
+    if keys.pressed(KeyCode::KeyW) && mouse.just_pressed(MouseButton::Left){
+        let state_of_attack = state_attack.get_attack().expect("Valid string");
+
+        println!("I am gonna atackk");
+    }
 
 }

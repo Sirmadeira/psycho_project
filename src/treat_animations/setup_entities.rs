@@ -6,6 +6,7 @@ use crate::treat_animations::lib::*;
 use crate::form_modular_char::helpers::find_child_with_name_containing;
 use crate::form_modular_char::lib::Skeleton;
 
+
 pub fn mark_bones(
     mut commands: Commands,
     q_1: Query<Entity, With<Skeleton>>,
@@ -28,7 +29,10 @@ pub fn mark_bones(
         }
     }
 }
-pub fn blend_animations(
+
+
+
+pub fn create_blend_animations(
     asset_pack: Res<MyAssets>,
     assets_gltf: Res<Assets<Gltf>>,
     mut assets_clips: ResMut<Assets<AnimationClip>>,
@@ -49,25 +53,25 @@ pub fn blend_animations(
         .get(skeleton_handle)
         .expect("My asset pack to have GLTF");
 
-    // Create animation graph and vec to push nodes
-    let mut blended_graph = AnimationGraph::default();
-    let mut new_nodes = Vec::new();
+
+    let mut animation_named_nodes:HashMap<String,AnimationNodeIndex> = HashMap::default();
+    let mut animation_graph = AnimationGraph::default();
 
     // Checking our resource config and saving the handles
-    for blend_animation in config_blend_animations.0.iter_mut() {
+    for mask_node in config_blend_animations.0.iter_mut() {
         // Fills them up with the clips to be blended
         for (name, handle_clip) in gltf.named_animations.iter() {
-            if blend_animation.first_anim == name.to_string() {
-                blend_animation.first_anim_clip = Some(handle_clip.clone()); // Fixed cloning the handle
+            if mask_node.first_anim == name.to_string() {
+                mask_node.first_anim_clip = Some(handle_clip.clone()); // Fixed cloning the handle
             }
-            if blend_animation.second_anim == name.to_string() {
-                blend_animation.second_anim_clip = Some(handle_clip.clone()); // Fixed cloning the handle
+            if mask_node.second_anim == name.to_string() {
+                mask_node.second_anim_clip = Some(handle_clip.clone()); // Fixed cloning the handle
             }
         }
 
         // Masking according to given clips
-        if let Some(anim_clip) = &blend_animation.first_anim_clip {
-            if let Some(second_clip) = &blend_animation.second_anim_clip {
+        if let Some(anim_clip) = &mask_node.first_anim_clip {
+            if let Some(second_clip) = &mask_node.second_anim_clip {
                 // Grab clips to be blended
                 let loaded_first_clip = assets_clips
                     .get(anim_clip)
@@ -102,20 +106,25 @@ pub fn blend_animations(
                 // Save blended clip
                 let handle = assets_clips.add(new_clip);
 
+                // Making it is name
+                let animation_name = format!("{}_{}",mask_node.first_anim,mask_node.second_anim);
                 // Add the clip to the animation graph
-                let node = blended_graph.add_clip(handle, 1.0, blended_graph.root.clone());
+                let node = animation_graph.add_clip(handle, 1.0, animation_graph.root.clone());
 
-                new_nodes.push(node);
+                // Creating named nodes
+                animation_named_nodes.insert(animation_name, node);
+
+
             }
         }
     }
 
     // Add graph to assets
-    let asset_graph = assets_animation_graph.add(blended_graph);
+    let handle_graph = assets_animation_graph.add(animation_graph);
 
-    commands.insert_resource(BlendAnimations {
-        animation_graph: asset_graph,
-        node: new_nodes,
+    commands.insert_resource(Animations {
+        animation_graph: handle_graph.clone(), 
+        named_nodes: animation_named_nodes,
     });
 }
 
@@ -123,8 +132,6 @@ pub fn blend_animations(
 pub fn gltf_animations(
     asset_pack: Res<MyAssets>,
     assets_gltf: Res<Assets<Gltf>>,
-    mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
-    mut commands: Commands,
 ) {
         // Creating graphs according to amount of player
         let mut graph = AnimationGraph::new();
@@ -153,12 +160,4 @@ pub fn gltf_animations(
             }
         }
 
-        // Adding animation graph to assets
-        let anim_graph = assets_animation_graph.add(graph);
-
-        // Formulating resource that tells me what is the name of the animation in a node and it is animation graph
-        commands.insert_resource(Animations {
-            named_nodes: named_nodes,
-            animation_graph: anim_graph.clone(),
-        });
 }

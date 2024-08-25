@@ -15,13 +15,13 @@ impl Plugin for TreatAnimations {
     fn build(&self, app: &mut App) {
         // Configs
         app.add_event::<AnimationType>();
+        app.add_event::<AnimationPropertiesBlend>();
         app.insert_resource(ConfigBoneMaskedAnimations::default());
         // Animation debug
         app.register_type::<Animations>();
-        // app.add_systems(OnEnter(MyAppState::InGame), spawn_animation_graph);
         app.add_systems(
             OnEnter(MyAppState::CharacterCreated),
-            (mark_bones, blend_animations,gltf_animations).chain(),
+            (mark_bones, create_blend_animations,gltf_animations).chain(),
         );
         app.add_systems(
             Update,
