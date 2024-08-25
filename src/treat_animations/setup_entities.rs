@@ -133,10 +133,10 @@ pub fn gltf_animations(
     asset_pack: Res<MyAssets>,
     assets_gltf: Res<Assets<Gltf>>,
     mut animations: ResMut<Animations>,
+    mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
 ) {
-        // Creating graphs according to amount of player
-        let mut graph = AnimationGraph::new();
 
+        let animation_graph = assets_animation_graph.get_mut(&animations.animation_graph).expect("To have created animation graph");
 
         // Using bevy asset loader to easily access my assets
         for (_, gltf_handle) in &asset_pack.gltf_files {
@@ -148,14 +148,18 @@ pub fn gltf_animations(
             for (name_animation, animation_clip) in gltf.named_animations.iter() {
                 // Set the parent node depending on the animation name
 
-                let node = graph.add_clip(animation_clip.clone(), 1.0, graph.root);
+                let node = animation_graph.add_clip(animation_clip.clone(), 1.0, animation_graph.root);
 
                 // Creating named node
                 animations.named_nodes.insert(name_animation.to_string(), node);
-                println!(
-                    "Current available animations are {} for player",
-                    name_animation
-                );
             }
         }
+
+        for (name,_) in animations.named_nodes.clone(){
+            println!(
+                "Current available animations are {} for player",
+                name
+            );
+        }
+    
 }

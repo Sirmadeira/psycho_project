@@ -32,7 +32,7 @@ pub fn keyboard_walk(
     }
 
     let mut direction = Vec2::ZERO;
-    let mut movetype = AnimationType::default();
+    let mut movetype = AnimationType::None;
     let mut key_to_direction =
         |key: KeyCode, cam_dir: Vec3, walk_anim: AnimationType, air_anim: AnimationType| {
             if keys.pressed(key) {
@@ -86,7 +86,7 @@ pub fn keyboard_dash(
         let cam = q_1.get_single().expect("To have camera");
 
         let mut direction = Vec2::ZERO;
-        let mut movetype = AnimationType::default();
+        let mut movetype = AnimationType::None;
 
         timers
             .up
@@ -221,11 +221,11 @@ pub fn keyboard_attack(
          }
     }
 
-    if keys.pressed(KeyCode::KeyW) && mouse.just_pressed(MouseButton::Left){
+    if keys.pressed(KeyCode::KeyW) && mouse.just_pressed(MouseButton::Middle){
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();
 
         let name = format!("FrontWalk_{}",state_of_attack);
-
+        println!("{}",name);
         animation_type_writer.send(AnimationType::BlendAnimation(name));
 
         commands.entity(entity).insert(StatusEffectAttack::default());

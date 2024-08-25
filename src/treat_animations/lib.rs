@@ -59,7 +59,7 @@ pub struct BoneMask;
 // Tells me which type of movement i should pass, to avoid multiple arguments or enums
 #[derive(Event, Clone,Debug, PartialEq, Eq)]
 pub enum AnimationType {
-    StartPose,
+    None,
     Idle,
     FrontWalk,
     BackWalk,
@@ -75,17 +75,8 @@ pub enum AnimationType {
     LeftAir,
     RightAir,
     Landing,
-    BlendAnimation(String)
+    BlendAnimation(String),
 }
-
-
-impl Default for AnimationType {
-    fn default() -> Self {
-        AnimationType::StartPose // Choose the default variant
-    }
-}
-
-
 
 pub struct AnimationProperties {
     pub name: String,
@@ -107,9 +98,6 @@ impl AnimationProperties {
 impl AnimationType {
     pub fn properties(&self) -> AnimationProperties {
         match self {
-            AnimationType::StartPose => {
-                AnimationProperties::new("StartPose".to_string(), Duration::from_millis(400), true)
-            }
             AnimationType::Idle => {
                 AnimationProperties::new("Idle".to_string(), Duration::from_millis(400), false)
             }
@@ -157,6 +145,9 @@ impl AnimationType {
             }
             AnimationType::BlendAnimation(name) => {
                 AnimationProperties::new(name.to_string(), Duration::from_millis(0), false)
+            }
+            AnimationType::None=> {
+                AnimationProperties::new("NOne".to_string(), Duration::from_millis(0), false)
             }
         }
     }
