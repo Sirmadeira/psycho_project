@@ -57,9 +57,9 @@ pub struct MaskNode {
 pub struct BoneMask;
 
 // Tells me which type of movement i should pass, to avoid multiple arguments or enums
-#[derive(Event, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Event, Clone,Debug, PartialEq, Eq)]
 pub enum AnimationType {
-    None,
+    StartPose,
     Idle,
     FrontWalk,
     BackWalk,
@@ -75,16 +75,26 @@ pub enum AnimationType {
     LeftAir,
     RightAir,
     Landing,
+    BlendAnimation(String)
 }
 
+
+impl Default for AnimationType {
+    fn default() -> Self {
+        AnimationType::StartPose // Choose the default variant
+    }
+}
+
+
+
 pub struct AnimationProperties {
-    pub name: &'static str,
+    pub name: String,
     pub duration: Duration,
     pub repeat: bool,
 }
 
 impl AnimationProperties {
-    pub fn new(name: &'static str, duration: Duration, repeat: bool) -> Self {
+    pub fn new(name: String, duration: Duration, repeat: bool) -> Self {
         Self {
             name,
             duration,
@@ -95,62 +105,60 @@ impl AnimationProperties {
 
 
 impl AnimationType {
-    pub fn properties(self) -> AnimationProperties {
+    pub fn properties(&self) -> AnimationProperties {
         match self {
+            AnimationType::StartPose => {
+                AnimationProperties::new("StartPose".to_string(), Duration::from_millis(400), true)
+            }
             AnimationType::Idle => {
-                AnimationProperties::new("Idle", Duration::from_millis(400), false)
+                AnimationProperties::new("Idle".to_string(), Duration::from_millis(400), false)
             }
             AnimationType::FrontWalk => {
-                AnimationProperties::new("FrontWalk", Duration::from_millis(400), true)
+                AnimationProperties::new("FrontWalk".to_string(), Duration::from_millis(400), true)
             }
             AnimationType::BackWalk => {
-                AnimationProperties::new("BackWalk", Duration::from_millis(400), true)
+                AnimationProperties::new("BackWalk".to_string(), Duration::from_millis(400), true)
             }
             AnimationType::LeftWalk => {
-                AnimationProperties::new("LeftWalk", Duration::from_millis(400), true)
+                AnimationProperties::new("LeftWalk".to_string(), Duration::from_millis(400), true)
             }
             AnimationType::RightWalk => {
-                AnimationProperties::new("RightWalk", Duration::from_millis(400), true)
+                AnimationProperties::new("RightWalk".to_string(), Duration::from_millis(400), true)
             }
             AnimationType::FrontDash => {
-                AnimationProperties::new("FrontDash", Duration::from_millis(0), false)
+                AnimationProperties::new("FrontDash".to_string(), Duration::from_millis(0), false)
             }
             AnimationType::LeftDash => {
-                AnimationProperties::new("LeftDash", Duration::from_millis(0), false)
+                AnimationProperties::new("LeftDash".to_string(), Duration::from_millis(0), false)
             }
             AnimationType::RightDash => {
-                AnimationProperties::new("RightDash", Duration::from_millis(0), false)
+                AnimationProperties::new("RightDash".to_string(), Duration::from_millis(0), false)
             }
             AnimationType::BackDash => {
-                AnimationProperties::new("BackDash", Duration::from_millis(0), false)
+                AnimationProperties::new("BackDash".to_string(), Duration::from_millis(0), false)
             }
             AnimationType::Jump => {
-                AnimationProperties::new("Jump", Duration::from_millis(0), false)
+                AnimationProperties::new("Jump".to_string(), Duration::from_millis(0), false)
             }
             AnimationType::FrontAir => {
-                AnimationProperties::new("FrontAir", Duration::from_millis(400), false)
+                AnimationProperties::new("FrontAir".to_string(), Duration::from_millis(400), false)
             }
             AnimationType::BackAir => {
-                AnimationProperties::new("BackAir", Duration::from_millis(400), false)
+                AnimationProperties::new("BackAir".to_string(), Duration::from_millis(400), false)
             }
             AnimationType::LeftAir => {
-                AnimationProperties::new("LeftAir", Duration::from_millis(500), false)
+                AnimationProperties::new("LeftAir".to_string(), Duration::from_millis(500), false)
             }
             AnimationType::RightAir => {
-                AnimationProperties::new("RightAir", Duration::from_millis(500), false)
+                AnimationProperties::new("RightAir".to_string(), Duration::from_millis(500), false)
             }
             AnimationType::Landing => {
-                AnimationProperties::new("Landing", Duration::from_millis(0), false)
+                AnimationProperties::new("Landing".to_string(), Duration::from_millis(0), false)
             }
-            AnimationType::None => AnimationProperties::new("None", Duration::ZERO, false),
+            AnimationType::BlendAnimation(name) => {
+                AnimationProperties::new(name.to_string(), Duration::from_millis(0), false)
+            }
         }
     }
 }
 
-
-// Pretty similar to animation proberties but instead of passing the whole animation we pass the name of blend animation
-#[derive(Event,Debug)]
-pub struct AnimationPropertiesBlend {
-    pub name: String,
-    pub duration: Duration,
-}

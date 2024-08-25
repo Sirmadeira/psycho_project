@@ -32,7 +32,7 @@ pub fn keyboard_walk(
     }
 
     let mut direction = Vec2::ZERO;
-    let mut movetype = AnimationType::None;
+    let mut movetype = AnimationType::default();
     let mut key_to_direction =
         |key: KeyCode, cam_dir: Vec3, walk_anim: AnimationType, air_anim: AnimationType| {
             if keys.pressed(key) {
@@ -86,7 +86,7 @@ pub fn keyboard_dash(
         let cam = q_1.get_single().expect("To have camera");
 
         let mut direction = Vec2::ZERO;
-        let mut movetype = AnimationType::None;
+        let mut movetype = AnimationType::default();
 
         timers
             .up
@@ -136,9 +136,7 @@ pub fn keyboard_dash(
 
         if direction != Vec2::ZERO && has_dashed == false {
             // Add dash status effect
-            let status_dash = StatusEffectDash {
-                dash_cooldown: Timer::new(Duration::from_secs_f32(0.5), TimerMode::Once),
-            };
+            let status_dash = StatusEffectDash::default();
             commands.entity(player).insert(status_dash);
 
             // Sending events
@@ -183,10 +181,13 @@ pub fn keyboard_jump(
 pub fn keyboard_attack(
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
-    mut state_attack: Query<&mut StateOfAttack, With<Player>>,
-    mut animation_type_writer: EventWriter<AnimationType>
+    mut state_attack: Query<(Entity,&mut StateOfAttack), With<Player>>,
+    mut animation_type_writer: EventWriter<AnimationType>,
+    mut commands: Commands
 ) {
-    let mut state_attack = state_attack.get_single_mut().expect("player to only have a single state of attack");
+    let (entity,mut state_attack) = state_attack.get_single_mut().expect("player to only have a single state of attack");
+
+
 
     // Handling KeyCode::KeyE
     if keys.just_pressed(KeyCode::KeyE) {
@@ -221,9 +222,14 @@ pub fn keyboard_attack(
     }
 
     if keys.pressed(KeyCode::KeyW) && mouse.just_pressed(MouseButton::Left){
-        let state_of_attack = state_attack.get_attack().expect("Valid string");
+        let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();
 
-        println!("I am gonna atackk");
+        let name = format!("FrontWalk_{}",state_of_attack);
+
+        animation_type_writer.send(AnimationType::BlendAnimation(name));
+
+        commands.entity(entity).insert(StatusEffectAttack::default());
+        
     }
 
 }

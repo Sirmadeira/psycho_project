@@ -17,11 +17,17 @@ pub struct Grounded;
 
 
 // Check if has dashed
+
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
-pub struct StatusEffectDash {
-    pub dash_cooldown: Timer,
+pub struct StatusEffectDash(pub Timer); // Example tuple with Timer and f32
+
+impl Default for StatusEffectDash {
+    fn default() -> Self {
+        StatusEffectDash(Timer::from_seconds(1.0, TimerMode::Once)) // Example default values
+    }
 }
+
 
 // Check if has status defend
 #[derive(Reflect, Component, Debug)]
@@ -33,6 +39,12 @@ pub struct StatusEffectDefend {
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct StatusEffectAttack(pub Timer);
+
+impl Default for StatusEffectAttack {
+    fn default() -> Self {
+        StatusEffectAttack(Timer::from_seconds(1.0, TimerMode::Once))  // Example default value
+    }
+}
 
 // Check if has stopped
 #[derive(Reflect, Component, Debug)]

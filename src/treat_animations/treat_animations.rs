@@ -51,7 +51,7 @@ pub fn state_machine(
 
             let animation = animations
                 .named_nodes
-                .get(properties.name)
+                .get(&properties.name)
                 .expect("To find animation in resource");
 
             if let Ok(mut stun) = stun_info.get_single_mut() {

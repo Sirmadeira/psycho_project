@@ -15,7 +15,6 @@ impl Plugin for TreatAnimations {
     fn build(&self, app: &mut App) {
         // Configs
         app.add_event::<AnimationType>();
-        app.add_event::<AnimationPropertiesBlend>();
         app.insert_resource(ConfigBoneMaskedAnimations::default());
         // Animation debug
         app.register_type::<Animations>();

@@ -193,8 +193,3 @@ pub fn detect_dead(
         }
     }
 }
-
-// Tells me the end result of detect hits
-fn final_state(){
-    todo!()
-}

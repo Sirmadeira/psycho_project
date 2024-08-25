@@ -22,9 +22,9 @@ pub fn check_status_ticker(
     for (ent, opt_dash, status_effect_stun, opt_attack) in q_1.iter_mut() {
         if let Some(mut status_dash) = opt_dash {
             status_dash
-                .dash_cooldown
+                .0
                 .tick(Duration::from_secs_f32(time.delta_seconds()));
-            if status_dash.dash_cooldown.just_finished() {
+            if status_dash.0.just_finished() {
                 commands.entity(ent).remove::<StatusEffectDash>();
             }
         }
