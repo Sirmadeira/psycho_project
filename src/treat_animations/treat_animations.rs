@@ -63,7 +63,7 @@ pub fn state_machine(
                 return
             } 
             else if let Ok(mut attack) = attack_info.get_single_mut() {
-                if !attack.played_animation {
+                if !attack.played_animation && current_animation != *animation{
                     println!("{}",properties.name);
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     attack.played_animation = true;
