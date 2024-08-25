@@ -27,14 +27,14 @@ impl Plugin for TreatAnimations {
             Update,
             (add_animation_graph, setup_state_machine)
                 .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)),
+                .run_if(in_state(MyAppState::CharacterCreated)),
         );
         app.add_systems(
             Update,
             state_machine
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))
-                .after(setup_state_machine).after(keyboard_attack),
+                .after(keyboard_attack),
         );
     }
 }
