@@ -147,7 +147,7 @@ impl AnimationType {
                 AnimationProperties::new(name.to_string(), Duration::from_millis(200), false)
             }
             AnimationType::None=> {
-                AnimationProperties::new("NOne".to_string(), Duration::from_millis(0), false)
+                AnimationProperties::new("NOne".to_string(), Duration::from_millis(200), false)
             }
         }
     }

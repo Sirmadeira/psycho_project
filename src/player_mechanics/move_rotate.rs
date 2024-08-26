@@ -59,7 +59,7 @@ pub fn rotate_character(
     }
 }
 
-pub fn spine_look_at(
+pub fn head_look_at(
     q_1: Query<&Transform, With<CamInfo>>,
     q_2: Query<Entity, With<Player>>,
     children_entities: Query<&Children>,
@@ -70,7 +70,7 @@ pub fn spine_look_at(
     let target_transform = q_1.get_single().expect("Failed to find camera transform");
     let player = q_2.get_single().expect("Failed to find player entity");
 
-    let spine = find_child_with_name_containing(&children_entities, &names, &player, "Spine_2")
+    let spine = find_child_with_name_containing(&children_entities, &names, &player, "Head")
         .expect("Failed to find spine bone");
 
     // Remove animation target

@@ -183,11 +183,11 @@ pub fn keyboard_jump(
 pub fn keyboard_attack(
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
-    mut state_attack: Query<(Entity,&mut StateOfAttack), With<Player>>,
+    mut state_attack: Query<(Entity,&mut StateOfAttack,Has<StatusEffectAttack>), With<Player>>,
     mut animation_type_writer: EventWriter<AnimationType>,
     mut commands: Commands
 ) {
-    let (entity,mut state_attack) = state_attack.get_single_mut().expect("player to only have a single state of attack");
+    let (entity,mut state_attack,has_attacked) = state_attack.get_single_mut().expect("player to only have a single state of attack");
 
 
 
@@ -224,14 +224,15 @@ pub fn keyboard_attack(
     }
 
     if keys.pressed(KeyCode::KeyW) && mouse.just_pressed(MouseButton::Left){
-        let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();
-
+        let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
         let name = format!("FrontWalk_{}",state_of_attack);
-        println!("{}",name);
-        animation_type_writer.send(AnimationType::BlendAnimation(name));
-
-        commands.entity(entity).insert(StatusEffectAttack::default());
-        
+        if !has_attacked{
+            commands.entity(entity).insert(StatusEffectAttack::default());
+            animation_type_writer.send(AnimationType::BlendAnimation(name));
+        }
+        else {
+            println!("Todo combo");
+        }
     }
 
 }

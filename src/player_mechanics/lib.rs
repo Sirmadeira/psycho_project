@@ -45,7 +45,7 @@ pub struct StatusEffectAttack{
 
 impl Default for StatusEffectAttack {
     fn default() -> Self {
-        Self{timer : Timer::from_seconds(1.0, TimerMode::Once),
+        Self{timer : Timer::from_seconds(0.8, TimerMode::Once),
         played_animation: false  // Example default value
         }
     }

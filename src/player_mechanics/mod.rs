@@ -71,7 +71,7 @@ impl Plugin for PlayerMechanics {
         // Just an aditional visual mechanic - Doesnt really matter as long as it happens before camera sync player camera.
         app.add_systems(
             Update,
-            spine_look_at
+            head_look_at
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
