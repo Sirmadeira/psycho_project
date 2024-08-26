@@ -15,7 +15,6 @@ pub fn keyboard_walk(
         (
             Has<StatusEffectDash>,
             Has<StatusEffectStun>,
-            Has<StatusEffectAttack>,
             Has<Grounded>,
         ),
         With<Player>,
@@ -23,7 +22,7 @@ pub fn keyboard_walk(
 ) {
     let cam = q_1.get_single().expect("Expected to have a camera");
 
-    let (has_dash, has_stun, has_attack, has_grounded) = q_2
+    let (has_dash, has_stun,has_grounded) = q_2
         .get_single()
         .expect("Expected to be able to check if player has dashed");
 
@@ -69,9 +68,7 @@ pub fn keyboard_walk(
 
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
-        if !has_attack{
-            animation_type_writer.send(movetype);
-        }
+        animation_type_writer.send(movetype);
     }
 }
 
@@ -183,13 +180,14 @@ pub fn keyboard_jump(
 pub fn keyboard_attack(
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
-    mut state_attack: Query<(Entity,&mut StateOfAttack,Has<StatusEffectAttack>), With<Player>>,
+    status: Query<(Has<StatusEffectAttack>,Has<StatusIdle>),With<Player>>,
+    mut state_attack: Query<(Entity,&mut StateOfAttack), With<Player>>,
     mut animation_type_writer: EventWriter<AnimationType>,
     mut commands: Commands
 ) {
-    let (entity,mut state_attack,has_attacked) = state_attack.get_single_mut().expect("player to only have a single state of attack");
+    let (entity,mut state_attack) = state_attack.get_single_mut().expect("player to only have a single state of attack");
 
-
+    let (has_attacked,has_idle) = status.get_single().expect("To only have one player");
 
     // Handling KeyCode::KeyE
     if keys.just_pressed(KeyCode::KeyE) {
@@ -226,6 +224,41 @@ pub fn keyboard_attack(
     if keys.pressed(KeyCode::KeyW) && mouse.just_pressed(MouseButton::Left){
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
         let name = format!("FrontWalk_{}",state_of_attack);
+        if !has_attacked{
+            commands.entity(entity).insert(StatusEffectAttack::default());
+            animation_type_writer.send(AnimationType::BlendAnimation(name));
+        }
+        else {
+            println!("Todo combo");
+        }
+    }
+
+
+    if keys.pressed(KeyCode::KeyS) && mouse.just_pressed(MouseButton::Left){
+        let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
+        let name = format!("BackWalk_{}",state_of_attack);
+        if !has_attacked{
+            commands.entity(entity).insert(StatusEffectAttack::default());
+            animation_type_writer.send(AnimationType::BlendAnimation(name));
+        }
+        else {
+            println!("Todo combo");
+        }
+    }
+    if keys.pressed(KeyCode::KeyA) && mouse.just_pressed(MouseButton::Left){
+        let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
+        let name = format!("LeftWalk_{}",state_of_attack);
+        if !has_attacked{
+            commands.entity(entity).insert(StatusEffectAttack::default());
+            animation_type_writer.send(AnimationType::BlendAnimation(name));
+        }
+        else {
+            println!("Todo combo");
+        }
+    }
+    if keys.pressed(KeyCode::KeyD) && mouse.just_pressed(MouseButton::Left){
+        let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
+        let name = format!("RightWalk_{}",state_of_attack);
         if !has_attacked{
             commands.entity(entity).insert(StatusEffectAttack::default());
             animation_type_writer.send(AnimationType::BlendAnimation(name));

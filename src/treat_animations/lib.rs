@@ -20,7 +20,7 @@ pub struct ConfigBoneMaskedAnimations(pub Vec<MaskNode>);
 impl Default for ConfigBoneMaskedAnimations {
     fn default() -> Self {
         // Define the "walk" and "attack" animations
-        let walk_anims = vec!["FrontWalk", "BackWalk", "LeftWalk", "RightWalk"];
+        let walk_anims = vec!["FrontWalk", "BackWalk", "LeftWalk", "RightWalk","Idle"];
         let attack_anims = vec!["FrontAttack", "BackAttack", "LeftAttack", "RightAttack"];
         
         // Create a mutable vector to hold all combinations
@@ -147,7 +147,8 @@ impl AnimationType {
                 AnimationProperties::new(name.to_string(), Duration::from_millis(200), false)
             }
             AnimationType::None=> {
-                AnimationProperties::new("NOne".to_string(), Duration::from_millis(200), false)
+                println!("Just matched no animation");
+                AnimationProperties::new("None".to_string(), Duration::from_millis(200), false)
             }
         }
     }

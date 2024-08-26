@@ -167,7 +167,7 @@ pub fn detect_if_idle(
                 status_idle
                     .0
                     .tick(Duration::from_secs_f32(time.delta_seconds()));
-                if status_idle.0.finished() {
+                if status_idle.0.just_finished() {
                     animation_writer.send(AnimationType::Idle);
                 }
             } else {
