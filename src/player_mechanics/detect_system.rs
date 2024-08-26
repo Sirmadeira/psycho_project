@@ -9,6 +9,8 @@ use crate::form_hitbox::setup_entities::*;
 use crate::form_world::setup_entities::*;
 use std::borrow::BorrowMut;
 
+use super::StatusEffectAttack;
+
 // These system can add and remove status as long as they are not time based
 
 pub fn detect_hits_body_weapon(
@@ -156,23 +158,26 @@ pub fn detect_hits_body_ground(
 
 // Check if player is idle if so it send animation type and adds a component
 pub fn detect_if_idle(
-    mut q_1: Query<(Entity, &Velocity, &ExternalImpulse, Option<&mut StatusIdle>), With<Player>>,
+    mut q_1: Query<(Entity, &Velocity, &ExternalImpulse, Option<&mut StatusIdle>,Has<StatusEffectAttack>), With<Player>>,
     mut commands: Commands,
     mut animation_writer: EventWriter<AnimationType>,
     time: Res<Time>,
 ) {
-    for (player, vel, imp, opt_status_idle) in q_1.iter_mut() {
+    for (player, vel, imp, opt_status_idle,has_attack) in q_1.iter_mut() {
         if vel.linvel.length() < 0.01 && imp.impulse.length() < 0.01 {
             if let Some(mut status_idle) = opt_status_idle {
-                status_idle
+                // If a player attacks dont tick after all he is not idle
+                if !has_attack{ 
+                    status_idle
                     .0
                     .tick(Duration::from_secs_f32(time.delta_seconds()));
+                }
                 if status_idle.0.just_finished() {
                     animation_writer.send(AnimationType::Idle);
                 }
             } else {
                 commands.entity(player).insert(StatusIdle(Timer::new(
-                    Duration::from_secs(2),
+                    Duration::from_millis(500),
                     TimerMode::Repeating,
                 )));
             }

@@ -77,6 +77,7 @@ pub fn state_machine(
                     println!("Playing animation 1 {}",properties.name);
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     attack.played_animation = true;
+                    return
                 }
             }else {
                 // Handles scenario where the is no "stun"

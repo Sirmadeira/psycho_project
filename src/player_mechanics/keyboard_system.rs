@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::utils::Duration;
+use bevy_rapier3d::prelude::Velocity;
 
 use crate::form_ingame_camera::setup_entities::CamInfo;
 use crate::form_player::setup_entities::*;
@@ -26,10 +27,6 @@ pub fn keyboard_walk(
     let (has_dash, has_stun,has_attack,has_grounded) = q_2
         .get_single()
         .expect("Expected to be able to check if player has dashed");
-
-    if has_dash || has_stun {
-        return;
-    }
 
     let mut direction = Vec2::ZERO;
     let mut movetype = AnimationType::None;
@@ -69,7 +66,7 @@ pub fn keyboard_walk(
 
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
-        if !has_attack{
+        if !has_attack || has_dash || has_stun{
             animation_type_writer.send(movetype);
         }
     }
@@ -183,14 +180,14 @@ pub fn keyboard_jump(
 pub fn keyboard_attack(
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
-    status: Query<(Has<StatusEffectAttack>,Has<StatusIdle>),With<Player>>,
-    mut state_attack: Query<(Entity,&mut StateOfAttack), With<Player>>,
+    status: Query<(Has<StatusEffectAttack>),With<Player>>,
+    mut state_attack: Query<(Entity,&Velocity,&mut StateOfAttack), With<Player>>,
     mut animation_type_writer: EventWriter<AnimationType>,
     mut commands: Commands
 ) {
-    let (entity,mut state_attack) = state_attack.get_single_mut().expect("player to only have a single state of attack");
+    let (entity,vel,mut state_attack) = state_attack.get_single_mut().expect("player to only have a single state of attack");
 
-    let (has_attacked,has_idle) = status.get_single().expect("To only have one player");
+    let has_attacked = status.get_single().expect("To only have one player");
 
     // Handling KeyCode::KeyE
     if keys.just_pressed(KeyCode::KeyE) {
@@ -225,7 +222,7 @@ pub fn keyboard_attack(
     }
 
 
-    if has_idle && mouse.just_pressed(MouseButton::Left){
+    if vel.linvel.length() < 0.03 && mouse.just_pressed(MouseButton::Left){
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
         let name = format!("Idle_{}",state_of_attack);
         if !has_attacked{
