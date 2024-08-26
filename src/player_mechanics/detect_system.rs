@@ -172,8 +172,8 @@ pub fn detect_if_idle(
                 }
             } else {
                 commands.entity(player).insert(StatusIdle(Timer::new(
-                    Duration::from_micros(100),
-                    TimerMode::Once,
+                    Duration::from_secs(2),
+                    TimerMode::Repeating,
                 )));
             }
         } else {

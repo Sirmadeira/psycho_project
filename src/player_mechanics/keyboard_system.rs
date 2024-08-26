@@ -224,6 +224,19 @@ pub fn keyboard_attack(
          }
     }
 
+
+    if has_idle && mouse.just_pressed(MouseButton::Left){
+        let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
+        let name = format!("Idle_{}",state_of_attack);
+        if !has_attacked{
+            commands.entity(entity).insert(StatusEffectAttack::default());
+            animation_type_writer.send(AnimationType::BlendAnimation(name));
+        }
+        else {
+            println!("Todo combo");
+        }
+    }
+
     if keys.pressed(KeyCode::KeyW) && mouse.just_pressed(MouseButton::Left){
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
         let name = format!("FrontWalk_{}",state_of_attack);

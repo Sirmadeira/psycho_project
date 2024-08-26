@@ -65,6 +65,7 @@ pub fn state_machine(
             }
 
             if let Ok(mut stun) = stun_info.get_single_mut() {
+                println!("Playing animation 0 {}",properties.name);
                 if !stun.played_animation && current_animation != *animation{
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     stun.played_animation = true;
@@ -72,25 +73,28 @@ pub fn state_machine(
                 return
             } 
             else if let Ok(mut attack) = attack_info.get_single_mut() {
-                if !attack.played_animation && current_animation != *animation{
-                    println!("{}",properties.name);
+                if !attack.played_animation{
+                    println!("Playing animation 1 {}",properties.name);
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     attack.played_animation = true;
                 }
             }else {
                 // Handles scenario where the is no "stun"
                 if current_animation != *animation {
-                    println!("Playing animation {}",properties.name);
                     if properties.repeat {
+                        println!("Playing animation 2{}",properties.name);
                         active_transitions
                             .play(&mut animation_player, *animation, properties.duration)
                             .repeat();
+
                     } else {
+                        println!("Playing animation 3{}",properties.name);
                         active_transitions.play(
                             &mut animation_player,
                             *animation,
                             properties.duration,
                         );
+
                     }
                 }
             }
