@@ -55,11 +55,13 @@ pub fn state_machine(
                 .get(&properties.name)
                 .expect("To find animation in resource");
 
-            // This fixes the little freezes bug, if an animation just started playing you got wait for a while to trigger the state machine the other animation 
-            let active_anim = animation_player.animation(current_animation).expect("To always be running an animation");
+
+
+            if let Some(active_anim) = animation_player.animation(current_animation){
 
             if active_anim.elapsed( ) < 0.2{
-                return
+                    return
+                }
             }
 
             if let Ok(mut stun) = stun_info.get_single_mut() {
@@ -67,16 +69,13 @@ pub fn state_machine(
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     stun.played_animation = true;
                 }
+                return
             } 
             else if let Ok(mut attack) = attack_info.get_single_mut() {
                 if !attack.played_animation && current_animation != *animation{
                     println!("{}",properties.name);
                     active_transitions.play(&mut animation_player, *animation, properties.duration);
                     attack.played_animation = true;
-                }
-                else {
-                    // Todo
-                    println!("Maybe combo")
                 }
             }else {
                 // Handles scenario where the is no "stun"

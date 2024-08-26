@@ -15,6 +15,7 @@ pub fn keyboard_walk(
         (
             Has<StatusEffectDash>,
             Has<StatusEffectStun>,
+            Has<StatusEffectAttack>,
             Has<Grounded>,
         ),
         With<Player>,
@@ -22,7 +23,7 @@ pub fn keyboard_walk(
 ) {
     let cam = q_1.get_single().expect("Expected to have a camera");
 
-    let (has_dash, has_stun,has_grounded) = q_2
+    let (has_dash, has_stun,has_attack,has_grounded) = q_2
         .get_single()
         .expect("Expected to be able to check if player has dashed");
 
@@ -68,7 +69,9 @@ pub fn keyboard_walk(
 
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
-        animation_type_writer.send(movetype);
+        if !has_attack{
+            animation_type_writer.send(movetype);
+        }
     }
 }
 
