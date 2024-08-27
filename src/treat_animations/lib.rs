@@ -1,7 +1,6 @@
-use bevy::prelude::*;
-use bevy::utils:: HashMap;
 use crate::player_mechanics::lib::ActionProperties;
-
+use bevy::prelude::*;
+use bevy::utils::HashMap;
 
 //Animation
 // This is a resource, that I am gonna use to play the pre imported clips
@@ -22,12 +21,12 @@ pub struct ConfigBoneMaskedAnimations(pub Vec<MaskNode>);
 impl Default for ConfigBoneMaskedAnimations {
     fn default() -> Self {
         // Define the "walk" and "attack" animations
-        let walk_anims = vec!["FrontWalk", "BackWalk", "LeftWalk", "RightWalk","Idle"];
+        let walk_anims = vec!["FrontWalk", "BackWalk", "LeftWalk", "RightWalk", "Idle"];
         let attack_anims = vec!["FrontAttack", "BackAttack", "LeftAttack", "RightAttack"];
-        
+
         // Create a mutable vector to hold all combinations
         let mut vec = Vec::new();
-        
+
         // Iterate over all combinations of "walk" and "attack" animations
         for walk in &walk_anims {
             for attack in &attack_anims {
@@ -40,7 +39,7 @@ impl Default for ConfigBoneMaskedAnimations {
                 vec.push(mask_node);
             }
         }
-        
+
         // Create and return the ConfigBoneMaskedAnimations with all combinations
         ConfigBoneMaskedAnimations(vec)
     }
@@ -61,4 +60,3 @@ pub struct BoneMask;
 // Tells me which type of movement i should pass, to avoid multiple arguments or enums
 #[derive(Event)]
 pub struct AnimationType(pub ActionProperties);
-

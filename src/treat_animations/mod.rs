@@ -20,7 +20,7 @@ impl Plugin for TreatAnimations {
         app.register_type::<Animations>();
         app.add_systems(
             OnEnter(MyAppState::CharacterCreated),
-            (mark_bones, create_blend_animations,gltf_animations).chain(),
+            (mark_bones, create_blend_animations, gltf_animations).chain(),
         );
         app.add_systems(
             Update,

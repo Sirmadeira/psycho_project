@@ -2,11 +2,11 @@
 
 use bevy::prelude::*;
 
-use self::{lib::*, keyboard_system::*, move_rotate::*, tick_status::*,detect_system::*};
+use self::{detect_system::*, keyboard_system::*, lib::*, move_rotate::*, tick_status::*};
 
 pub mod detect_system;
-pub mod lib;
 pub mod keyboard_system;
+pub mod lib;
 pub mod move_rotate;
 pub mod tick_status;
 
@@ -33,7 +33,7 @@ impl Plugin for PlayerMechanics {
                 detect_hits_wall_weapon,
                 detect_hits_weapon_weapon,
                 detect_hits_body_ground,
-                detect_dead
+                detect_dead,
             )
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
@@ -43,9 +43,7 @@ impl Plugin for PlayerMechanics {
         // Since they are a lot of timers runs in fixed to avoid fps related issues and so on
         app.add_systems(
             FixedPostUpdate,
-            (
-                check_status_ticker,
-            )
+            (check_status_ticker,)
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
@@ -53,7 +51,7 @@ impl Plugin for PlayerMechanics {
         // Send movement events and anImation events
         app.add_systems(
             Update,
-            (keyboard_walk, keyboard_dash, keyboard_jump,keyboard_attack)
+            (keyboard_walk, keyboard_dash, keyboard_jump, keyboard_attack)
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
@@ -63,10 +61,16 @@ impl Plugin for PlayerMechanics {
             Update,
             (move_character, rotate_character)
                 .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame))
+                .run_if(in_state(MyAppState::InGame)),
         );
-        app.add_systems(Update, player_state.run_if(player_exists)
-        .run_if(in_state(MyAppState::InGame)).after(move_character));
+        app.add_systems(
+            Update,
+            player_state
+                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame))
+                .after(move_character)
+                .after(keyboard_attack),
+        );
 
         // Just an aditional visual mechanic - Doesnt really matter as long as it happens before camera sync player camera.
         app.add_systems(
@@ -75,6 +79,5 @@ impl Plugin for PlayerMechanics {
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
-
     }
 }

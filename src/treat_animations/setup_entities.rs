@@ -1,11 +1,10 @@
-use bevy::{animation::AnimationTarget, prelude::*};
-use bevy::utils::HashMap;
 use crate::load_assets_plugin::MyAssets;
 use crate::treat_animations::lib::*;
+use bevy::utils::HashMap;
+use bevy::{animation::AnimationTarget, prelude::*};
 
 use crate::form_modular_char::helpers::find_child_with_name_containing;
 use crate::form_modular_char::lib::Skeleton;
-
 
 pub fn mark_bones(
     mut commands: Commands,
@@ -30,8 +29,6 @@ pub fn mark_bones(
     }
 }
 
-
-
 pub fn create_blend_animations(
     asset_pack: Res<MyAssets>,
     assets_gltf: Res<Assets<Gltf>>,
@@ -53,8 +50,7 @@ pub fn create_blend_animations(
         .get(skeleton_handle)
         .expect("My asset pack to have GLTF");
 
-
-    let mut animation_named_nodes:HashMap<String,AnimationNodeIndex> = HashMap::default();
+    let mut animation_named_nodes: HashMap<String, AnimationNodeIndex> = HashMap::default();
     let mut animation_graph = AnimationGraph::default();
 
     // Checking our resource config and saving the handles
@@ -107,14 +103,12 @@ pub fn create_blend_animations(
                 let handle = assets_clips.add(new_clip);
 
                 // Making it is name
-                let animation_name = format!("{}_{}",mask_node.first_anim,mask_node.second_anim);
+                let animation_name = format!("{}_{}", mask_node.first_anim, mask_node.second_anim);
                 // Add the clip to the animation graph
                 let node = animation_graph.add_clip(handle, 1.0, animation_graph.root.clone());
 
                 // Creating named nodes
                 animation_named_nodes.insert(animation_name, node);
-
-
             }
         }
     }
@@ -123,7 +117,7 @@ pub fn create_blend_animations(
     let handle_graph = assets_animation_graph.add(animation_graph);
 
     commands.insert_resource(Animations {
-        animation_graph: handle_graph.clone(), 
+        animation_graph: handle_graph.clone(),
         named_nodes: animation_named_nodes,
     });
 }
@@ -135,31 +129,30 @@ pub fn gltf_animations(
     mut animations: ResMut<Animations>,
     mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
 ) {
+    let animation_graph = assets_animation_graph
+        .get_mut(&animations.animation_graph)
+        .expect("To have created animation graph");
 
-        let animation_graph = assets_animation_graph.get_mut(&animations.animation_graph).expect("To have created animation graph");
+    // Using bevy asset loader to easily access my assets
+    for (_, gltf_handle) in &asset_pack.gltf_files {
+        let gltf = assets_gltf
+            .get(gltf_handle)
+            .expect("My asset pack to have GLTF");
 
-        // Using bevy asset loader to easily access my assets
-        for (_, gltf_handle) in &asset_pack.gltf_files {
-            let gltf = assets_gltf
-                .get(gltf_handle)
-                .expect("My asset pack to have GLTF");
+        // Creating named nodes
+        for (name_animation, animation_clip) in gltf.named_animations.iter() {
+            // Set the parent node depending on the animation name
 
-            // Creating named nodes
-            for (name_animation, animation_clip) in gltf.named_animations.iter() {
-                // Set the parent node depending on the animation name
+            let node = animation_graph.add_clip(animation_clip.clone(), 1.0, animation_graph.root);
 
-                let node = animation_graph.add_clip(animation_clip.clone(), 1.0, animation_graph.root);
-
-                // Creating named node
-                animations.named_nodes.insert(name_animation.to_string(), node);
-            }
+            // Creating named node
+            animations
+                .named_nodes
+                .insert(name_animation.to_string(), node);
         }
+    }
 
-        for (name,_) in animations.named_nodes.clone(){
-            println!(
-                "Current available animations are {} for player",
-                name
-            );
-        }
-    
+    for (name, _) in animations.named_nodes.clone() {
+        println!("Current available animations are {} for player", name);
+    }
 }

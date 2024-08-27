@@ -1,4 +1,3 @@
-use bevy::a11y::accesskit::Action;
 use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::Velocity;
@@ -65,7 +64,7 @@ pub fn keyboard_walk(
 
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
-        if !has_attack || has_dash || has_stun {
+        if !has_attack {
             if let Some(action) = player_action {
                 player_action_writer.send(action);
             }
@@ -185,9 +184,8 @@ pub fn keyboard_jump(
 pub fn keyboard_attack(
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
-    status: Query<(Has<StatusEffectAttack>),With<Player>>,
+    status: Query<Has<StatusEffectAttack>,With<Player>>,
     mut state_attack: Query<(Entity,&Velocity,&mut StateOfAttack), With<Player>>,
-    mut player_action_writer: EventWriter<PlayerAction>,
     mut commands: Commands
 ) {
     let (entity,vel,mut state_attack) = state_attack.get_single_mut().expect("player to only have a single state of attack");
@@ -231,8 +229,7 @@ pub fn keyboard_attack(
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
         let name = format!("Idle_{}",state_of_attack);
         if !has_attacked{
-            commands.entity(entity).insert(StatusEffectAttack::default());
-            player_action_writer.send(PlayerAction::BlendAnimation(name));
+            commands.entity(entity).insert(StatusEffectAttack::new(name));
         }
         else {
             println!("Todo combo");
@@ -243,8 +240,7 @@ pub fn keyboard_attack(
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
         let name = format!("FrontWalk_{}",state_of_attack);
         if !has_attacked{
-            commands.entity(entity).insert(StatusEffectAttack::default());
-            player_action_writer.send(PlayerAction::BlendAnimation(name));
+            commands.entity(entity).insert(StatusEffectAttack::new(name));
         }
         else {
             println!("Todo combo");
@@ -256,8 +252,7 @@ pub fn keyboard_attack(
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
         let name = format!("BackWalk_{}",state_of_attack);
         if !has_attacked{
-            commands.entity(entity).insert(StatusEffectAttack::default());
-            player_action_writer.send(PlayerAction::BlendAnimation(name));
+            commands.entity(entity).insert(StatusEffectAttack::new(name));
         }
         else {
             println!("Todo combo");
@@ -267,8 +262,7 @@ pub fn keyboard_attack(
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
         let name = format!("LeftWalk_{}",state_of_attack);
         if !has_attacked{
-            commands.entity(entity).insert(StatusEffectAttack::default());
-            player_action_writer.send(PlayerAction::BlendAnimation(name));
+            commands.entity(entity).insert(StatusEffectAttack::new(name));
         }
         else {
             println!("Todo combo");
@@ -278,8 +272,7 @@ pub fn keyboard_attack(
         let state_of_attack = state_attack.get_attack().expect("Valid string").to_string();        
         let name = format!("RightWalk_{}",state_of_attack);
         if !has_attacked{
-            commands.entity(entity).insert(StatusEffectAttack::default());
-            player_action_writer.send(PlayerAction::BlendAnimation(name));
+            commands.entity(entity).insert(StatusEffectAttack::new(name));
         }
         else {
             println!("Todo combo");
@@ -296,7 +289,7 @@ pub fn player_state(
     player_velocity: Query<&Velocity,With<Player>>,
     
     mut status_idle: Query<&mut StatusIdle,With<Player>>,
-    mut status_attack:Query<(&StateOfAttack,&mut StatusEffectAttack),With<Player>>,
+    mut status_attack:Query<&mut StatusEffectAttack,With<Player>>,
     
     mut send_animation: EventWriter<AnimationType>,
     mut read_player_action: EventReader<PlayerAction>,
@@ -311,6 +304,25 @@ pub fn player_state(
 
     // ATTACK STUN DASH MUST OCCUR FIRST
 
+
+    // Check first
+    if let Ok(mut attack) = status_attack.get_single_mut(){
+        attack.timer.tick(Duration::from_secs_f32(time.delta_seconds())); 
+        if attack.timer.just_finished(){
+            println!("Removing attack");
+            player_commands.remove::<StatusEffectAttack>();
+        }
+
+        if !attack.played_animation{
+            println!("Going to attack");
+            send_animation.send(AnimationType(ActionProperties{
+                name:attack.animation_name.clone(),
+                duration: Duration::from_millis(400),
+                repeat:false
+            })); 
+        }
+        return
+    }
 
     // Status idle
     if velocity.linvel.length_squared() < 0.1 {
@@ -334,18 +346,20 @@ pub fn player_state(
         }
     }
 
+
         
     for player_action in read_player_action.read(){
 
         let animation_properties = player_action.properties();
 
+        
         if animation_properties.name.contains("Jump") {
             player_commands.remove::<StatusIdle>(); 
             send_animation.send(AnimationType(animation_properties.clone()));
             println!("Uhandled animation {}",animation_properties.name);
         }   
 
-        if velocity.linvel.length_squared() >= 0.1 {
+        else if velocity.linvel.length_squared() >= 0.1 {
             if animation_properties.name.contains("Walk") || animation_properties.name.contains("Air"){
                 send_animation.send(AnimationType(animation_properties.clone()));
                 println!("player walking sending animation"); 

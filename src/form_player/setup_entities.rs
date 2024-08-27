@@ -30,8 +30,6 @@ impl Default for Limit {
     }
 }
 
-
-
 // Kind of a simple pid
 #[derive(Reflect, Component, Debug)]
 pub struct PlayerVel {
@@ -82,17 +80,20 @@ impl Default for DashTimers {
 }
 
 // // Gives me the direction of the player is supposed to be attacking from
-#[derive(Component,Reflect)]
-pub struct StateOfAttack{
+#[derive(Component, Reflect)]
+pub struct StateOfAttack {
     pub attack_states: Vec<&'static str>,
-    pub active_attack:&'static str,
-    pub index: u8 
+    pub active_attack: &'static str,
+    pub index: u8,
 }
-
 
 impl Default for StateOfAttack {
     fn default() -> Self {
-        Self { attack_states: vec!["LeftAttack", "RightAttack","FrontAttack", "BackAttack"],active_attack: "LeftAttack" ,index:0}
+        Self {
+            attack_states: vec!["LeftAttack", "RightAttack", "FrontAttack", "BackAttack"],
+            active_attack: "LeftAttack",
+            index: 0,
+        }
     }
 }
 
@@ -178,7 +179,6 @@ pub fn spawn_main_rigidbody(
             TransformBundle::from(Transform::from_xyz(0.0, 1.0, 0.0)),
         );
 
-
         // Character health
         let health = Health::default();
 
@@ -187,7 +187,7 @@ pub fn spawn_main_rigidbody(
 
         // A few of the player limits
         let limit = Limit::default();
-        
+
         let state_of_attack = StateOfAttack::default();
 
         if scene_name.to_string() == "skeleton_1" {

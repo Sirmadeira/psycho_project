@@ -7,7 +7,6 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
-
 pub fn move_character(
     mut movement_event_reader: EventReader<MovementAction>,
     time: Res<Time>,
@@ -30,7 +29,6 @@ pub fn move_character(
     }
 }
 
-
 // Guy who is gonna send animation events according to rotation also is gonna tell to rotate the dynamic player
 pub fn rotate_character(
     q_1: Query<&Transform, With<CamInfo>>,
@@ -40,7 +38,6 @@ pub fn rotate_character(
     let camera_transform = q_1.get_single().expect("Cam to have transform");
 
     let (player_transform, player_vel) = q_2.get_single().expect("Player to have transform");
-
 
     let rot_error = (camera_transform.rotation * player_transform.rotation.inverse()).normalize();
 
@@ -53,7 +50,7 @@ pub fn rotate_character(
     let only_y = Vec3::new(0.0, angvel.y, 0.0);
 
     if only_y.y > 0.18 || only_y.y < -0.18 {
-        for mut vel in q_3.iter_mut(){
+        for mut vel in q_3.iter_mut() {
             vel.angvel = only_y;
         }
     }

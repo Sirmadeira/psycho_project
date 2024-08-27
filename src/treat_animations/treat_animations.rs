@@ -1,9 +1,8 @@
 use crate::form_player::setup_entities::*;
 use crate::player_mechanics::lib::{StatusEffectAttack, StatusEffectStun};
 use crate::treat_animations::lib::*;
-use bevy::utils::Duration;
 use bevy::prelude::*;
-
+use bevy::utils::Duration;
 
 // Loads from assets and put into our animations players must have for animation playing
 pub fn add_animation_graph(
@@ -53,47 +52,34 @@ pub fn state_machine(
                 .get(&event.0.name)
                 .expect("To find animation in resource");
 
-
-
-            if let Some(active_anim) = animation_player.animation(current_animation){
-
-            if active_anim.elapsed( ) < 0.2{
-                    return
+            if let Some(active_anim) = animation_player.animation(current_animation) {
+                if active_anim.elapsed() < 0.2 {
+                    return;
                 }
             }
 
             if let Ok(mut stun) = stun_info.get_single_mut() {
-                println!("Playing animation 0 {}",event.0.name);
-                if !stun.played_animation && current_animation != *animation{
+                println!("Playing animation 0 {}", event.0.name);
+                if !stun.played_animation && current_animation != *animation {
                     active_transitions.play(&mut animation_player, *animation, event.0.duration);
                     stun.played_animation = true;
                 }
-                return
-            } 
-            else if let Ok(mut attack) = attack_info.get_single_mut() {
-                if !attack.played_animation{
-                    println!("Playing animation 1 {}",event.0.name);
-                    active_transitions.play(&mut animation_player, *animation, event.0.duration);
-                    attack.played_animation = true;
-                    return
-                }
-            }else {
+                return;
+            } else {
                 // Handles scenario where the is no "stun"
                 if current_animation != *animation {
                     if event.0.repeat {
-                        println!("Playing animation 2{}",event.0.name);
+                        println!("Playing animation 2{}", event.0.name);
                         active_transitions
                             .play(&mut animation_player, *animation, event.0.duration)
                             .repeat();
-
                     } else {
-                        println!("Playing animation 3{}",event.0.name);
+                        println!("Playing animation 3{}", event.0.name);
                         active_transitions.play(
                             &mut animation_player,
                             *animation,
                             event.0.duration,
                         );
-
                     }
                 }
             }

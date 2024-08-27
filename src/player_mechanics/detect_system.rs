@@ -2,14 +2,11 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
-use crate::form_player::setup_entities::*;
-use crate::player_mechanics::{Grounded, StatusEffectDash, StatusEffectStun,StatusIdle};
-use crate::treat_animations::lib::AnimationType;
 use crate::form_hitbox::setup_entities::*;
+use crate::form_player::setup_entities::*;
 use crate::form_world::setup_entities::*;
+use crate::player_mechanics::{Grounded, StatusEffectDash, StatusEffectStun};
 use std::borrow::BorrowMut;
-
-use super::StatusEffectAttack;
 
 // These system can add and remove status as long as they are not time based
 
@@ -119,7 +116,6 @@ pub fn detect_hits_weapon_weapon(
     }
 }
 
-
 pub fn detect_hits_body_ground(
     rapier_context: Res<RapierContext>,
     mut commands: Commands,
@@ -148,34 +144,7 @@ pub fn detect_hits_body_ground(
                 }
             }
         } else {
-            commands.entity(player).remove::<Grounded>(); 
-        }
-    }
-}
-
-
-// Check if player is idle if so it send animation type and adds a component
-pub fn detect_if_idle(
-    mut q_1: Query<(Entity, &Velocity, &ExternalImpulse, Option<&mut StatusIdle>,Has<StatusEffectAttack>), With<Player>>,
-    mut commands: Commands,
-    time: Res<Time>,
-) {
-    for (player, vel, imp, opt_status_idle,has_attack) in q_1.iter_mut() {
-        if vel.linvel.length() < 0.01 && imp.impulse.length() < 0.01 {
-            if let Some(mut status_idle) = opt_status_idle {
-                // If a player attacks dont tick after all he is not idle
-                if !has_attack{ 
-                    status_idle
-                    .timer
-                    .tick(Duration::from_secs_f32(time.delta_seconds()));
-                }
-                if status_idle.timer.just_finished() {
-                }
-            } else {
-                commands.entity(player).insert(StatusIdle::default());
-            }
-        } else {
-            commands.entity(player).remove::<StatusIdle>(); // Remove the idle marker if the player is moving
+            commands.entity(player).remove::<Grounded>();
         }
     }
 }

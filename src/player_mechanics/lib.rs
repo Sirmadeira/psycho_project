@@ -1,12 +1,10 @@
-use bevy::{prelude::*, time::Timer};
 use bevy::utils::Duration;
+use bevy::{prelude::*, time::Timer};
 
-#[derive(Event,Clone,Debug)]
-pub enum PlayerAction{
-    Idle,
+#[derive(Event, Clone, Debug)]
+pub enum PlayerAction {
     Jump,
     Landing,
-    BlendAnimation(String),
     FrontDash,
     LeftDash,
     RightDash,
@@ -38,14 +36,9 @@ impl ActionProperties {
     }
 }
 
-
-
 impl PlayerAction {
     pub fn properties(&self) -> ActionProperties {
         match self {
-            PlayerAction::Idle => {
-                ActionProperties::new("Idle".to_string(), Duration::from_millis(400), false)
-            }
             PlayerAction::FrontWalk => {
                 ActionProperties::new("FrontWalk".to_string(), Duration::from_millis(400), true)
             }
@@ -88,14 +81,9 @@ impl PlayerAction {
             PlayerAction::Landing => {
                 ActionProperties::new("Landing".to_string(), Duration::from_millis(0), false)
             }
-            PlayerAction::BlendAnimation(name) => {
-                ActionProperties::new(name.to_string(), Duration::from_millis(200), false)
-            }
         }
     }
 }
-
-
 
 #[derive(Event, Debug)]
 pub enum MovementAction {
@@ -112,7 +100,6 @@ pub enum MovementAction {
 #[component(storage = "SparseSet")]
 pub struct Grounded;
 
-
 // Check if has dashed
 
 #[derive(Reflect, Component, Debug)]
@@ -125,7 +112,6 @@ impl Default for StatusEffectDash {
     }
 }
 
-
 // Check if has status defend
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
@@ -135,15 +121,18 @@ pub struct StatusEffectDefend {
 
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
-pub struct StatusEffectAttack{
+pub struct StatusEffectAttack {
     pub timer: Timer,
-    pub played_animation:bool
+    pub played_animation: bool,
+    pub animation_name: String,
 }
 
-impl Default for StatusEffectAttack {
-    fn default() -> Self {
-        Self{timer : Timer::from_seconds(0.8, TimerMode::Once),
-        played_animation: false  // Example default value
+impl StatusEffectAttack {
+    pub fn new(animation_name: String) -> Self {
+        Self {
+            timer: Timer::from_seconds(0.8, TimerMode::Once),
+            played_animation: false, // Example default value
+            animation_name,
         }
     }
 }
@@ -152,20 +141,17 @@ impl Default for StatusEffectAttack {
 // Check if has stopped
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
-pub struct StatusIdle{
-    pub timer: Timer
+pub struct StatusIdle {
+    pub timer: Timer,
 }
 
-impl Default for StatusIdle{
+impl Default for StatusIdle {
     fn default() -> Self {
         Self {
-            timer: Timer::from_seconds(1.0, TimerMode::Repeating)
+            timer: Timer::from_seconds(1.0, TimerMode::Repeating),
         }
     }
 }
-
-
-
 
 // Check if it stuns - Stops animation midtrack and plays one last animation until it is finished
 #[derive(Reflect, Component, Debug)]
