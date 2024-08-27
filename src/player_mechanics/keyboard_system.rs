@@ -1,3 +1,4 @@
+use bevy::a11y::accesskit::Action;
 use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier3d::prelude::Velocity;
@@ -6,13 +7,12 @@ use crate::form_ingame_camera::setup_entities::CamInfo;
 use crate::form_player::setup_entities::*;
 use crate::player_mechanics::*;
 use crate::treat_animations::lib::AnimationType;
-
 pub fn keyboard_walk(
-    keys: Res<ButtonInput<KeyCode>>, // Res<Input<KeyCode>> is used instead of ButtonInput<KeyCode>
+    keys: Res<ButtonInput<KeyCode>>,  // Adjusted to Res<Input<KeyCode>> instead of ButtonInput<KeyCode>>
     mut movement_event_writer: EventWriter<MovementAction>,
-    mut animation_type_writer: EventWriter<AnimationType>,
-    q_1: Query<&Transform, With<CamInfo>>,
-    q_2: Query<
+    mut player_action_writer: EventWriter<PlayerAction>,
+    cam_query: Query<&Transform, With<CamInfo>>,
+    player_status_query: Query<
         (
             Has<StatusEffectDash>,
             Has<StatusEffectStun>,
@@ -22,62 +22,64 @@ pub fn keyboard_walk(
         With<Player>,
     >,
 ) {
-    let cam = q_1.get_single().expect("Expected to have a camera");
-
-    let (has_dash, has_stun,has_attack,has_grounded) = q_2
+    let cam = cam_query.get_single().expect("Expected to have a camera");
+    let (has_dash, has_stun, has_attack, has_grounded) = player_status_query
         .get_single()
-        .expect("Expected to be able to check if player has dashed");
+        .expect("Expected to be able to check player status");
 
     let mut direction = Vec2::ZERO;
-    let mut movetype = AnimationType::None;
-    let mut key_to_direction =
-        |key: KeyCode, cam_dir: Vec3, walk_anim: AnimationType, air_anim: AnimationType| {
-            if keys.pressed(key) {
-                direction.x = cam_dir.x;
-                direction.y = cam_dir.z;
-                movetype = if has_grounded { walk_anim } else { air_anim };
-            }
-        };
+    let mut player_action: Option<PlayerAction> = None;
+
+    let mut key_to_direction = |key: KeyCode, cam_dir: Vec3, walk_action: PlayerAction, air_action: PlayerAction| {
+        if keys.pressed(key) {
+            direction.x = cam_dir.x;
+            direction.y = cam_dir.z;
+            player_action = Some(if has_grounded { walk_action } else { air_action });
+        }
+    };
 
     key_to_direction(
         KeyCode::KeyW,
         cam.forward().into(),
-        AnimationType::FrontWalk,
-        AnimationType::FrontAir,
+        PlayerAction::FrontWalk,
+        PlayerAction::FrontAir,
     );
     key_to_direction(
         KeyCode::KeyS,
         cam.back().into(),
-        AnimationType::BackWalk,
-        AnimationType::BackAir,
+        PlayerAction::BackWalk,
+        PlayerAction::BackAir,
     );
     key_to_direction(
         KeyCode::KeyA,
         cam.left().into(),
-        AnimationType::LeftWalk,
-        AnimationType::LeftAir,
+        PlayerAction::LeftWalk,
+        PlayerAction::LeftAir,
     );
     key_to_direction(
         KeyCode::KeyD,
         cam.right().into(),
-        AnimationType::RightWalk,
-        AnimationType::RightAir,
+        PlayerAction::RightWalk,
+        PlayerAction::RightAir,
     );
 
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
-        if !has_attack || has_dash || has_stun{
-            animation_type_writer.send(movetype);
+        if !has_attack || has_dash || has_stun {
+            if let Some(action) = player_action {
+                player_action_writer.send(action);
+            }
         }
     }
 }
+
 
 pub fn keyboard_dash(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut movement_event_writer: EventWriter<MovementAction>,
-    mut animation_type_writer: EventWriter<AnimationType>,
+    mut player_action_writer: EventWriter<PlayerAction>,
     mut q: Query<(&mut DashTimers, Entity, Has<StatusEffectDash>), With<Player>>,
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
@@ -85,7 +87,7 @@ pub fn keyboard_dash(
         let cam = q_1.get_single().expect("To have camera");
 
         let mut direction = Vec2::ZERO;
-        let mut movetype = AnimationType::None;
+        let mut player_action: Option<PlayerAction> = None;
 
         timers
             .up
@@ -106,7 +108,7 @@ pub fn keyboard_dash(
         if timers.up.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyW) {
             direction.x = cam.forward().x;
             direction.y = cam.forward().z;
-            movetype = AnimationType::FrontDash
+            player_action = Some(PlayerAction::FrontDash)
         }
         if keys.just_released(KeyCode::KeyS) {
             timers.down.reset();
@@ -114,7 +116,7 @@ pub fn keyboard_dash(
         if timers.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS) {
             direction.x = cam.back().x;
             direction.y = cam.back().z;
-            movetype = AnimationType::BackDash
+            player_action = Some(PlayerAction::BackDash)
         }
         if keys.just_released(KeyCode::KeyA) {
             timers.left.reset();
@@ -122,7 +124,7 @@ pub fn keyboard_dash(
         if timers.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA) {
             direction.x = cam.left().x;
             direction.y = cam.left().z;
-            movetype = AnimationType::LeftDash
+            player_action = Some(PlayerAction::LeftDash)
         }
         if keys.just_released(KeyCode::KeyD) {
             timers.right.reset();
@@ -130,7 +132,7 @@ pub fn keyboard_dash(
         if timers.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD) {
             direction.x = cam.right().x;
             direction.y = cam.right().z;
-            movetype = AnimationType::RightDash
+            player_action = Some(PlayerAction::RightDash)
         }
 
         if direction != Vec2::ZERO && has_dashed == false {
@@ -140,7 +142,10 @@ pub fn keyboard_dash(
 
             // Sending events
             movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
-            animation_type_writer.send(movetype);
+            if let Some(action) = player_action{
+                player_action_writer.send(action);
+            }
+
         }
     }
 }
@@ -149,7 +154,7 @@ pub fn keyboard_jump(
     keys: Res<ButtonInput<KeyCode>>,
     mut q_1: Query<(Has<Grounded>, &mut Limit), With<Player>>,
     mut movement_event_writer: EventWriter<MovementAction>,
-    mut animation_type_writer: EventWriter<AnimationType>,
+    mut player_action_writer: EventWriter<PlayerAction>,
 ) {
     let (is_grounded, mut amount_jumps) = q_1
         .get_single_mut()
@@ -161,13 +166,13 @@ pub fn keyboard_jump(
         println!("{}",amount_jumps.jump_limit);
         amount_jumps.jump_limit -= 1;
         movement_event_writer.send(MovementAction::Jump);
-        animation_type_writer.send(AnimationType::Jump);
+        player_action_writer.send(PlayerAction::Jump);
     }
     else if keys.just_pressed(KeyCode::Space) && amount_jumps.jump_limit != 0 {
         println!("{}",amount_jumps.jump_limit);
         amount_jumps.jump_limit -= 1;
         movement_event_writer.send(MovementAction::Jump);
-        animation_type_writer.send(AnimationType::Jump);
+        player_action_writer.send(PlayerAction::Jump);
     }
     
     else if is_grounded && amount_jumps.jump_limit == 0 {
@@ -182,7 +187,7 @@ pub fn keyboard_attack(
     mouse: Res<ButtonInput<MouseButton>>,
     status: Query<(Has<StatusEffectAttack>),With<Player>>,
     mut state_attack: Query<(Entity,&Velocity,&mut StateOfAttack), With<Player>>,
-    mut animation_type_writer: EventWriter<AnimationType>,
+    mut player_action_writer: EventWriter<PlayerAction>,
     mut commands: Commands
 ) {
     let (entity,vel,mut state_attack) = state_attack.get_single_mut().expect("player to only have a single state of attack");
@@ -227,7 +232,7 @@ pub fn keyboard_attack(
         let name = format!("Idle_{}",state_of_attack);
         if !has_attacked{
             commands.entity(entity).insert(StatusEffectAttack::default());
-            animation_type_writer.send(AnimationType::BlendAnimation(name));
+            player_action_writer.send(PlayerAction::BlendAnimation(name));
         }
         else {
             println!("Todo combo");
@@ -239,7 +244,7 @@ pub fn keyboard_attack(
         let name = format!("FrontWalk_{}",state_of_attack);
         if !has_attacked{
             commands.entity(entity).insert(StatusEffectAttack::default());
-            animation_type_writer.send(AnimationType::BlendAnimation(name));
+            player_action_writer.send(PlayerAction::BlendAnimation(name));
         }
         else {
             println!("Todo combo");
@@ -252,7 +257,7 @@ pub fn keyboard_attack(
         let name = format!("BackWalk_{}",state_of_attack);
         if !has_attacked{
             commands.entity(entity).insert(StatusEffectAttack::default());
-            animation_type_writer.send(AnimationType::BlendAnimation(name));
+            player_action_writer.send(PlayerAction::BlendAnimation(name));
         }
         else {
             println!("Todo combo");
@@ -263,7 +268,7 @@ pub fn keyboard_attack(
         let name = format!("LeftWalk_{}",state_of_attack);
         if !has_attacked{
             commands.entity(entity).insert(StatusEffectAttack::default());
-            animation_type_writer.send(AnimationType::BlendAnimation(name));
+            player_action_writer.send(PlayerAction::BlendAnimation(name));
         }
         else {
             println!("Todo combo");
@@ -274,11 +279,86 @@ pub fn keyboard_attack(
         let name = format!("RightWalk_{}",state_of_attack);
         if !has_attacked{
             commands.entity(entity).insert(StatusEffectAttack::default());
-            animation_type_writer.send(AnimationType::BlendAnimation(name));
+            player_action_writer.send(PlayerAction::BlendAnimation(name));
         }
         else {
             println!("Todo combo");
         }
     }
+
+}
+
+
+
+
+pub fn player_state(
+    player: Query<Entity,With<Player>>,
+    player_velocity: Query<&Velocity,With<Player>>,
+    
+    mut status_idle: Query<&mut StatusIdle,With<Player>>,
+    mut status_attack:Query<(&StateOfAttack,&mut StatusEffectAttack),With<Player>>,
+    
+    mut send_animation: EventWriter<AnimationType>,
+    mut read_player_action: EventReader<PlayerAction>,
+    time: ResMut<Time>,
+    mut commands: Commands
+){
+
+    let mut player_commands = commands.entity(player.get_single().expect("Player to have velocity"));
+
+    let velocity = player_velocity.get_single().expect("Player to have velocity");
+
+
+    // ATTACK STUN DASH MUST OCCUR FIRST
+
+
+    // Status idle
+    if velocity.linvel.length_squared() < 0.1 {
+        if let Ok(mut idle) = status_idle.get_single_mut(){
+            idle
+            .timer
+            .tick(Duration::from_secs_f32(time.delta_seconds()));
+            if idle.timer.just_finished(){
+                println!("player idle sending animation");
+                send_animation.send(AnimationType(ActionProperties{
+                    name: "Idle".to_string(),
+                    duration: Duration::from_secs(2),
+                    repeat: false
+                }));
+            }
+        }
+        else {
+            println!("Inserting idle");
+            player_commands.insert(StatusIdle::default());  
+            println!("Make in idle state")              
+        }
+    }
+
+        
+    for player_action in read_player_action.read(){
+
+        let animation_properties = player_action.properties();
+
+        if animation_properties.name.contains("Jump") {
+            player_commands.remove::<StatusIdle>(); 
+            send_animation.send(AnimationType(animation_properties.clone()));
+            println!("Uhandled animation {}",animation_properties.name);
+        }   
+
+        if velocity.linvel.length_squared() >= 0.1 {
+            if animation_properties.name.contains("Walk") || animation_properties.name.contains("Air"){
+                send_animation.send(AnimationType(animation_properties.clone()));
+                println!("player walking sending animation"); 
+                player_commands.remove::<StatusIdle>();     
+            }
+        }
+
+
+
+    }
+
+
+
+
 
 }

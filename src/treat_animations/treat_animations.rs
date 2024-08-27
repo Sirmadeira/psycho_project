@@ -48,11 +48,9 @@ pub fn state_machine(
 
     if let Some(current_animation) = active_transitions.get_main_animation() {
         for event in animation_to_play.read() {
-            let properties = event.properties();
-
             let animation = animations
                 .named_nodes
-                .get(&properties.name)
+                .get(&event.0.name)
                 .expect("To find animation in resource");
 
 
@@ -65,35 +63,35 @@ pub fn state_machine(
             }
 
             if let Ok(mut stun) = stun_info.get_single_mut() {
-                println!("Playing animation 0 {}",properties.name);
+                println!("Playing animation 0 {}",event.0.name);
                 if !stun.played_animation && current_animation != *animation{
-                    active_transitions.play(&mut animation_player, *animation, properties.duration);
+                    active_transitions.play(&mut animation_player, *animation, event.0.duration);
                     stun.played_animation = true;
                 }
                 return
             } 
             else if let Ok(mut attack) = attack_info.get_single_mut() {
                 if !attack.played_animation{
-                    println!("Playing animation 1 {}",properties.name);
-                    active_transitions.play(&mut animation_player, *animation, properties.duration);
+                    println!("Playing animation 1 {}",event.0.name);
+                    active_transitions.play(&mut animation_player, *animation, event.0.duration);
                     attack.played_animation = true;
                     return
                 }
             }else {
                 // Handles scenario where the is no "stun"
                 if current_animation != *animation {
-                    if properties.repeat {
-                        println!("Playing animation 2{}",properties.name);
+                    if event.0.repeat {
+                        println!("Playing animation 2{}",event.0.name);
                         active_transitions
-                            .play(&mut animation_player, *animation, properties.duration)
+                            .play(&mut animation_player, *animation, event.0.duration)
                             .repeat();
 
                     } else {
-                        println!("Playing animation 3{}",properties.name);
+                        println!("Playing animation 3{}",event.0.name);
                         active_transitions.play(
                             &mut animation_player,
                             *animation,
-                            properties.duration,
+                            event.0.duration,
                         );
 
                     }

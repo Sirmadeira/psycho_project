@@ -20,6 +20,7 @@ impl Plugin for PlayerMechanics {
     fn build(&self, app: &mut App) {
         // Events
         app.add_event::<MovementAction>();
+        app.add_event::<PlayerAction>();
         // Debugin
         app.register_type::<StatusEffectDash>();
         app.register_type::<StatusEffectStun>();
@@ -32,7 +33,6 @@ impl Plugin for PlayerMechanics {
                 detect_hits_wall_weapon,
                 detect_hits_weapon_weapon,
                 detect_hits_body_ground,
-                detect_if_idle,
                 detect_dead
             )
                 .run_if(player_exists)
@@ -65,6 +65,8 @@ impl Plugin for PlayerMechanics {
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))
         );
+        app.add_systems(Update, player_state.run_if(player_exists)
+        .run_if(in_state(MyAppState::InGame)).after(move_character));
 
         // Just an aditional visual mechanic - Doesnt really matter as long as it happens before camera sync player camera.
         app.add_systems(

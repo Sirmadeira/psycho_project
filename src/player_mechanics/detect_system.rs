@@ -126,7 +126,6 @@ pub fn detect_hits_body_ground(
     q_1: Query<Entity, With<PlayerGroundCollider>>,
     q_2: Query<Entity, With<Ground>>,
     q_3: Query<(Entity, Has<Grounded>), With<Player>>,
-    mut animation_writer: EventWriter<AnimationType>,
 ) {
     // Player
     let (player, is_grounded) = q_3.get_single().expect("Player to exist");
@@ -146,7 +145,6 @@ pub fn detect_hits_body_ground(
                         timer: Timer::new(Duration::from_micros(50), TimerMode::Once),
                         played_animation: false,
                     });
-                    animation_writer.send(AnimationType::Landing);
                 }
             }
         } else {
@@ -160,7 +158,6 @@ pub fn detect_hits_body_ground(
 pub fn detect_if_idle(
     mut q_1: Query<(Entity, &Velocity, &ExternalImpulse, Option<&mut StatusIdle>,Has<StatusEffectAttack>), With<Player>>,
     mut commands: Commands,
-    mut animation_writer: EventWriter<AnimationType>,
     time: Res<Time>,
 ) {
     for (player, vel, imp, opt_status_idle,has_attack) in q_1.iter_mut() {
@@ -169,17 +166,13 @@ pub fn detect_if_idle(
                 // If a player attacks dont tick after all he is not idle
                 if !has_attack{ 
                     status_idle
-                    .0
+                    .timer
                     .tick(Duration::from_secs_f32(time.delta_seconds()));
                 }
-                if status_idle.0.just_finished() {
-                    animation_writer.send(AnimationType::Idle);
+                if status_idle.timer.just_finished() {
                 }
             } else {
-                commands.entity(player).insert(StatusIdle(Timer::new(
-                    Duration::from_millis(500),
-                    TimerMode::Repeating,
-                )));
+                commands.entity(player).insert(StatusIdle::default());
             }
         } else {
             commands.entity(player).remove::<StatusIdle>(); // Remove the idle marker if the player is moving
