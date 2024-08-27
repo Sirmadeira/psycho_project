@@ -52,11 +52,11 @@ pub fn state_machine(
                 .get(&event.0.name)
                 .expect("To find animation in resource");
 
-            if let Some(active_anim) = animation_player.animation(current_animation) {
-                if active_anim.elapsed() < 0.2 {
-                    return;
-                }
-            }
+            // if let Some(active_anim) = animation_player.animation(current_animation) {
+            //     if active_anim.elapsed() < 0.2 {
+            //         return;
+            //     }
+            // }
 
             if let Ok(mut stun) = stun_info.get_single_mut() {
                 println!("Playing animation 0 {}", event.0.name);

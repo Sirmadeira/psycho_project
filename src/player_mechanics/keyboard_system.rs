@@ -319,7 +319,8 @@ pub fn player_state(
                 name:attack.animation_name.clone(),
                 duration: Duration::from_millis(400),
                 repeat:false
-            })); 
+            }));
+            attack.played_animation=true
         }
         return
     }
@@ -334,7 +335,7 @@ pub fn player_state(
                 println!("player idle sending animation");
                 send_animation.send(AnimationType(ActionProperties{
                     name: "Idle".to_string(),
-                    duration: Duration::from_secs(2),
+                    duration: Duration::from_secs(1),
                     repeat: false
                 }));
             }
