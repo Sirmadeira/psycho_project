@@ -138,7 +138,7 @@ pub fn detect_hits_body_ground(
                     // Tell me player is grounded
                     commands.entity(player).insert(Grounded);
                     commands.entity(player).insert(StatusEffectStun {
-                        timer: Timer::new(Duration::from_micros(50), TimerMode::Once),
+                        timer: Timer::new(Duration::from_micros(200), TimerMode::Once),
                         played_animation: false,
                     });
                 }

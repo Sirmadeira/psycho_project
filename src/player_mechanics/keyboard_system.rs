@@ -64,7 +64,7 @@ pub fn keyboard_walk(
 
     if direction != Vec2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.normalize_or_zero()));
-        if !has_attack {
+        if !has_dash && !has_attack && ! has_stun{
             if let Some(action) = player_action {
                 player_action_writer.send(action);
             }
@@ -78,7 +78,6 @@ pub fn keyboard_dash(
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut movement_event_writer: EventWriter<MovementAction>,
-    mut player_action_writer: EventWriter<PlayerAction>,
     mut q: Query<(&mut DashTimers, Entity, Has<StatusEffectDash>), With<Player>>,
     q_1: Query<&Transform, With<CamInfo>>,
 ) {
@@ -86,7 +85,7 @@ pub fn keyboard_dash(
         let cam = q_1.get_single().expect("To have camera");
 
         let mut direction = Vec2::ZERO;
-        let mut player_action: Option<PlayerAction> = None;
+        let mut player_action: Option<String> = None;
 
         timers
             .up
@@ -107,7 +106,7 @@ pub fn keyboard_dash(
         if timers.up.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyW) {
             direction.x = cam.forward().x;
             direction.y = cam.forward().z;
-            player_action = Some(PlayerAction::FrontDash)
+            player_action = Some("FrontDash".to_string());
         }
         if keys.just_released(KeyCode::KeyS) {
             timers.down.reset();
@@ -115,7 +114,7 @@ pub fn keyboard_dash(
         if timers.down.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyS) {
             direction.x = cam.back().x;
             direction.y = cam.back().z;
-            player_action = Some(PlayerAction::BackDash)
+            player_action = Some("BackDash".to_string());
         }
         if keys.just_released(KeyCode::KeyA) {
             timers.left.reset();
@@ -123,7 +122,7 @@ pub fn keyboard_dash(
         if timers.left.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyA) {
             direction.x = cam.left().x;
             direction.y = cam.left().z;
-            player_action = Some(PlayerAction::LeftDash)
+            player_action = Some("LeftDash".to_string());
         }
         if keys.just_released(KeyCode::KeyD) {
             timers.right.reset();
@@ -131,20 +130,18 @@ pub fn keyboard_dash(
         if timers.right.elapsed_secs() <= 1.0 && keys.just_pressed(KeyCode::KeyD) {
             direction.x = cam.right().x;
             direction.y = cam.right().z;
-            player_action = Some(PlayerAction::RightDash)
+            player_action = Some("RightDash".to_string());
         }
 
+        // Still necessary because of unstable
         if direction != Vec2::ZERO && has_dashed == false {
             // Add dash status effect
-            let status_dash = StatusEffectDash::default();
-            commands.entity(player).insert(status_dash);
-
+            if let Some(action) = player_action{
+                let status_dash = StatusEffectDash::new(action);
+                commands.entity(player).insert(status_dash);
+            }
             // Sending events
             movement_event_writer.send(MovementAction::Dash(direction.normalize_or_zero()));
-            if let Some(action) = player_action{
-                player_action_writer.send(action);
-            }
-
         }
     }
 }
@@ -284,11 +281,13 @@ pub fn keyboard_attack(
 
 
 
-pub fn player_state(
+pub fn player_state_to_animation(
     player: Query<Entity,With<Player>>,
     player_velocity: Query<&Velocity,With<Player>>,
     
     mut status_idle: Query<&mut StatusIdle,With<Player>>,
+    mut status_dash: Query<&mut StatusEffectDash,With<Player>>,
+    mut status_stun: Query<&mut StatusEffectStun,With<Player>>,
     mut status_attack:Query<&mut StatusEffectAttack,With<Player>>,
     
     mut send_animation: EventWriter<AnimationType>,
@@ -302,10 +301,46 @@ pub fn player_state(
     let velocity = player_velocity.get_single().expect("Player to have velocity");
 
 
-    // ATTACK STUN DASH MUST OCCUR FIRST
 
+    //State check for stun
+    if let Ok(mut stun) = status_stun.get_single_mut(){
+        stun.timer.tick(Duration::from_secs_f32(time.delta_seconds()));
 
-    // Check first
+        if stun.timer.just_finished(){
+            println!("Removing stun");
+            player_commands.remove::<StatusEffectStun>();
+        }
+
+        if !stun.played_animation{
+            player_commands.remove::<StatusIdle>();
+            send_animation.send(AnimationType(PlayerAction::Landing.properties()));
+            stun.played_animation=true
+        }
+
+        return
+    }
+
+    // State check for dash
+    if let Ok(mut dash) = status_dash.get_single_mut(){
+        dash.timer.tick(Duration::from_secs_f32(time.delta_seconds()));
+        if dash.timer.just_finished(){
+            println!("Removing dash");
+            player_commands.remove::<StatusEffectDash>();
+        }
+        if !dash.played_animation{
+            println!("Going to dash");
+            send_animation.send(AnimationType(ActionProperties{
+                name: dash.animation_name.clone(),
+                duration: Duration::from_millis(400),
+                repeat:false
+            }));
+            dash.played_animation = true
+        }
+
+        return;
+    }
+
+    // State check for attack
     if let Ok(mut attack) = status_attack.get_single_mut(){
         attack.timer.tick(Duration::from_secs_f32(time.delta_seconds())); 
         if attack.timer.just_finished(){
@@ -333,11 +368,7 @@ pub fn player_state(
             .tick(Duration::from_secs_f32(time.delta_seconds()));
             if idle.timer.just_finished(){
                 println!("player idle sending animation");
-                send_animation.send(AnimationType(ActionProperties{
-                    name: "Idle".to_string(),
-                    duration: Duration::from_secs(1),
-                    repeat: false
-                }));
+                send_animation.send(AnimationType(PlayerAction::Idle.properties()));
             }
         }
         else {
@@ -353,19 +384,17 @@ pub fn player_state(
 
         let animation_properties = player_action.properties();
 
-        
-        if animation_properties.name.contains("Jump") {
-            player_commands.remove::<StatusIdle>(); 
-            send_animation.send(AnimationType(animation_properties.clone()));
-            println!("Uhandled animation {}",animation_properties.name);
-        }   
+        // State check for jump
 
-        else if velocity.linvel.length_squared() >= 0.1 {
+        if velocity.linvel.length_squared() >= 0.1 {
             if animation_properties.name.contains("Walk") || animation_properties.name.contains("Air"){
                 send_animation.send(AnimationType(animation_properties.clone()));
-                println!("player walking sending animation"); 
-                player_commands.remove::<StatusIdle>();     
+                // println!("player walking sending animation");   
             }
+        }
+        if animation_properties.name.contains("Jump") {
+            println!("Going to jump");
+            send_animation.send(AnimationType(animation_properties.clone()));
         }
 
 

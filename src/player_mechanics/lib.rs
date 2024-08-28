@@ -4,11 +4,8 @@ use bevy::{prelude::*, time::Timer};
 #[derive(Event, Clone, Debug)]
 pub enum PlayerAction {
     Jump,
+    Idle,
     Landing,
-    FrontDash,
-    LeftDash,
-    RightDash,
-    BackDash,
     FrontWalk,
     BackWalk,
     LeftWalk,
@@ -39,6 +36,9 @@ impl ActionProperties {
 impl PlayerAction {
     pub fn properties(&self) -> ActionProperties {
         match self {
+            PlayerAction::Idle => {
+                ActionProperties::new("Idle".to_string(), Duration::from_millis(400), false)
+            }
             PlayerAction::FrontWalk => {
                 ActionProperties::new("FrontWalk".to_string(), Duration::from_millis(400), true)
             }
@@ -50,18 +50,6 @@ impl PlayerAction {
             }
             PlayerAction::RightWalk => {
                 ActionProperties::new("RightWalk".to_string(), Duration::from_millis(400), true)
-            }
-            PlayerAction::FrontDash => {
-                ActionProperties::new("FrontDash".to_string(), Duration::from_millis(0), false)
-            }
-            PlayerAction::LeftDash => {
-                ActionProperties::new("LeftDash".to_string(), Duration::from_millis(0), false)
-            }
-            PlayerAction::RightDash => {
-                ActionProperties::new("RightDash".to_string(), Duration::from_millis(0), false)
-            }
-            PlayerAction::BackDash => {
-                ActionProperties::new("BackDash".to_string(), Duration::from_millis(0), false)
             }
             PlayerAction::Jump => {
                 ActionProperties::new("Jump".to_string(), Duration::from_millis(0), false)
@@ -104,19 +92,20 @@ pub struct Grounded;
 
 #[derive(Reflect, Component, Debug)]
 #[component(storage = "SparseSet")]
-pub struct StatusEffectDash(pub Timer); // Example tuple with Timer and f32
+pub struct StatusEffectDash {
+    pub timer: Timer,
+    pub played_animation: bool,
+    pub animation_name: String
+} // Example tuple with Timer and f32
 
-impl Default for StatusEffectDash {
-    fn default() -> Self {
-        StatusEffectDash(Timer::from_seconds(1.0, TimerMode::Once)) // Example default values
+impl StatusEffectDash {
+    pub fn new(animation_name:String) -> Self {
+        Self {
+            timer: Timer::from_seconds(1.0, TimerMode::Once),
+            played_animation:false,
+            animation_name
+        }
     }
-}
-
-// Check if has status defend
-#[derive(Reflect, Component, Debug)]
-#[component(storage = "SparseSet")]
-pub struct StatusEffectDefend {
-    pub dash_cooldown: Timer,
 }
 
 #[derive(Reflect, Component, Debug)]
@@ -136,7 +125,6 @@ impl StatusEffectAttack {
         }
     }
 }
-
 
 // Check if has stopped
 #[derive(Reflect, Component, Debug)]

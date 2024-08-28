@@ -2,13 +2,12 @@
 
 use bevy::prelude::*;
 
-use self::{detect_system::*, keyboard_system::*, lib::*, move_rotate::*, tick_status::*};
+use self::{detect_system::*, keyboard_system::*, lib::*, move_rotate::*};
 
 pub mod detect_system;
 pub mod keyboard_system;
 pub mod lib;
 pub mod move_rotate;
-pub mod tick_status;
 
 use crate::MyAppState;
 
@@ -39,15 +38,6 @@ impl Plugin for PlayerMechanics {
                 .run_if(in_state(MyAppState::InGame)),
         );
 
-        // Ticker related systems - They just remove components it would be ideal to put them in post, because them new status can be applied and evaluated correctly.
-        // Since they are a lot of timers runs in fixed to avoid fps related issues and so on
-        app.add_systems(
-            FixedPostUpdate,
-            (check_status_ticker,)
-                .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)),
-        );
-
         // Send movement events and anImation events
         app.add_systems(
             Update,
@@ -65,7 +55,7 @@ impl Plugin for PlayerMechanics {
         );
         app.add_systems(
             Update,
-            player_state
+            player_state_to_animation
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame))
                 .after(move_character)

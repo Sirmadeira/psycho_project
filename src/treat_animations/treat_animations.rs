@@ -1,5 +1,3 @@
-use crate::form_player::setup_entities::*;
-use crate::player_mechanics::lib::{StatusEffectAttack, StatusEffectStun};
 use crate::treat_animations::lib::*;
 use bevy::prelude::*;
 use bevy::utils::Duration;
@@ -31,9 +29,7 @@ pub fn setup_state_machine(
 
 // This will handle animation according to input events given by player_effects or other plugins
 
-pub fn state_machine(
-    mut stun_info: Query<&mut StatusEffectStun, With<Player>>,
-    mut attack_info: Query<&mut StatusEffectAttack, With<Player>>,
+pub fn transition_animations(
     mut animation_components: Query<
         (&mut AnimationPlayer, &mut AnimationTransitions),
         With<AnimatedEntity>,
@@ -52,35 +48,21 @@ pub fn state_machine(
                 .get(&event.0.name)
                 .expect("To find animation in resource");
 
-            // if let Some(active_anim) = animation_player.animation(current_animation) {
-            //     if active_anim.elapsed() < 0.2 {
-            //         return;
-            //     }
-            // }
-
-            if let Ok(mut stun) = stun_info.get_single_mut() {
-                println!("Playing animation 0 {}", event.0.name);
-                if !stun.played_animation && current_animation != *animation {
-                    active_transitions.play(&mut animation_player, *animation, event.0.duration);
-                    stun.played_animation = true;
+            if let Some(active_anim) = animation_player.animation(current_animation) {
+                if active_anim.elapsed() < 0.1 {
+                    return;
                 }
-                return;
-            } else {
-                // Handles scenario where the is no "stun"
-                if current_animation != *animation {
-                    if event.0.repeat {
-                        println!("Playing animation 2{}", event.0.name);
-                        active_transitions
-                            .play(&mut animation_player, *animation, event.0.duration)
-                            .repeat();
-                    } else {
-                        println!("Playing animation 3{}", event.0.name);
-                        active_transitions.play(
-                            &mut animation_player,
-                            *animation,
-                            event.0.duration,
-                        );
-                    }
+            }
+            // Handles scenario where the is no "stun"
+            if current_animation != *animation {
+                if event.0.repeat {
+                    println!("Playing animation repeat {}", event.0.name);
+                    active_transitions
+                        .play(&mut animation_player, *animation, event.0.duration)
+                        .repeat();
+                } else {
+                    println!("Playing animation not repeat {}", event.0.name);
+                    active_transitions.play(&mut animation_player, *animation, event.0.duration);
                 }
             }
         }

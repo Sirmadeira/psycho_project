@@ -30,7 +30,7 @@ impl Plugin for TreatAnimations {
         );
         app.add_systems(
             Update,
-            state_machine
+            transition_animations
                 .run_if(player_exists)
                 .run_if(in_state(MyAppState::InGame)),
         );
