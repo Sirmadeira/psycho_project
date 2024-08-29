@@ -4,6 +4,8 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use iyes_perf_ui::prelude::*;
 
+
+
 mod form_hitbox;
 mod form_ingame_camera;
 mod form_modular_char;
@@ -21,7 +23,6 @@ use form_hitbox::FormHitbox;
 use form_ingame_camera::FormIngameCamera;
 use form_modular_char::FormModularChar;
 use form_player::FormPlayer;
-use form_multiplayer::FormMultiplayer;
 use form_ui::FormUi;
 use form_world::FormWorld;
 use load_assets_plugin::LoadingAssetsPlugin;
@@ -41,7 +42,10 @@ pub enum MyAppState {
     InGame,
 }
 
-// Main running function
+
+
+
+// Main running function - I am gonna have to destroy u
 fn main() {
     App::new()
         // Really important configs
@@ -69,8 +73,6 @@ fn main() {
 
         // Main menu and debugger menu
         .add_plugins(FormUi)
-        //Responsible for creating the whole debacle of multiplayer let sees if it fit the structure
-        .add_plugins(FormMultiplayer)
         // Contruct the world
         .add_plugins(FormWorld)
         // Formulates all the game entities to be used
