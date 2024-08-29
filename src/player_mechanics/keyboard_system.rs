@@ -3,7 +3,7 @@ use bevy::utils::Duration;
 use bevy_rapier3d::prelude::Velocity;
 
 use crate::form_ingame_camera::setup_entities::CamInfo;
-use crate::form_player::setup_entities::*;
+use crate::form_player::lib::*;
 use crate::player_mechanics::*;
 use crate::treat_animations::lib::AnimationType;
 pub fn keyboard_walk(

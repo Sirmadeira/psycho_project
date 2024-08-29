@@ -3,7 +3,7 @@ use bevy::utils::Duration;
 use bevy_rapier3d::prelude::*;
 
 use crate::form_hitbox::setup_entities::*;
-use crate::form_player::setup_entities::*;
+use crate::form_player::lib::*;
 use crate::form_world::setup_entities::*;
 use crate::player_mechanics::{Grounded, StatusEffectDash, StatusEffectStun};
 use std::borrow::BorrowMut;

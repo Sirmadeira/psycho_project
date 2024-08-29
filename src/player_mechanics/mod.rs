@@ -49,7 +49,6 @@ impl Plugin for PlayerMechanics {
                 .after(PlayerSystems::MovePlayer),
         );
 
-        // Detect systems - They run in fixed preupdate because they define game logic. For example if idle, send idle animation and if ground dont fly, so on on
         app.add_systems(
             PreUpdate,
             (
@@ -62,14 +61,12 @@ impl Plugin for PlayerMechanics {
                 .in_set(PlayerSystems::DetectCollisions),
         );
 
-        // Send movement events and anImation events
         app.add_systems(
             PreUpdate,
             (keyboard_walk, keyboard_dash, keyboard_jump, keyboard_attack)
                 .in_set(PlayerSystems::KeyboardInput),
         );
 
-        // Moves character around - Runs in update- Because they just dont care about status
         app.add_systems(
             Update,
             (move_character, rotate_character).in_set(PlayerSystems::MovePlayer),
@@ -80,7 +77,6 @@ impl Plugin for PlayerMechanics {
             player_state_to_animation.in_set(PlayerSystems::StatePlayer),
         );
 
-        // Just an aditional visual mechanic - Doesnt really matter as long as it happens before camera sync player camera.
         app.add_systems(Update, head_look_at.run_if(in_state(MyAppState::InGame)));
     }
 }

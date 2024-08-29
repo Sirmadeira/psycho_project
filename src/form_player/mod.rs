@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 
 pub mod setup_entities;
+pub mod lib;
 
 use crate::MyAppState;
 
-use self::setup_entities::*;
+use self::{setup_entities::*,lib::*};
 pub struct FormPlayer;
 
 impl Plugin for FormPlayer {

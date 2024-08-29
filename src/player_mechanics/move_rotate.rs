@@ -1,6 +1,6 @@
 use crate::form_ingame_camera::setup_entities::CamInfo;
 use crate::form_modular_char::helpers::find_child_with_name_containing;
-use crate::form_player::setup_entities::*;
+use crate::form_player::lib::*;
 use crate::player_mechanics::MovementAction;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
