@@ -10,6 +10,7 @@ mod form_modular_char;
 mod form_player;
 mod form_ui;
 mod form_world;
+mod form_multiplayer;
 mod load_assets_plugin;
 
 mod player_mechanics;
@@ -20,6 +21,7 @@ use form_hitbox::FormHitbox;
 use form_ingame_camera::FormIngameCamera;
 use form_modular_char::FormModularChar;
 use form_player::FormPlayer;
+use form_multiplayer::FormMultiplayer;
 use form_ui::FormUi;
 use form_world::FormWorld;
 use load_assets_plugin::LoadingAssetsPlugin;
@@ -63,9 +65,12 @@ fn main() {
         .add_plugins(LoadingAssetsPlugin)
         // Plugin to form a cube that render cool atmosphere shaders
         .add_plugins(AtmospherePlugin)
-        // Here end external plugins
+        // Here endss external plugins
+
         // Main menu and debugger menu
         .add_plugins(FormUi)
+        //Responsible for creating the whole debacle of multiplayer let sees if it fit the structure
+        .add_plugins(FormMultiplayer)
         // Contruct the world
         .add_plugins(FormWorld)
         // Formulates all the game entities to be used
