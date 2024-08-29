@@ -5,14 +5,12 @@ use bevy_rapier3d::prelude::*;
 use iyes_perf_ui::prelude::*;
 
 
-
 mod form_hitbox;
 mod form_ingame_camera;
 mod form_modular_char;
 mod form_player;
 mod form_ui;
 mod form_world;
-mod form_multiplayer;
 mod load_assets_plugin;
 
 mod player_mechanics;
@@ -45,13 +43,40 @@ pub enum MyAppState {
 
 
 
+
+mod client;
+mod server;
+mod shared;
+
+use crate::client::ExampleClientPlugin;
+use crate::server::ExampleServerPlugin;
+use clap::Parser;
+
+#[derive(Parser, PartialEq, Debug)]
+pub enum Cli {
+    /// The program will act as server
+    Server,
+    /// The program will act as a client
+    Client,
+}
+
+
 // Main running function - I am gonna have to destroy u
 fn main() {
-    App::new()
+    let cli = Cli::parse();
+
+    let mut app = App::new();
+
+    match cli {
+        Cli::Server => app.add_plugins(ExampleServerPlugin),
+        Cli::Client => app.add_plugins(ExampleClientPlugin),
+    };
+
+
+
+    app
         // Really important configs
         .insert_resource(Time::<Fixed>::from_hz(60.0))
-        // Mandatory plugins
-        .add_plugins(DefaultPlugins)
         // A simple plugin to adjust screen size
         .add_plugins(ResolutionPlugin)
         // Bevy specific diagnostics for debug

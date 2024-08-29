@@ -1,7 +1,5 @@
-//! The client plugin.
-use lightyear::server::SERVER_ADDR;
-use lightyear::shared;
-use lightyear::shared::{shared_config, SharedPlugin};
+use crate::server::SERVER_ADDR;
+use crate::shared::{shared_config, SharedPlugin};
 use bevy::prelude::*;
 pub use lightyear::prelude::client::*;
 use lightyear::prelude::*;
