@@ -10,8 +10,6 @@ pub mod sync_camera;
 
 use self::{camera_mechanics::*, setup_entities::*, sync_camera::*};
 
-use crate::form_player::*;
-
 pub struct FormIngameCamera;
 
 impl Plugin for FormIngameCamera {
@@ -35,13 +33,13 @@ impl Plugin for FormIngameCamera {
                 orbit_mouse.run_if(orbit_condition),
                 zoom_mouse.run_if(zoom_condition),
             )
-                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame))
                 .chain(),
         );
         app.add_systems(
             PostUpdate,
             sync_player_camera
-                .run_if(player_exists)
+                .run_if(in_state(MyAppState::InGame))
                 .after(PhysicsSet::StepSimulation),
         );
     }

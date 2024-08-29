@@ -19,11 +19,3 @@ impl Plugin for FormPlayer {
         app.add_systems(OnEnter(MyAppState::CharacterCreated), spawn_main_rigidbody);
     }
 }
-
-// Player condition
-pub fn player_exists(player_q: Query<Entity, With<Player>>) -> bool {
-    match player_q.get_single() {
-        Ok(_) => true,
-        Err(_) => false,
-    }
-}

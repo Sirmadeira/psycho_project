@@ -1,6 +1,14 @@
 use bevy::utils::Duration;
 use bevy::{prelude::*, time::Timer};
 
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum PlayerSystems {
+    DetectCollisions,
+    KeyboardInput,
+    MovePlayer,
+    StatePlayer,
+}
+
 #[derive(Event, Clone, Debug)]
 pub enum PlayerAction {
     Jump,
@@ -95,15 +103,15 @@ pub struct Grounded;
 pub struct StatusEffectDash {
     pub timer: Timer,
     pub played_animation: bool,
-    pub animation_name: String
+    pub animation_name: String,
 } // Example tuple with Timer and f32
 
 impl StatusEffectDash {
-    pub fn new(animation_name:String) -> Self {
+    pub fn new(animation_name: String) -> Self {
         Self {
             timer: Timer::from_seconds(1.0, TimerMode::Once),
-            played_animation:false,
-            animation_name
+            played_animation: false,
+            animation_name,
         }
     }
 }

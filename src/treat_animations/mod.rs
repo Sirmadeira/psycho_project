@@ -1,4 +1,4 @@
-use crate::MyAppState;
+use crate::{player_mechanics::lib::PlayerSystems, MyAppState};
 use bevy::prelude::*;
 
 pub struct TreatAnimations;
@@ -8,8 +8,6 @@ pub mod setup_entities;
 pub mod treat_animations;
 
 use self::{lib::*, setup_entities::*, treat_animations::*};
-
-use crate::form_player::*;
 
 impl Plugin for TreatAnimations {
     fn build(&self, app: &mut App) {
@@ -25,14 +23,11 @@ impl Plugin for TreatAnimations {
         app.add_systems(
             Update,
             (add_animation_graph, setup_state_machine)
-                .run_if(player_exists)
                 .run_if(in_state(MyAppState::CharacterCreated)),
         );
         app.add_systems(
             Update,
-            transition_animations
-                .run_if(player_exists)
-                .run_if(in_state(MyAppState::InGame)),
+            transition_animations.run_if(in_state(MyAppState::InGame)).after(PlayerSystems::StatePlayer),
         );
     }
 }
