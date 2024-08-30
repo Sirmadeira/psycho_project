@@ -1,1 +1,1 @@
-fn main() {}
+fn main() {println!("I am server")}
