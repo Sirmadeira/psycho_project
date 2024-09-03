@@ -4,7 +4,6 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use iyes_perf_ui::prelude::*;
 
-
 mod form_hitbox;
 mod form_ingame_camera;
 mod form_modular_char;
@@ -40,40 +39,9 @@ pub enum MyAppState {
     InGame,
 }
 
-
-
-
-
-mod client;
-mod server;
-mod shared;
-
-use crate::client::ExampleClientPlugin;
-use crate::server::ExampleServerPlugin;
-use clap::Parser;
-
-#[derive(Parser, PartialEq, Debug)]
-pub enum Cli {
-    /// The program will act as server
-    Server,
-    /// The program will act as a client
-    Client,
-}
-
-
 // Main running function - I am gonna have to destroy u
 fn main() {
-    let cli = Cli::parse();
-
     let mut app = App::new();
-
-    match cli {
-        Cli::Server => app.add_plugins(ExampleServerPlugin),
-        Cli::Client => app.add_plugins(ExampleClientPlugin),
-    };
-
-
-
     app
         // Really important configs
         .insert_resource(Time::<Fixed>::from_hz(60.0))
@@ -95,7 +63,6 @@ fn main() {
         // Plugin to form a cube that render cool atmosphere shaders
         .add_plugins(AtmospherePlugin)
         // Here endss external plugins
-
         // Main menu and debugger menu
         .add_plugins(FormUi)
         // Contruct the world
