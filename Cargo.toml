@@ -5,6 +5,8 @@ members = [
     "shared"
 ]
 resolver = "2"
-
-# Set the default valuecar
 default-members = ["client"]
+
+# VRUM VRUM
+[profile.release]
+opt-level = 3

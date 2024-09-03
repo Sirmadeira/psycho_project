@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.14", features = ["jpeg","multi_threaded","bevy_state","serialize"] }
+
+[lib]
+path = "src/lib.rs"

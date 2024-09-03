@@ -16,6 +16,8 @@ mod player_mechanics;
 mod resolution_plugin;
 mod treat_animations;
 
+mod protocol;
+
 use form_hitbox::FormHitbox;
 use form_ingame_camera::FormIngameCamera;
 use form_modular_char::FormModularChar;
@@ -42,7 +44,7 @@ pub enum MyAppState {
 // Main running function - I am gonna have to destroy u
 fn main() {
     let mut app = App::new();
-    app
+    app.add_plugins(DefaultPlugins)
         // Really important configs
         .insert_resource(Time::<Fixed>::from_hz(60.0))
         // A simple plugin to adjust screen size
