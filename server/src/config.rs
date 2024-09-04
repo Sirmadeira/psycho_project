@@ -3,11 +3,11 @@ use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 use lightyear::server::config::NetcodeConfig;
 use lightyear::server::plugin::ServerPlugins;
-use shared::network_shared::config::*;
-use shared::network_shared::sockets::*;
+use shared::config::*;
+use shared::sockets::*;
 
 /// Here we create the lightyear [`ServerPlugins`]
-fn build_server_plugin() -> ServerPlugins {
+pub fn build_server_plugin() -> ServerPlugins {
     // The IoConfig will specify the transport to use.
     let io = IoConfig {
         // the address specified here is the server_address, because we open a UDP socket on the server

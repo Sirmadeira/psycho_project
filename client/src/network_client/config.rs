@@ -1,8 +1,8 @@
 use bevy::prelude::default;
 use lightyear::prelude::client::*;
 use lightyear::prelude::*;
-use shared::network_shared::config::create_shared_config;
-use shared::network_shared::sockets::*;
+use shared::config::create_shared_config;
+use shared::sockets::*;
 
 // Constructs the whole client and returns a ClientPlugins, which is basically a simple plugin
 pub fn build_client() -> ClientPlugins {

@@ -5,7 +5,7 @@ members = [
     "shared"
 ]
 resolver = "2"
-default-members = ["client"]
+default-members = ["server"]
 
 # VRUM VRUM
 [profile.release]
