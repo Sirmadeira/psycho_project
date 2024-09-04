@@ -16,7 +16,7 @@ mod player_mechanics;
 mod resolution_plugin;
 mod treat_animations;
 
-mod form_network;
+mod network_client;
 
 use form_hitbox::FormHitbox;
 use form_ingame_camera::FormIngameCamera;
