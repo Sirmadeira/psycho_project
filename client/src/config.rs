@@ -1,4 +1,4 @@
-use bevy::prelude::default;
+use bevy::prelude::*;
 use lightyear::prelude::client::*;
 use lightyear::prelude::*;
 use shared::config::create_shared_config;
@@ -32,6 +32,8 @@ pub fn build_client() -> ClientPlugins {
         net: net_config,
         ..default()
     };
+
+    info!("Built client");
 
     return ClientPlugins::new(client_config);
 }

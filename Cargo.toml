@@ -5,4 +5,4 @@ members = [
     "shared"
 ]
 resolver = "2"
-default-members = ["server"]
+default-members = ["client"]

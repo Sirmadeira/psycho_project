@@ -7,9 +7,10 @@ pub fn start_client(mut commands: Commands) {
 
 /// Add some debugging text to the screen
 pub fn init(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default());
     commands.spawn(
         TextBundle::from_section(
-            "Server",
+            "Client",
             TextStyle {
                 font_size: 30.0,
                 color: Color::WHITE,
