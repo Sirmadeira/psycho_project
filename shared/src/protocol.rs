@@ -10,7 +10,7 @@
 
 use bevy::ecs::entity::MapEntities;
 use bevy::prelude::{
-    default, App, Bundle, Component, Deref, DerefMut, Entity, EntityMapper, Plugin, Vec2,
+    default, App, Bundle, Color, Component, Deref, DerefMut, Entity, EntityMapper, Plugin, Vec2,
 };
 use lightyear::client::components::ComponentSyncMode;
 use lightyear::prelude::*;
@@ -19,9 +19,28 @@ use std::ops::{Add, Mul};
 
 // A public crate - Meaning everyone in the client package can easily acess it a new type of infra I didnt know it existed
 #[derive(Bundle)]
-pub(crate) struct PlayerBundle {
+pub struct PlayerBundle {
     id: PlayerId,
     position: PlayerPosition,
+    color: PlayerColor,
+}
+
+#[derive(Component, Deserialize, Serialize, Clone, Debug, PartialEq)]
+pub struct PlayerColor(pub Color);
+
+impl PlayerBundle {
+    pub fn new(id: ClientId, position: Vec2) -> Self {
+        // Generate pseudo random color from client id.
+        let h = (((id.to_bits().wrapping_mul(30)) % 360) as f32) / 360.0;
+        let s = 0.8;
+        let l = 0.5;
+        let color = Color::hsl(h, s, l);
+        Self {
+            id: PlayerId(id),
+            position: PlayerPosition(position),
+            color: PlayerColor(color),
+        }
+    }
 }
 
 // Id of entitity

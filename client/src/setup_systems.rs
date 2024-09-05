@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use lightyear::prelude::client::ClientCommands;
-
 pub fn start_client(mut commands: Commands) {
     commands.connect_client();
 }

@@ -20,6 +20,7 @@ pub fn create_app(cli: Cli) -> App {
     app.add_plugins(build_server_plugin());
     app.add_plugins(SharedPlugin);
     app.add_systems(Startup, (init, start_server));
+    app.add_systems(Update, handle_connections);
 
     return app;
 }
