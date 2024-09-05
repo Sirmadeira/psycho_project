@@ -7,6 +7,9 @@ Since waiting for a sequel became tiresome, I've taken it upon myself to create 
 
 I aspire for this game to become both competitive and immensely enjoyable.
 
+To run server just cargo run --package server
+To run client just cargo run --package client
+ 
 ## MAIN IDEAS
   * Modular character customization - So I can later add multiple skins and utilze of ragdolls and so on. DONE
   * UI the idea of betting in your dueling skill
