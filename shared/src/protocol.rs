@@ -89,14 +89,14 @@ pub struct Message1(pub usize);
 //Inputs - Define the actions that the player is currently doing
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Direction {
-    pub(crate) up: bool,
-    pub(crate) down: bool,
-    pub(crate) left: bool,
-    pub(crate) right: bool,
+    pub up: bool,
+    pub down: bool,
+    pub left: bool,
+    pub right: bool,
 }
 
 impl Direction {
-    pub(crate) fn is_none(&self) -> bool {
+    pub fn is_none(&self) -> bool {
         !self.up && !self.down && !self.left && !self.right
     }
 }
