@@ -6,7 +6,3 @@ members = [
 ]
 resolver = "2"
 default-members = ["server"]
-
-# VRUM VRUM
-[profile.release]
-opt-level = 3

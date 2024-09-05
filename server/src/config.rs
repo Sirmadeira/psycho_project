@@ -34,5 +34,6 @@ pub fn build_server_plugin() -> ServerPlugins {
         },
         ..default()
     };
+    info!("Server is built");
     ServerPlugins::new(config)
 }
