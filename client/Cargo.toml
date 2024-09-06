@@ -15,6 +15,7 @@ bevy_atmosphere = "0.10"
 iyes_perf_ui = "0.3"
 regex = "*"
 log = { version = "*", features = ["max_level_debug", "release_max_level_warn"] }
+lightyear_examples_common = "0.17.1"
 
 # Shared talks to everyone
 shared = {path = "../shared"}
