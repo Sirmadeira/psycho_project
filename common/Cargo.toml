@@ -1,0 +1,28 @@
+[package]
+name = "common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lightyear = { version = "0.17.0", features = [
+  "steam",
+  "webtransport",
+  "websocket",
+] }
+
+# utils
+anyhow = { version = "1.0.75", features = [] }
+async-compat = "0.2.3"
+cfg-if = "1.0.0"
+clap = { version = "4.5.4", features = ["derive"] }
+crossbeam-channel = "0.5.12"
+rand = "0.8.5"
+serde = { version = "1.0.201", features = ["derive"] }
+
+# bevy
+bevy = { version = "0.14", default-features = true, features = [
+  "multi_threaded",
+  "bevy_state",
+  "serialize",
+] }
+bevy-inspector-egui = "0.25"

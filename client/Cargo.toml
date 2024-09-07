@@ -6,23 +6,30 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.14", features = ["jpeg","multi_threaded","bevy_state","serialize"] }
-bevy_rapier3d = "0.27"
-bevy_asset_loader = "0.21"
+# Bevy
+bevy = { version = "0.14.2", features = [
+  "multi_threaded",
+  "bevy_state",
+  "serialize",
+] }
 bevy-inspector-egui = "0.25"
-lightyear = "*"
-bevy_atmosphere = "0.10"
-iyes_perf_ui = "0.3"
-regex = "*"
-log = { version = "*", features = ["max_level_debug", "release_max_level_warn"] }
-lightyear_examples_common = "0.17.1"
+bevy_mod_picking = { version = "0.20", features = ["backend_bevy_ui"] }
+lightyear = {version = "0.17", features = [
+  "steam",
+  "webtransport",
+  "websocket",
+] }
 
-# Shared talks to everyone
-shared = {path = "../shared"}
 
 # Utils
 serde = { version = "1.0", features = ["derive"] }
+anyhow = { version = "1.0", features = [] }
+tracing = "0.1"
+tracing-subscriber = "0.3.17"
+rand = "0.8"
+metrics-exporter-prometheus = { version = "0.15.1", optional = true }
 
+common = {path = "../common"}
 
 # VRUM VRUM
 [profile.dev.package."*"]

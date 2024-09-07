@@ -1,8 +1,7 @@
 [workspace]
 members = [
-    "server",
     "client",
-    "shared"
+    "common"
 ]
 resolver = "2"
 default-members = ["client"]

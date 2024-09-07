@@ -1,35 +1,31 @@
-// Also known as contract - It will basically tell me what will be sent from server to client.
-// A protocol is composed of
-
-//     Input: Defines the client's input type, i.e. the different actions that a user can perform (e.g. move, jump, shoot, etc.).
-//     Message: Defines the message protocol, i.e. the messages that can be exchanged between the client and server.
-//     Components: Defines the component protocol, i.e. the list of components that can be replicated between the client and server.
-//     Channels: Defines channels that are used to send messages between the client and server.
-
-// Lets us define all player related components
+//! This file contains the shared [`Protocol`] that defines the messages that can be sent between the client and server.
+//!
+//! You will need to define the [`Components`], [`Messages`] and [`Inputs`] that make up the protocol.
+//! You can use the `#[protocol]` attribute to specify additional behaviour:
+//! - how entities contained in the message should be mapped from the remote world to the local world
+//! - how the component should be synchronized between the `Confirmed` entity and the `Predicted`/`Interpolated` entity
+use std::ops::{Add, Mul};
 
 use bevy::ecs::entity::MapEntities;
 use bevy::prelude::{
-    default, App, Bundle, Color, Component, Deref, DerefMut, Entity, EntityMapper, Plugin, Vec2,
+    default, Bundle, Color, Component, Deref, DerefMut, Entity, EntityMapper, Vec2,
 };
+use bevy::prelude::{App, Plugin};
+use serde::{Deserialize, Serialize};
+
 use lightyear::client::components::ComponentSyncMode;
 use lightyear::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::ops::{Add, Mul};
 
-// A public crate - Meaning everyone in the client package can easily acess it a new type of infra I didnt know it existed
+// Player
 #[derive(Bundle)]
-pub struct PlayerBundle {
+pub(crate) struct PlayerBundle {
     id: PlayerId,
     position: PlayerPosition,
     color: PlayerColor,
 }
 
-#[derive(Component, Deserialize, Serialize, Clone, Debug, PartialEq)]
-pub struct PlayerColor(pub Color);
-
 impl PlayerBundle {
-    pub fn new(id: ClientId, position: Vec2) -> Self {
+    pub(crate) fn new(id: ClientId, position: Vec2) -> Self {
         // Generate pseudo random color from client id.
         let h = (((id.to_bits().wrapping_mul(30)) % 360) as f32) / 360.0;
         let s = 0.8;
@@ -43,11 +39,11 @@ impl PlayerBundle {
     }
 }
 
-// Id of entitity
+// Components
+
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct PlayerId(ClientId);
 
-// Current position of player
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut)]
 pub struct PlayerPosition(Vec2);
 
@@ -67,8 +63,14 @@ impl Mul<f32> for &PlayerPosition {
     }
 }
 
-// Entities that point to other entities should always have that mapentities impl, because if they dont well you never gonna find that entity in the server
-// Because of the way replication works
+#[derive(Component, Deserialize, Serialize, Clone, Debug, PartialEq)]
+pub struct PlayerColor(pub(crate) Color);
+
+// Example of a component that contains an entity.
+// This component, when replicated, needs to have the inner entity mapped from the Server world
+// to the client World.
+// You will need to derive the `MapEntities` trait for the component, and register
+// app.add_map_entities<PlayerParent>() in your protocol
 #[derive(Component, Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct PlayerParent(Entity);
 
@@ -78,25 +80,28 @@ impl MapEntities for PlayerParent {
     }
 }
 
-// Defines channels that are used to send messages between the client and server.
+// Channels
+
 #[derive(Channel)]
 pub struct Channel1;
 
-// Defines the message protocol, i.e. the messages that can be exchanged between the client and server.
+// Messages
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Message1(pub usize);
 
-//Inputs - Define the actions that the player is currently doing
+// Inputs
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Direction {
-    pub up: bool,
-    pub down: bool,
-    pub left: bool,
-    pub right: bool,
+    pub(crate) up: bool,
+    pub(crate) down: bool,
+    pub(crate) left: bool,
+    pub(crate) right: bool,
 }
 
 impl Direction {
-    pub fn is_none(&self) -> bool {
+    pub(crate) fn is_none(&self) -> bool {
         !self.up && !self.down && !self.left && !self.right
     }
 }
@@ -106,12 +111,11 @@ pub enum Inputs {
     Direction(Direction),
     Delete,
     Spawn,
-    // None so server can distinguishe from lost packets and none inputs
     None,
 }
 
-// Plugin struct that will tel me the whole "contract"
-pub struct ProtocolPlugin;
+// Protocol
+pub(crate) struct ProtocolPlugin;
 
 impl Plugin for ProtocolPlugin {
     fn build(&self, app: &mut App) {
@@ -119,14 +123,19 @@ impl Plugin for ProtocolPlugin {
         app.register_message::<Message1>(ChannelDirection::Bidirectional);
         // inputs
         app.add_plugins(InputPlugin::<Inputs>::default());
-        // Tell me exactly what components will be replicated from server to client- Since this is server authoritive
+        // components
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
-            .add_prediction(client::ComponentSyncMode::Once)
-            .add_interpolation(client::ComponentSyncMode::Once);
+            .add_prediction(ComponentSyncMode::Once)
+            .add_interpolation(ComponentSyncMode::Once);
+
         app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full)
             .add_interpolation(ComponentSyncMode::Full)
             .add_linear_interpolation_fn();
+
+        app.register_component::<PlayerColor>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once)
+            .add_interpolation(ComponentSyncMode::Once);
         // channels
         app.add_channel::<Channel1>(ChannelSettings {
             mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
