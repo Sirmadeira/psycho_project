@@ -7,8 +7,10 @@ use bevy_mod_picking::prelude::{Click, On, Pointer};
 use lightyear::client::input::native::InputSystemSet;
 pub use lightyear::prelude::client::*;
 use lightyear::prelude::*;
+use load_assets::LoadingAssetsPlugin;
 
 mod create_char;
+mod load_assets;
 
 use self::create_char::CreateCharPlugin;
 use crate::shared;
@@ -25,6 +27,8 @@ impl Plugin for ExampleClientPlugin {
             (handle_connection, handle_disconnection).after(MainSet::Receive),
         );
 
+        // Self made plugins
+        app.add_plugins(LoadingAssetsPlugin);
         app.add_plugins(CreateCharPlugin);
 
         // Inputs have to be buffered in the FixedPreUpdate schedule
@@ -47,6 +51,13 @@ impl Plugin for ExampleClientPlugin {
         );
         app.add_systems(OnEnter(NetworkingState::Disconnected), on_disconnect);
     }
+}
+
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
+pub enum MyClientState {
+    #[default]
+    LoadingAssets,
+    Loaded,
 }
 
 /// Component to identify the text displaying the client id

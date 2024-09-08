@@ -26,7 +26,11 @@ impl Plugin for SharedPlugin {
 
 // Common initialization both  in server and client
 fn init(mut commands: Commands) {
-    commands.spawn(Camera3dBundle::default());
+    let common_camera = Camera3dBundle {
+        transform: Transform::from_xyz(2.3, 1.1, 0.0),
+        ..Default::default()
+    };
+    commands.spawn(common_camera);
 }
 
 // This system defines how we update the player's positions when we receive an input

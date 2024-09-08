@@ -13,6 +13,7 @@ bevy = { version = "0.14.2", features = [
   "serialize",
 ] }
 bevy-inspector-egui = "0.25"
+bevy_asset_loader = "0.21"
 bevy_mod_picking = { version = "0.20", features = ["backend_bevy_ui"] }
 lightyear = {version = "0.17", features = [
   "steam",

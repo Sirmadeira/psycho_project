@@ -7,12 +7,12 @@ pub struct CreateCharPlugin;
 
 impl Plugin for CreateCharPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, create_character);
+        app.add_systems(Update, naming_player);
     }
 }
 
 /// Example system to handle ComponentInsertEvent events
-pub(crate) fn create_character(
+pub(crate) fn naming_player(
     player_id: Query<&PlayerId>,
     mut reader: EventReader<ComponentInsertEvent<PlayerId>>,
     mut commands: Commands,
@@ -22,7 +22,7 @@ pub(crate) fn create_character(
             "Creating character according to insertion of component sent from server: {:?}",
             event.entity()
         );
-
+        // Insert identifier for egui
         match player_id.get(event.entity()) {
             Ok(player_id) => {
                 let client_id = player_id.0;
