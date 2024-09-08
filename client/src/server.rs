@@ -10,8 +10,8 @@ use bevy::prelude::*;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
-use crate::protocol::*;
 use crate::shared;
+use crate::shared::protocol::*;
 
 pub struct ExampleServerPlugin;
 
@@ -54,7 +54,6 @@ pub(crate) fn handle_connections(
 ) {
     for connection in connections.read() {
         let client_id = connection.client_id;
-        // server and client are running in the same app, no need to replicate to the local client
         let replicate = Replicate {
             sync: SyncTarget {
                 prediction: NetworkTarget::Single(client_id),
@@ -66,7 +65,10 @@ pub(crate) fn handle_connections(
             },
             ..default()
         };
-        let entity = commands.spawn((PlayerBundle::new(client_id, Vec2::ZERO), replicate));
+
+        let name = Name::new(format!("Player {:?}", client_id));
+
+        let entity = commands.spawn((PlayerBundle::new(client_id, Vec2::ZERO), name, replicate));
         info!("Create entity {:?} for client {:?}", entity.id(), client_id);
     }
 }

@@ -41,9 +41,11 @@ impl PlayerBundle {
 
 // Components
 
+// Marker component tells me exactly who connected, which player and so on. Via it is id also know as ip
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq)]
-pub struct PlayerId(ClientId);
+pub struct PlayerId(pub ClientId);
 
+// Player position
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut)]
 pub struct PlayerPosition(Vec2);
 
@@ -63,6 +65,7 @@ impl Mul<f32> for &PlayerPosition {
     }
 }
 
+// Still apply
 #[derive(Component, Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct PlayerColor(pub(crate) Color);
 

@@ -7,7 +7,8 @@ use bevy::prelude::*;
 use bevy::render::RenderPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 
-use crate::protocol::*;
+pub mod protocol;
+use self::protocol::*;
 
 #[derive(Clone)]
 pub struct SharedPlugin;
@@ -19,13 +20,13 @@ impl Plugin for SharedPlugin {
         if app.is_plugin_added::<RenderPlugin>() {
             app.add_plugins(DefaultPickingPlugins);
             app.add_systems(Startup, init);
-            app.add_systems(Update, draw_boxes);
         }
     }
 }
 
+// Common initialization both  in server and client
 fn init(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera3dBundle::default());
 }
 
 // This system defines how we update the player's positions when we receive an input
@@ -50,15 +51,15 @@ pub(crate) fn shared_movement_behaviour(mut position: Mut<PlayerPosition>, input
     }
 }
 
-/// System that draws the boxes of the player positions.
-/// The components should be replicated from the server to the client
-pub(crate) fn draw_boxes(mut gizmos: Gizmos, players: Query<(&PlayerPosition, &PlayerColor)>) {
-    for (position, color) in &players {
-        gizmos.rect(
-            Vec3::new(position.x, position.y, 0.0),
-            Quat::IDENTITY,
-            Vec2::ONE * 50.0,
-            color.0,
-        );
-    }
-}
+// /// System that draws the boxes of the player positions.
+// /// The components should be replicated from the server to the client
+// pub(crate) fn draw_boxes(mut gizmos: Gizmos, players: Query<(&PlayerPosition, &PlayerColor)>) {
+//     for (position, color) in &players {
+//         gizmos.rect(
+//             Vec3::new(position.x, position.y, 0.0),
+//             Quat::IDENTITY,
+//             Vec2::ONE * 50.0,
+//             color.0,
+//         );
+//     }
+// }

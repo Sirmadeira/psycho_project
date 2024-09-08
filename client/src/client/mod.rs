@@ -1,9 +1,5 @@
 //! The client plugin.
-//! The client will be responsible for:
-//! - connecting to the server at Startup
-//! - sending inputs to the server
-//! - applying inputs to the locally predicted player (for prediction to work, inputs have to be applied to both the
-//! predicted entity and the server entity)
+//! This plugin will act as the entire client meaning every single plugin that relies on the user computer is gonna run here
 
 use bevy::prelude::*;
 use bevy_mod_picking::picking_core::Pickable;
@@ -12,10 +8,13 @@ use lightyear::client::input::native::InputSystemSet;
 pub use lightyear::prelude::client::*;
 use lightyear::prelude::*;
 
-use crate::protocol::Direction;
-use crate::protocol::*;
-use crate::shared;
+mod create_char;
 
+use self::create_char::CreateCharPlugin;
+use crate::shared;
+use crate::shared::protocol::Direction;
+use crate::shared::protocol::*;
+// Centralization of plugins
 pub struct ExampleClientPlugin;
 
 impl Plugin for ExampleClientPlugin {
@@ -25,6 +24,9 @@ impl Plugin for ExampleClientPlugin {
             PreUpdate,
             (handle_connection, handle_disconnection).after(MainSet::Receive),
         );
+
+        app.add_plugins(CreateCharPlugin);
+
         // Inputs have to be buffered in the FixedPreUpdate schedule
         app.add_systems(
             FixedPreUpdate,
