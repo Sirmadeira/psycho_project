@@ -1,22 +1,11 @@
-//! This file contains the shared [`Protocol`] that defines the messages that can be sent between the client and server.
-//!
-//! You will need to define the [`Components`], [`Messages`] and [`Inputs`] that make up the protocol.
-//! You can use the `#[protocol]` attribute to specify additional behaviour:
-//! - how entities contained in the message should be mapped from the remote world to the local world
-//! - how the component should be synchronized between the `Confirmed` entity and the `Predicted`/`Interpolated` entity
 use std::ops::{Add, Mul};
 
 use bevy::ecs::entity::MapEntities;
-use bevy::prelude::{
-    default, Bundle, Color, Component, Deref, DerefMut, Entity, EntityMapper, Vec2,
-};
-use bevy::prelude::{App, Plugin};
+use bevy::prelude::{Bundle, Color, Component, Deref, DerefMut, Entity, EntityMapper, Vec2};
+use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use lightyear::client::components::ComponentSyncMode;
-use lightyear::prelude::*;
-
-// Player
+// Player bundler - Create the matrix of our player it give me a serious of needed info
 #[derive(Bundle)]
 pub(crate) struct PlayerBundle {
     id: PlayerId,
@@ -65,7 +54,7 @@ impl Mul<f32> for &PlayerPosition {
     }
 }
 
-// Still apply
+// Player color TODO - CHANGE IT SO EACH CLIENT HAS AN INDIVIDUAL COLOR
 #[derive(Component, Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct PlayerColor(pub(crate) Color);
 
@@ -83,18 +72,15 @@ impl MapEntities for PlayerParent {
     }
 }
 
-// Channels
-
+// Channels - LOcal info utilized
 #[derive(Channel)]
 pub struct Channel1;
 
-// Messages
-
+// Messages utilized in player
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Message1(pub usize);
 
-// Inputs
-
+// Inputs - Input buffers
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Direction {
     pub(crate) up: bool,
@@ -115,34 +101,4 @@ pub enum Inputs {
     Delete,
     Spawn,
     None,
-}
-
-// Protocol
-pub(crate) struct ProtocolPlugin;
-
-impl Plugin for ProtocolPlugin {
-    fn build(&self, app: &mut App) {
-        // messages
-        app.register_message::<Message1>(ChannelDirection::Bidirectional);
-        // inputs
-        app.add_plugins(InputPlugin::<Inputs>::default());
-        // components
-        app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once)
-            .add_interpolation(ComponentSyncMode::Once);
-
-        app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Full)
-            .add_interpolation(ComponentSyncMode::Full)
-            .add_linear_interpolation_fn();
-
-        app.register_component::<PlayerColor>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once)
-            .add_interpolation(ComponentSyncMode::Once);
-        // channels
-        app.add_channel::<Channel1>(ChannelSettings {
-            mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
-            ..default()
-        });
-    }
 }

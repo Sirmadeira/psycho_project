@@ -8,7 +8,8 @@ use bevy::render::RenderPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 
 pub mod protocol;
-use self::protocol::*;
+use self::protocol::player_structs::*;
+use self::protocol::ProtocolPlugin;
 
 #[derive(Clone)]
 pub struct SharedPlugin;
@@ -26,7 +27,7 @@ impl Plugin for SharedPlugin {
 
 // Common initialization both  in server and client
 fn init(mut commands: Commands) {
-    let common_camera = Camera3dBundle {
+    let common_camera = Camera2dBundle {
         transform: Transform::from_xyz(2.3, 1.1, 0.0),
         ..Default::default()
     };
@@ -55,8 +56,8 @@ pub(crate) fn shared_movement_behaviour(mut position: Mut<PlayerPosition>, input
     }
 }
 
-// /// System that draws the boxes of the player positions.
-// /// The components should be replicated from the server to the client
+// System that draws the boxes of the player positions.
+// The components should be replicated from the server to the client
 // pub(crate) fn draw_boxes(mut gizmos: Gizmos, players: Query<(&PlayerPosition, &PlayerColor)>) {
 //     for (position, color) in &players {
 //         gizmos.rect(

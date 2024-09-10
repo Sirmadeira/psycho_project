@@ -14,22 +14,23 @@ mod load_assets;
 
 use self::create_char::CreateCharPlugin;
 use crate::shared;
-use crate::shared::protocol::Direction;
-use crate::shared::protocol::*;
+use crate::shared::protocol::player_structs::Direction;
+use crate::shared::protocol::player_structs::*;
+
 // Centralization of plugins
 pub struct ExampleClientPlugin;
 
 impl Plugin for ExampleClientPlugin {
     fn build(&self, app: &mut App) {
+        // Self made plugins
+        app.add_plugins(LoadingAssetsPlugin);
+        app.add_plugins(CreateCharPlugin);
+
         app.add_systems(Startup, spawn_connect_button);
         app.add_systems(
             PreUpdate,
             (handle_connection, handle_disconnection).after(MainSet::Receive),
         );
-
-        // Self made plugins
-        app.add_plugins(LoadingAssetsPlugin);
-        app.add_plugins(CreateCharPlugin);
 
         // Inputs have to be buffered in the FixedPreUpdate schedule
         app.add_systems(

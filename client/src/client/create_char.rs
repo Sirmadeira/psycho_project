@@ -1,4 +1,4 @@
-use crate::shared::protocol::*;
+use crate::shared::protocol::player_structs::*;
 use bevy::prelude::*;
 
 use lightyear::client::events::*;

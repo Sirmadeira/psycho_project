@@ -11,7 +11,7 @@ use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
 use crate::shared;
-use crate::shared::protocol::*;
+use crate::shared::protocol::player_structs::*;
 
 pub struct ExampleServerPlugin;
 
