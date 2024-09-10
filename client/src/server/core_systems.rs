@@ -46,7 +46,7 @@ pub(crate) fn spawn_player_entity(
     commands: &mut Commands,
     client_id: ClientId,
     dedicated_server: bool,
-) {
+) -> Entity {
     let replicate = Replicate {
         sync: SyncTarget {
             prediction: NetworkTarget::Single(client_id),
@@ -68,6 +68,7 @@ pub(crate) fn spawn_player_entity(
 
     let entity = commands.spawn((PlayerBundle::new(client_id, Vec2::ZERO), name, replicate));
     info!("Create entity {:?} for client {:?}", entity.id(), client_id);
+    return entity.id();
 }
 
 /// Handle client disconnections: we want to despawn every entity that was controlled by that client.

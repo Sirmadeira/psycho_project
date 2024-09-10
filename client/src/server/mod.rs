@@ -1,4 +1,4 @@
-use crate::shared::protocol::{lobby_structs::Lobbies, player_structs::*};
+use crate::shared::protocol::lobby_structs::Lobbies;
 use bevy::prelude::*;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
@@ -19,11 +19,19 @@ impl Plugin for ExampleServerPlugin {
         app.add_systems(Startup, (init, start_server));
         // the physics/FixedUpdates systems that consume inputs should be run in this set
         app.add_systems(FixedUpdate, movement);
+        app.add_systems(Update, send_message);
+
+        // What happens when yopu connects
+        app.add_systems(Update, (handle_connections).run_if(is_host_server));
+        // What happens when any player discontects
         app.add_systems(
             Update,
             handle_disconnections.run_if(in_state(NetworkingState::Started)),
         );
-        app.add_systems(Update, (handle_connections).run_if(is_host_server));
-        app.add_systems(Update, send_message);
+        // Systems that update general lobbies resource
+        app.add_systems(
+            Update,
+            (handle_lobby_join, handle_lobby_exit, handle_start_game).run_if(is_mode_separate),
+        );
     }
 }
