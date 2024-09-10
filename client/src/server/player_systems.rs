@@ -1,36 +1,18 @@
-//! The server side of the example.
-//! It is possible (and recommended) to run the server in headless mode (without any rendering plugins).
-//!
-//! The server will:
-//! - spawn a new player entity for each client that connects
-//! - read inputs from the clients and move the player entities accordingly
-//!
-//! Lightyear will handle the replication of entities automatically if you add a `Replicate` component to them.
 use bevy::prelude::*;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
-use crate::shared;
 use crate::shared::protocol::player_structs::*;
 
-pub struct ExampleServerPlugin;
-
-impl Plugin for ExampleServerPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (init, start_server));
-        // the physics/FixedUpdates systems that consume inputs should be run in this set
-        app.add_systems(FixedUpdate, movement);
-        app.add_systems(Update, (send_message, handle_connections));
-    }
-}
+use crate::shared;
 
 /// Start the server
-fn start_server(mut commands: Commands) {
+pub(crate) fn start_server(mut commands: Commands) {
     commands.start_server();
 }
 
 /// Add some debugging text to the screen
-fn init(mut commands: Commands) {
+pub(crate) fn init(mut commands: Commands) {
     commands.spawn(
         TextBundle::from_section(
             "Server",
