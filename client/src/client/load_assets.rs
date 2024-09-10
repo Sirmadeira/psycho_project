@@ -4,16 +4,16 @@ use bevy_asset_loader::prelude::*;
 use lightyear::prelude::client::Predicted;
 
 pub struct LoadingAssetsPlugin;
-use crate::client::MyClientState;
+use crate::client::MyAppState;
 
 impl Plugin for LoadingAssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<MyClientState>().add_loading_state(
-            LoadingState::new(MyClientState::LoadingAssets)
-                .continue_to_state(MyClientState::Loaded)
+        app.init_state::<MyAppState>().add_loading_state(
+            LoadingState::new(MyAppState::LoadingAssets)
+                .continue_to_state(MyAppState::Loaded)
                 .load_collection::<ClientCollection>(),
         );
-        app.add_systems(OnEnter(MyClientState::Loaded), spawn_character);
+        app.add_systems(OnEnter(MyAppState::Loaded), spawn_character);
     }
 }
 

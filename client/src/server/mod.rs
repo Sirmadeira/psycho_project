@@ -6,9 +6,8 @@ use lightyear::prelude::*;
 mod lobby_systems;
 
 mod core_systems;
-mod player_systems;
 
-use self::{core_systems::*, lobby_systems::*, player_systems::*};
+use self::{core_systems::*, lobby_systems::*};
 
 pub struct ExampleServerPlugin;
 
@@ -17,9 +16,6 @@ impl Plugin for ExampleServerPlugin {
         app.insert_resource(Lobbies::default());
         app.register_type::<Lobbies>();
         app.add_systems(Startup, (init, start_server));
-        // the physics/FixedUpdates systems that consume inputs should be run in this set
-        app.add_systems(FixedUpdate, movement);
-        app.add_systems(Update, send_message);
 
         // What happens when yopu connects
         app.add_systems(Update, (handle_connections).run_if(is_host_server));

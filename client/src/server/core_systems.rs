@@ -66,7 +66,7 @@ pub(crate) fn spawn_player_entity(
 
     let name = Name::new(format!("Player {:?}", client_id));
 
-    let entity = commands.spawn((PlayerBundle::new(client_id, Vec2::ZERO), name, replicate));
+    let entity = commands.spawn((PlayerBundle::new(client_id), name, replicate));
     info!("Create entity {:?} for client {:?}", entity.id(), client_id);
     return entity.id();
 }

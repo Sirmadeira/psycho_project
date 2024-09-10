@@ -8,7 +8,6 @@ use bevy::render::RenderPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 
 pub mod protocol;
-use self::protocol::player_structs::*;
 use self::protocol::ProtocolPlugin;
 
 #[derive(Clone)]
@@ -33,38 +32,3 @@ fn init(mut commands: Commands) {
     };
     commands.spawn(common_camera);
 }
-
-// This system defines how we update the player's positions when we receive an input
-pub(crate) fn shared_movement_behaviour(mut position: Mut<PlayerPosition>, input: &Inputs) {
-    const MOVE_SPEED: f32 = 10.0;
-    match input {
-        Inputs::Direction(direction) => {
-            if direction.up {
-                position.y += MOVE_SPEED;
-            }
-            if direction.down {
-                position.y -= MOVE_SPEED;
-            }
-            if direction.left {
-                position.x -= MOVE_SPEED;
-            }
-            if direction.right {
-                position.x += MOVE_SPEED;
-            }
-        }
-        _ => {}
-    }
-}
-
-// System that draws the boxes of the player positions.
-// The components should be replicated from the server to the client
-// pub(crate) fn draw_boxes(mut gizmos: Gizmos, players: Query<(&PlayerPosition, &PlayerColor)>) {
-//     for (position, color) in &players {
-//         gizmos.rect(
-//             Vec3::new(position.x, position.y, 0.0),
-//             Quat::IDENTITY,
-//             Vec2::ONE * 50.0,
-//             color.0,
-//         );
-//     }
-// }

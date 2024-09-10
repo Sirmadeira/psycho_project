@@ -17,23 +17,11 @@ impl Plugin for ProtocolPlugin {
         //Resources
         app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);
         // messages
-        app.register_message::<Message1>(ChannelDirection::Bidirectional);
         app.register_message::<StartGame>(ChannelDirection::Bidirectional);
         app.register_message::<JoinLobby>(ChannelDirection::ClientToServer);
         app.register_message::<ExitLobby>(ChannelDirection::ClientToServer);
-        // inputs
-        app.add_plugins(InputPlugin::<Inputs>::default());
         // components
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once)
-            .add_interpolation(ComponentSyncMode::Once);
-
-        app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Full)
-            .add_interpolation(ComponentSyncMode::Full)
-            .add_linear_interpolation_fn();
-
-        app.register_component::<PlayerColor>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
         // channels
