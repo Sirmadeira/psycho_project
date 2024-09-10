@@ -29,6 +29,8 @@ pub(crate) fn init(mut commands: Commands) {
             ..default()
         }),
     );
+    // Camera to avoid boring warning
+    commands.spawn(Camera2dBundle::default());
 }
 
 // Handles connections

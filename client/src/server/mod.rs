@@ -5,9 +5,9 @@ use lightyear::prelude::*;
 
 mod lobby_systems;
 
-mod core_systems;
+mod server_systems;
 
-use self::{core_systems::*, lobby_systems::*};
+use self::{server_systems::*, lobby_systems::*};
 
 pub struct ExampleServerPlugin;
 
@@ -17,9 +17,9 @@ impl Plugin for ExampleServerPlugin {
         app.register_type::<Lobbies>();
         app.add_systems(Startup, (init, start_server));
 
-        // What happens when yopu connects
+        // What happens when you connects to server
         app.add_systems(Update, (handle_connections).run_if(is_host_server));
-        // What happens when any player discontects
+        // What happens when any player disconnects
         app.add_systems(
             Update,
             handle_disconnections.run_if(in_state(NetworkingState::Started)),

@@ -5,7 +5,6 @@
 //! mispredictions/rollbacks.
 use bevy::prelude::*;
 use bevy::render::RenderPlugin;
-use bevy_mod_picking::DefaultPickingPlugins;
 
 pub mod protocol;
 use self::protocol::ProtocolPlugin;
@@ -17,18 +16,5 @@ impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
         // the protocol needs to be shared between the client and server
         app.add_plugins(ProtocolPlugin);
-        if app.is_plugin_added::<RenderPlugin>() {
-            app.add_plugins(DefaultPickingPlugins);
-            app.add_systems(Startup, init);
-        }
     }
-}
-
-// Common initialization both  in server and client
-fn init(mut commands: Commands) {
-    let common_camera = Camera2dBundle {
-        transform: Transform::from_xyz(2.3, 1.1, 0.0),
-        ..Default::default()
-    };
-    commands.spawn(common_camera);
 }

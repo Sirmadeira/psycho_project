@@ -1,3 +1,5 @@
+//! Once loaded we will continue to two states ui and loaded
+
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_asset_loader::prelude::*;
@@ -10,17 +12,16 @@ impl Plugin for LoadingAssetsPlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<MyAppState>().add_loading_state(
             LoadingState::new(MyAppState::LoadingAssets)
-                .continue_to_state(MyAppState::Loaded)
-                .load_collection::<ClientCollection>(),
+                .continue_to_state(MyAppState::MainMenu)
+                .load_collection::<ClientCharCollection>(),
         );
-        app.add_systems(OnEnter(MyAppState::Loaded), spawn_character);
     }
 }
 
 // Resource for easily acessing client based assets, which are mostly things like character world and so on. Each field in the connect is gonna be associate with something.
 #[derive(AssetCollection, Resource)]
-pub struct ClientCollection {
-    #[asset(paths("character_mesh.glb"), collection(typed, mapped))]
+pub struct ClientCharCollection {
+    #[asset(paths("characters/character_mesh.glb"), collection(typed, mapped))]
     pub gltf_files: HashMap<String, Handle<Gltf>>,
 }
 
@@ -42,7 +43,7 @@ impl Default for ConfigModularCharacters {
 // This will spawn our main characters according TO THE AMOUNT OF ENTITIES, IN LOBBY. TODO LOBBY
 pub(crate) fn spawn_character(
     player: Query<Entity, With<Predicted>>,
-    client_collection: Res<ClientCollection>,
+    client_collection: Res<ClientCharCollection>,
     assets_gltf: Res<Assets<Gltf>>,
     mut commands: Commands,
 ) {
