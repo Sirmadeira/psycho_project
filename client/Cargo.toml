@@ -30,7 +30,3 @@ rand = "0.8"
 metrics-exporter-prometheus = { version = "0.15.1", optional = true }
 
 common = {path = "../common"}
-
-# VRUM VRUM
-[profile.dev.package."*"]
-opt-level = 3

@@ -121,12 +121,12 @@ pub fn spawn_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         });
 
                     parent
-                        .spawn(ButtonBundle {
+                        .spawn((ButtonBundle {
                             style: button_style.clone(),
                             border_color: BorderColor(Color::BLACK),
                             background_color: NORMAL_BUTTON.into(),
                             ..default()
-                        })
+                        },))
                         .with_children(|parent| {
                             parent.spawn(TextBundle::from_section(
                                 "SETTINGS",
@@ -135,12 +135,15 @@ pub fn spawn_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         });
 
                     parent
-                        .spawn(ButtonBundle {
-                            style: button_style.clone(),
-                            border_color: BorderColor(Color::BLACK),
-                            background_color: NORMAL_BUTTON.into(),
-                            ..default()
-                        })
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                border_color: BorderColor(Color::BLACK),
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                            ExitButton,
+                        ))
                         .with_children(|parent| {
                             parent
                                 .spawn(TextBundle::from_section("QUIT", button_text_style.clone()));

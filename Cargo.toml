@@ -6,3 +6,5 @@ members = [
 resolver = "2"
 default-members = ["client"]
 
+[profile.dev.package."*"]
+opt-level = 3
