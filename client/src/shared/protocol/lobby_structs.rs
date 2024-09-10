@@ -3,7 +3,7 @@ use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 
 // All lobbies currently active
-#[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+#[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Default, Reflect)]
 pub struct Lobbies {
     pub lobbies: Vec<Lobby>,
 }
@@ -40,7 +40,7 @@ impl Lobbies {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default, Reflect)]
 pub struct Lobby {
     // List of lobby players
     pub players: Vec<ClientId>,
