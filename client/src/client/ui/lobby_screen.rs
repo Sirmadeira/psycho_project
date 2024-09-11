@@ -27,7 +27,6 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                 style: Style {
                     width: Val::Percent(100.0),
                     height: Val::Percent(100.0),
-                    align_items: AlignItems::Center,
                     justify_content: JustifyContent::SpaceBetween,
                     ..default()
                 },
@@ -45,6 +44,7 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                         justify_content: JustifyContent::Center,
                         ..default()
                     },
+                    background_color: Color::srgb(0.65, 0.65, 0.65).into(),
                     ..default()
                 })
                 .with_children(|parent| {
