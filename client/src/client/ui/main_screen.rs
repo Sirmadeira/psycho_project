@@ -133,7 +133,7 @@ pub fn start_button(
     mut commands: Commands,
 ) {
     for (interaction, mut color, mut border_color, children) in &mut interaction_query {
-        // Grabs entity text button
+        // Grabs first child of start button in this case the text bundle.
         let mut text = text_query.get_mut(children[0]).unwrap();
         match *interaction {
             Interaction::Pressed => {
