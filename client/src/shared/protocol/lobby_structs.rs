@@ -12,10 +12,8 @@ pub struct Lobbies {
 pub struct Lobby {
     // List of lobby players
     pub players: Vec<ClientId>,
-    /// If true, the lobby is in game. If not, it is still in lobby mode
-    pub in_game: bool,
+    pub lobby_id: usize,
 }
-
 // Messages
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct StartGame {

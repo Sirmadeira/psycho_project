@@ -8,8 +8,6 @@ use bevy::utils::HashMap;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
-use rand::seq::IteratorRandom;
-
 // Start the server
 pub(crate) fn start_server(mut commands: Commands) {
     // Replicates to all channels
@@ -22,7 +20,14 @@ pub(crate) fn start_server(mut commands: Commands) {
 #[derive(Resource, Default)]
 pub struct PlayerAmount {
     quantity: u32,
-    client_ids: HashMap<ClientId, bool>,
+}
+
+#[derive(Component, Default, Clone)]
+pub struct PlayerState {
+    // If in lobby or not
+    searching: bool,
+    // If in game or not
+    in_game: bool,
 }
 
 /// Add some debugging text to the screen
@@ -53,39 +58,51 @@ pub(crate) fn handle_connections(
     mut commands: Commands,
 ) {
     for connection in connections.read() {
-        spawn_player_entity(&mut commands, connection.client_id, false);
+        info!("Settin their status to searching for matchmaking");
+        let player_state = PlayerState {
+            searching: true,
+            in_game: false,
+        };
+
+        spawn_player_entity(
+            &mut commands,
+            connection.client_id,
+            false,
+            player_state.clone(),
+        );
         current_players.quantity += 1;
         info!("Current players online is {}", current_players.quantity);
-        current_players
-            .client_ids
-            .insert(connection.client_id, true);
     }
 }
 
-// Creates a lobby after two players are connected automatically
+// Creates a lobby if two players are actively searching
 pub fn create_lobby(
     mut lobbies: ResMut<Lobbies>,
-    current_players: ResMut<PlayerAmount>,
-    mut connection_manager: ResMut<ConnectionManager>,
+    mut query: Query<(&PlayerId, &mut PlayerState), With<PlayerState>>,
 ) {
-    let mut lobby = Lobby::default();
+    // Client id searching
+    let mut clients_searching = Vec::default();
 
-    let rng = &mut rand::thread_rng();
+    let mut player_states = Vec::default();
 
-    let sample = current_players.client_ids.keys();
-    if current_players.quantity % 2 == 0 {
-        let vec = sample.choose_multiple(rng, 2);
-        lobby.players.extend(vec.clone());
-        lobby.in_game = true;
-        info("Creating lobby");
+    // Loop through find total of players searching
+    for (client_id, player_state) in query.iter_mut() {
+        if player_state.searching == true {
+            clients_searching.push(client_id.0);
+            player_states.push(player_state);
+        }
+    }
+
+    // If two are found make it so creates a lobby and changer their state
+    if clients_searching.len() % 2 == 0 && clients_searching.len() != 0 {
+        info!("Creating lobby");
+        let mut lobby = Lobby::default();
+        let lobby_id = lobbies.lobbies.len();
+        lobby.lobby_id = lobby_id;
         lobbies.lobbies.push(lobby);
-
-        let lobby_id = lobbies.lobbies.len() + 1;
-
-        for client_id in vec.iter() {
-            let _ = connection_manager
-                .send_message::<Channel1, StartGame>(**client_id, &mut StartGame { lobby_id });
-            info!("Starting game");
+        for state in player_states.iter_mut() {
+            state.in_game = true;
+            state.searching = false;
         }
     }
 }
@@ -95,6 +112,7 @@ pub(crate) fn spawn_player_entity(
     commands: &mut Commands,
     client_id: ClientId,
     dedicated_server: bool,
+    player_state: PlayerState,
 ) -> Entity {
     let replicate = Replicate {
         sync: SyncTarget {
@@ -115,7 +133,7 @@ pub(crate) fn spawn_player_entity(
 
     let name = Name::new(format!("Player {:?}", client_id));
 
-    let entity = commands.spawn((PlayerBundle::new(client_id), name, replicate));
+    let entity = commands.spawn((PlayerBundle::new(client_id), name, replicate, player_state));
     info!("Create entity {:?} for client {:?}", entity.id(), client_id);
     return entity.id();
 }

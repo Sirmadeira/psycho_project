@@ -2,8 +2,9 @@
 //! This plugin will act as the entire client meaning every single plugin that relies on the user computer is gonna run here
 
 use bevy::prelude::*;
+use lightyear::shared::events::components::MessageEvent;
 
-use crate::client::ui::UiPlugin;
+use crate::{client::ui::UiPlugin, shared::protocol::lobby_structs::StartGame};
 
 mod create_char;
 mod load_assets;
@@ -19,6 +20,7 @@ impl Plugin for ExampleClientPlugin {
         // Self made plugins
         app.add_plugins(LoadingAssetsPlugin);
         app.add_plugins(UiPlugin);
+        app.add_systems(Update, start_game);
     }
 }
 
@@ -28,4 +30,11 @@ pub enum MyAppState {
     LoadingAssets,
     MainMenu,
     Lobby,
+}
+
+pub fn start_game(mut events: EventReader<MessageEvent<StartGame>>) {
+    for event in events.read() {
+        let content = event.message();
+        info!("Start game {}", content.lobby_id);
+    }
 }
