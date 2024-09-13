@@ -4,7 +4,6 @@
 //! The simulation logic (movement, etc.) should be shared between client and server to guarantee that there won't be
 //! mispredictions/rollbacks.
 use bevy::prelude::*;
-use bevy::render::RenderPlugin;
 
 pub mod protocol;
 use self::protocol::ProtocolPlugin;

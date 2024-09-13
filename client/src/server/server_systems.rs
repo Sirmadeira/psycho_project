@@ -3,8 +3,13 @@
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
+
+use rand::seq::IteratorRandom;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 // Start the server
 pub(crate) fn start_server(mut commands: Commands) {
@@ -12,6 +17,13 @@ pub(crate) fn start_server(mut commands: Commands) {
 
     commands.replicate_resource::<Lobbies, Channel1>(NetworkTarget::All);
     commands.start_server();
+}
+
+// Gives me the current player amount
+#[derive(Resource, Default)]
+pub struct PlayerAmount {
+    quantity: u32,
+    client_ids: HashMap<ClientId, bool>,
 }
 
 /// Add some debugging text to the screen
@@ -30,17 +42,38 @@ pub(crate) fn init(mut commands: Commands) {
             ..default()
         }),
     );
+
     // Camera to avoid boring warning
     commands.spawn(Camera2dBundle::default());
 }
 
 // Handles connections
 pub(crate) fn handle_connections(
+    mut current_players: ResMut<PlayerAmount>,
     mut connections: EventReader<ConnectEvent>,
     mut commands: Commands,
 ) {
     for connection in connections.read() {
         spawn_player_entity(&mut commands, connection.client_id, false);
+        current_players.quantity += 1;
+        info!("Current players online is {}", current_players.quantity);
+        current_players
+            .client_ids
+            .insert(connection.client_id, true);
+    }
+}
+
+// Creates a lobby after two players are connected automatically
+pub fn create_lobby(mut lobbies: ResMut<Lobbies>, current_players: ResMut<PlayerAmount>) {
+    let mut lobby = Lobby::default();
+
+    let mut rng = &mut rand::thread_rng();
+
+    let sample = current_players.client_ids.keys();
+    if current_players.quantity % 2 == 0 {
+        let vec = sample.choose_multiple(rng, 2);
+
+        lobby.players.extend(vec);
     }
 }
 
@@ -72,27 +105,4 @@ pub(crate) fn spawn_player_entity(
     let entity = commands.spawn((PlayerBundle::new(client_id), name, replicate));
     info!("Create entity {:?} for client {:?}", entity.id(), client_id);
     return entity.id();
-}
-
-/// Handle client disconnections: we want to despawn every entity that was controlled by that client.
-///
-/// Lightyear creates one entity per client, which contains metadata associated with that client.
-/// You can find that entity by calling `ConnectionManager::client_entity(client_id)`.
-///
-/// That client entity contains the `ControlledEntities` component, which is a set of entities that are controlled by that client.
-///
-/// By default, lightyear automatically despawns all the `ControlledEntities` when the client disconnects;
-/// but in this example we will also do it manually to showcase how it can be done.
-/// (however we don't actually run the system)
-pub(crate) fn handle_disconnections(
-    mut disconnections: EventReader<DisconnectEvent>,
-    mut lobbies: Option<ResMut<Lobbies>>,
-) {
-    for disconnection in disconnections.read() {
-        // NOTE: games hosted by players will disappear from the lobby list since the host
-        //  is not connected anymore
-        if let Some(lobbies) = lobbies.as_mut() {
-            lobbies.remove_client(disconnection.client_id);
-        }
-    }
 }

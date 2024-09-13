@@ -17,9 +17,6 @@ impl Plugin for ProtocolPlugin {
         //Resources
         app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);
         // messages
-        app.register_message::<StartGame>(ChannelDirection::Bidirectional);
-        app.register_message::<JoinLobby>(ChannelDirection::ClientToServer);
-        app.register_message::<ExitLobby>(ChannelDirection::ClientToServer);
         // components
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
