@@ -3,9 +3,17 @@ use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 
 // All lobbies currently active
-#[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Default, Reflect)]
+#[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 pub struct Lobbies {
     pub lobbies: Vec<Lobby>,
+}
+
+impl Default for Lobbies {
+    fn default() -> Self {
+        Self {
+            lobbies: vec![Lobby::default()],
+        }
+    }
 }
 
 impl Lobbies {

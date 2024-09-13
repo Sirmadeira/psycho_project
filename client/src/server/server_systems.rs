@@ -9,6 +9,7 @@ use lightyear::prelude::*;
 // Start the server
 pub(crate) fn start_server(mut commands: Commands) {
     // Replicates to all channels
+
     commands.replicate_resource::<Lobbies, Channel1>(NetworkTarget::All);
     commands.start_server();
 }

@@ -1,5 +1,13 @@
+use crate::shared::protocol::lobby_structs::Lobbies;
+use bevy::a11y::{
+    accesskit::{NodeBuilder, Role},
+    AccessibilityNode,
+};
+use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
-use lightyear::{client::networking::NetworkingState, prelude::client::ClientCommands};
+use bevy::utils::HashMap;
+use lightyear::prelude::client::*;
+use lightyear::prelude::*;
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -11,7 +19,26 @@ pub struct ScreenLobby;
 #[derive(Component)]
 pub struct ConnectButton;
 
-pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
+#[derive(Component, Default)]
+pub struct ScrollingList {
+    position: f32,
+}
+
+#[derive(Resource, Default, Debug)]
+pub(crate) struct LobbyTable {
+    clients: HashMap<ClientId, bool>,
+}
+
+impl LobbyTable {
+    /// Find who will be the host of the game. If no client is host; the server will be the host.
+    pub(crate) fn get_host(&self) -> Option<ClientId> {
+        self.clients
+            .iter()
+            .find_map(|(client_id, is_host)| if *is_host { Some(*client_id) } else { None })
+    }
+}
+
+pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobbies: Res<Lobbies>) {
     let button_style = Style {
         width: Val::Px(350.0),
         height: Val::Px(125.0),
@@ -80,6 +107,49 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 button_text_style.clone(),
                             ));
                         });
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Column,
+                                align_self: AlignSelf::Stretch,
+                                height: Val::Percent(50.),
+                                overflow: Overflow::clip_y(),
+                                ..default()
+                            },
+                            background_color: Color::srgb(0.10, 0.10, 0.10).into(),
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent
+                                .spawn((
+                                    NodeBundle {
+                                        style: Style {
+                                            flex_direction: FlexDirection::Column,
+                                            align_items: AlignItems::Center,
+                                            ..default()
+                                        },
+                                        ..default()
+                                    },
+                                    ScrollingList::default(),
+                                    AccessibilityNode(NodeBuilder::new(Role::List)),
+                                ))
+                                .with_children(|parent| {
+                                    // Check if lobby exists
+                                    for (lobby_id, lobby) in lobbies.lobbies.iter().enumerate() {
+                                        parent.spawn((
+                                            TextBundle::from_section(
+                                                format!("Item {lobby_id}"),
+                                                TextStyle {
+                                                    font: asset_server.load("grafitti.ttf"),
+                                                    ..default()
+                                                },
+                                            ),
+                                            Label,
+                                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                        ));
+                                    }
+                                });
+                        });
                 });
         });
 }
@@ -131,6 +201,30 @@ pub fn connect_button(
             NetworkingState::Connected => {
                 text.sections[0].value = "Connected".to_string();
             }
+        }
+    }
+}
+
+pub fn scrolling_list(
+    mut mouse_wheel_events: EventReader<MouseWheel>,
+    mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,
+    query_node: Query<&Node>,
+) {
+    for mouse_wheel_event in mouse_wheel_events.read() {
+        for (mut scrolling_list, mut style, parent, list_node) in &mut query_list {
+            let items_height = list_node.size().y;
+            let container_height = query_node.get(parent.get()).unwrap().size().y;
+
+            let max_scroll = (items_height - container_height).max(0.);
+
+            let dy = match mouse_wheel_event.unit {
+                MouseScrollUnit::Line => mouse_wheel_event.y * 20.,
+                MouseScrollUnit::Pixel => mouse_wheel_event.y,
+            };
+
+            scrolling_list.position += dy;
+            scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
+            style.top = Val::Px(scrolling_list.position);
         }
     }
 }

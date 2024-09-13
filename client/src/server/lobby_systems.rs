@@ -27,10 +27,6 @@ pub(crate) fn handle_lobby_join(
             room_manager.add_entity(entity, RoomId(lobby_id as u64));
         }
     }
-    // always make sure that there is an empty lobby for players to join
-    if !lobbies.has_empty_lobby() {
-        lobbies.lobbies.push(Lobby::default());
-    }
 }
 
 /// A client has exited a lobby:
