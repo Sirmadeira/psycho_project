@@ -16,7 +16,8 @@ pub struct Lobby {
     pub in_game: bool,
 }
 
-
-
-
 // Messages
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct StartGame {
+    pub lobby_id: usize,
+}

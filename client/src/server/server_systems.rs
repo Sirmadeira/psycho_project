@@ -3,13 +3,12 @@
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use bevy::prelude::*;
+use bevy::utils::info;
 use bevy::utils::HashMap;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
 use rand::seq::IteratorRandom;
-use rand::seq::SliceRandom;
-use rand::thread_rng;
 
 // Start the server
 pub(crate) fn start_server(mut commands: Commands) {
@@ -64,16 +63,30 @@ pub(crate) fn handle_connections(
 }
 
 // Creates a lobby after two players are connected automatically
-pub fn create_lobby(mut lobbies: ResMut<Lobbies>, current_players: ResMut<PlayerAmount>) {
+pub fn create_lobby(
+    mut lobbies: ResMut<Lobbies>,
+    current_players: ResMut<PlayerAmount>,
+    mut connection_manager: ResMut<ConnectionManager>,
+) {
     let mut lobby = Lobby::default();
 
-    let mut rng = &mut rand::thread_rng();
+    let rng = &mut rand::thread_rng();
 
     let sample = current_players.client_ids.keys();
     if current_players.quantity % 2 == 0 {
         let vec = sample.choose_multiple(rng, 2);
+        lobby.players.extend(vec.clone());
+        lobby.in_game = true;
+        info("Creating lobby");
+        lobbies.lobbies.push(lobby);
 
-        lobby.players.extend(vec);
+        let lobby_id = lobbies.lobbies.len() + 1;
+
+        for client_id in vec.iter() {
+            let _ = connection_manager
+                .send_message::<Channel1, StartGame>(**client_id, &mut StartGame { lobby_id });
+            info!("Starting game");
+        }
     }
 }
 

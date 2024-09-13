@@ -20,5 +20,7 @@ impl Plugin for ExampleServerPlugin {
 
         // What happens when you connects to server
         app.add_systems(Update, handle_connections);
+
+        app.add_systems(Update, create_lobby);
     }
 }
