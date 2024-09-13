@@ -1,7 +1,5 @@
 use crate::shared::protocol::lobby_structs::Lobbies;
 use bevy::prelude::*;
-use lightyear::prelude::server::*;
-use lightyear::prelude::*;
 
 mod lobby_systems;
 

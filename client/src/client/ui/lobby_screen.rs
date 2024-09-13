@@ -5,9 +5,7 @@ use bevy::a11y::{
 };
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
-use bevy::utils::HashMap;
 use lightyear::prelude::client::*;
-use lightyear::prelude::*;
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -22,20 +20,6 @@ pub struct ConnectButton;
 #[derive(Component, Default)]
 pub struct ScrollingList {
     position: f32,
-}
-
-#[derive(Resource, Default, Debug)]
-pub(crate) struct LobbyTable {
-    clients: HashMap<ClientId, bool>,
-}
-
-impl LobbyTable {
-    /// Find who will be the host of the game. If no client is host; the server will be the host.
-    pub(crate) fn get_host(&self) -> Option<ClientId> {
-        self.clients
-            .iter()
-            .find_map(|(client_id, is_host)| if *is_host { Some(*client_id) } else { None })
-    }
 }
 
 pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobbies: Res<Lobbies>) {
@@ -135,7 +119,7 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobb
                                 ))
                                 .with_children(|parent| {
                                     // Check if lobby exists
-                                    for (lobby_id, lobby) in lobbies.lobbies.iter().enumerate() {
+                                    for (lobby_id, _) in lobbies.lobbies.iter().enumerate() {
                                         parent.spawn((
                                             TextBundle::from_section(
                                                 format!("Item {lobby_id}"),
