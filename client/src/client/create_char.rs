@@ -1,3 +1,5 @@
+//! RESPONSIBILITIES - HANDLES ALL MODULAR CHARACTERS CREATIONS
+
 use crate::shared::protocol::player_structs::*;
 use bevy::prelude::*;
 

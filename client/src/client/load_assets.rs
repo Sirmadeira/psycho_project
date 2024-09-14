@@ -1,4 +1,5 @@
-//! Once loaded we will continue to two states ui and loaded
+//! RESPONSIBILITIES - LOAD ALL ASSETS WHEN GAME STARTS
+//! Once loaded we will continue to state UI
 
 use bevy::prelude::*;
 use bevy::utils::HashMap;

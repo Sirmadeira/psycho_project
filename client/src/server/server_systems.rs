@@ -72,8 +72,19 @@ pub(crate) fn handle_connections(
     }
 }
 
+pub(crate) fn handle_disconnections(
+    mut disconnections: EventReader<DisconnectEvent>,
+    mut current_players: ResMut<PlayerAmount>,
+) {
+    for disconnection in disconnections.read() {
+        let client_id = disconnection.client_id;
+        info!("Client disconnected {}", client_id);
+        current_players.quantity -= 1;
+    }
+}
+
 // Creates a lobby if two players are actively searching
-pub fn create_lobby(
+pub(crate) fn create_lobby(
     mut lobbies: ResMut<Lobbies>,
     mut query: Query<(&PlayerId, &mut PlayStateConnection), With<PlayStateConnection>>,
     mut connection_manager: ResMut<ConnectionManager>,
@@ -91,7 +102,7 @@ pub fn create_lobby(
         }
     }
 
-    // If two are found make it so creates a lobby changes their states and
+    // If two are found make it so creates a lobby changes their states
     if clients_searching.len() % 2 == 0 && clients_searching.len() != 0 {
         info!("Creating lobby");
         let mut lobby = Lobby::default();
@@ -103,7 +114,7 @@ pub fn create_lobby(
             state.in_game = true;
             state.searching = false;
         }
-        info!("Sending message to clients to state game");
+        info!("Sending message specific clients to start their game");
         for clients in clients_searching {
             let _ = connection_manager
                 .send_message::<Channel1, StartGame>(clients, &mut StartGame { lobby_id });

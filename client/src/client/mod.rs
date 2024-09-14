@@ -20,6 +20,7 @@ impl Plugin for ExampleClientPlugin {
         // Self made plugins
         app.add_plugins(LoadingAssetsPlugin);
         app.add_plugins(UiPlugin);
+        // Listening systems - Systems that hear messages from server
         app.add_systems(Update, start_game);
     }
 }
@@ -30,12 +31,17 @@ pub enum MyAppState {
     LoadingAssets,
     MainMenu,
     Lobby,
+    Game,
 }
 
-// Reads messa
-pub fn start_game(mut events: EventReader<MessageEvent<StartGame>>) {
+// Starts the game the message filters out the specific clients
+pub fn start_game(
+    mut events: EventReader<MessageEvent<StartGame>>,
+    mut next_state: ResMut<NextState<MyAppState>>,
+) {
     for event in events.read() {
         let content = event.message();
-        info!("Start game {}", content.lobby_id);
+        info!("Start game for lobby{}", content.lobby_id);
+        next_state.set(MyAppState::Game);
     }
 }
