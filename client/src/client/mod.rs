@@ -32,6 +32,7 @@ pub enum MyAppState {
     Lobby,
 }
 
+// Reads messa
 pub fn start_game(mut events: EventReader<MessageEvent<StartGame>>) {
     for event in events.read() {
         let content = event.message();

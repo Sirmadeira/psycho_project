@@ -12,6 +12,7 @@ pub struct Lobbies {
 pub struct Lobby {
     // List of lobby players
     pub players: Vec<ClientId>,
+    // Identifier of lobby in list
     pub lobby_id: usize,
 }
 // Messages
