@@ -18,6 +18,7 @@ impl Plugin for UiPlugin {
         app.add_systems(Update, exit_button.run_if(in_state(MyAppState::MainMenu)));
         app.add_systems(Update, connect_button.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
+        app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
     }
 }
 

@@ -48,7 +48,6 @@ pub enum MyAppState {
 // Starts the game the message filters out the specific clients
 pub fn start_game(
     mut events: EventReader<MessageEvent<StartGame>>,
-    lobbies: Res<Lobbies>,
     mut next_state: ResMut<NextState<MyAppState>>,
 ) {
     for event in events.read() {

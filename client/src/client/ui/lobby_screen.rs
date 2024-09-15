@@ -1,4 +1,4 @@
-use crate::shared::protocol::lobby_structs::Lobbies;
+use crate::shared::protocol::lobby_structs::StartGame;
 use bevy::a11y::{
     accesskit::{NodeBuilder, Role},
     AccessibilityNode,
@@ -23,11 +23,7 @@ pub struct ScrollingList {
     position: f32,
 }
 
-pub fn lobby_screen(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    lobbies: Option<Res<Lobbies>>,
-) {
+pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
     let button_style = Style {
         width: Val::Px(350.0),
         height: Val::Px(125.0),
@@ -137,28 +133,18 @@ pub fn lobby_screen(
                         })
                         .with_children(|parent| {
                             // Actual list
-                            parent
-                                .spawn((
-                                    NodeBundle {
-                                        style: Style {
-                                            flex_direction: FlexDirection::Column,
-                                            align_items: AlignItems::Center,
-                                            ..default()
-                                        },
+                            parent.spawn((
+                                NodeBundle {
+                                    style: Style {
+                                        flex_direction: FlexDirection::Column,
+                                        align_items: AlignItems::Center,
                                         ..default()
                                     },
-                                    ScrollingList::default(),
-                                    AccessibilityNode(NodeBuilder::new(Role::List)),
-                                ))
-                                .with_children(|parent| {
-                                    if let Some(lobbies) = lobbies {
-                                        for i in lobbies.lobbies.iter() {
-                                            info!("Available lobbies are {:?}", i);
-                                        }
-                                    } else {
-                                        info!("Cant find no lobby")
-                                    }
-                                });
+                                    ..default()
+                                },
+                                ScrollingList::default(),
+                                AccessibilityNode(NodeBuilder::new(Role::List)),
+                            ));
                         });
                 });
         });
@@ -214,6 +200,7 @@ pub fn connect_button(
     }
 }
 
+// Responsible for scrolling up and down the matches list
 pub fn scrolling_list(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,
@@ -235,5 +222,35 @@ pub fn scrolling_list(
             scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
             style.top = Val::Px(scrolling_list.position);
         }
+    }
+}
+
+// When a game starts update the list to other clients
+pub fn display_matches(
+    query_list: Query<Entity, With<ScrollingList>>,
+    mut events: EventReader<MessageEvent<StartGame>>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+) {
+    let scroll_parent = query_list
+        .get_single()
+        .expect("To have only one scrolling list");
+
+    for event in events.read() {
+        let lobby_id = event.message().lobby_id;
+
+        let list_item = (
+            TextBundle::from_section(
+                format!("Lobby"),
+                TextStyle {
+                    font: asset_server.load("grafitti.ttf"),
+                    ..default()
+                },
+            ),
+            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+        );
+        let mut child_entity = commands.spawn(list_item);
+        child_entity.set_parent(scroll_parent);
+        info!("Current lobbies displayed {}", lobby_id);
     }
 }
