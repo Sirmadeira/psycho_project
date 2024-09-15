@@ -3,6 +3,7 @@ use bevy::a11y::{
     accesskit::{NodeBuilder, Role},
     AccessibilityNode,
 };
+use bevy::color::palettes::basic::WHITE;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use lightyear::prelude::client::*;
@@ -22,7 +23,11 @@ pub struct ScrollingList {
     position: f32,
 }
 
-pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobbies: Res<Lobbies>) {
+pub fn lobby_screen(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    lobbies: Option<Res<Lobbies>>,
+) {
     let button_style = Style {
         width: Val::Px(350.0),
         height: Val::Px(125.0),
@@ -53,8 +58,8 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobb
             },
             ScreenLobby,
         ))
-        // First column
         .with_children(|parent| {
+            // First column
             parent
                 .spawn(NodeBundle {
                     style: Style {
@@ -63,19 +68,19 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobb
                         justify_content: JustifyContent::Center,
                         ..default()
                     },
-                    background_color: Color::srgb(0.65, 0.65, 0.65).into(),
                     ..default()
                 })
+                // SIMPLE TITLE TEXT
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
-                        "Lobby",
+                        "SEARCH FOR MATCH",
                         TextStyle {
                             font: asset_server.load("grafitti.ttf"),
                             font_size: 80.0,
-                            color: Color::srgb(0.9, 0.9, 0.9),
                             ..default()
                         },
                     ));
+                    // CONNECT BUTTON
                     parent
                         .spawn((
                             ButtonBundle {
@@ -87,10 +92,35 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobb
                         ))
                         .with_children(|parent| {
                             parent.spawn(TextBundle::from_section(
-                                "JOIN LOBBY",
+                                "CONNECT TO SERVER",
                                 button_text_style.clone(),
                             ));
                         });
+                });
+            // Second columns
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        width: Val::Percent(50.0),
+                        ..default()
+                    },
+                    background_color: Color::srgb(0.15, 0.15, 0.15).into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    // Title for scrolling list
+                    parent.spawn(TextBundle::from_section(
+                        "WHO IS FIGHTING",
+                        TextStyle {
+                            font: asset_server.load("grafitti.ttf"),
+                            font_size: 40.,
+                            ..default()
+                        },
+                    ));
+                    // LIST OF CURRENT LOBBIES - TODO MAKE PLAYER FIGHTING
                     parent
                         .spawn(NodeBundle {
                             style: Style {
@@ -98,12 +128,15 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobb
                                 align_self: AlignSelf::Stretch,
                                 height: Val::Percent(50.),
                                 overflow: Overflow::clip_y(),
+                                border: UiRect::all(Val::Px(20.)),
                                 ..default()
                             },
+                            border_color: WHITE.into(),
                             background_color: Color::srgb(0.10, 0.10, 0.10).into(),
                             ..default()
                         })
                         .with_children(|parent| {
+                            // Actual list
                             parent
                                 .spawn((
                                     NodeBundle {
@@ -118,19 +151,12 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobb
                                     AccessibilityNode(NodeBuilder::new(Role::List)),
                                 ))
                                 .with_children(|parent| {
-                                    // Check if lobby exists
-                                    for (lobby_id, _) in lobbies.lobbies.iter().enumerate() {
-                                        parent.spawn((
-                                            TextBundle::from_section(
-                                                format!("Item {lobby_id}"),
-                                                TextStyle {
-                                                    font: asset_server.load("grafitti.ttf"),
-                                                    ..default()
-                                                },
-                                            ),
-                                            Label,
-                                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                        ));
+                                    if let Some(lobbies) = lobbies {
+                                        for i in lobbies.lobbies.iter() {
+                                            info!("Available lobbies are {:?}", i);
+                                        }
+                                    } else {
+                                        info!("Cant find no lobby")
                                     }
                                 });
                         });
@@ -138,7 +164,7 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>, lobb
         });
 }
 
-// Responsible for simple connections
+// Responsible for doing connections and sending character info - TODO ASSETS
 pub fn connect_button(
     mut interaction_query: Query<
         (
@@ -154,7 +180,6 @@ pub fn connect_button(
     mut commands: Commands,
 ) {
     // Thus button only contains one child text
-
     if let Ok((interaction, mut color, mut border_color, children)) =
         interaction_query.get_single_mut()
     {

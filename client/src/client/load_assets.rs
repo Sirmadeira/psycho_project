@@ -4,7 +4,6 @@
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_asset_loader::prelude::*;
-use lightyear::prelude::client::Predicted;
 
 pub struct LoadingAssetsPlugin;
 use crate::client::MyAppState;
@@ -23,37 +22,8 @@ impl Plugin for LoadingAssetsPlugin {
 #[derive(AssetCollection, Resource)]
 pub struct ClientCharCollection {
     #[asset(
-        paths("characters/character_mesh.glb", "character/katana.glb"),
+        paths("characters/character_mesh.glb", "weapons/katana.glb"),
         collection(typed, mapped)
     )]
     pub gltf_files: HashMap<String, Handle<Gltf>>,
-}
-
-// This will spawn our main characters according TO THE AMOUNT OF ENTITIES, IN LOBBY. TODO LOBBY
-pub(crate) fn spawn_character(
-    player: Query<Entity, With<Predicted>>,
-    client_collection: Res<ClientCharCollection>,
-    assets_gltf: Res<Assets<Gltf>>,
-    mut commands: Commands,
-) {
-    for _ in player.iter() {
-        info!("All players being created");
-        for (file_name, han_gltf) in &client_collection.gltf_files {
-            if file_name.contains("character_mesh") {
-                // Loading gltf from asset_server
-                let gltf_scene = assets_gltf
-                    .get(han_gltf)
-                    .expect("The handle in server to be loaded");
-
-                // Grabbng mesh
-                let player_mesh = SceneBundle {
-                    scene: gltf_scene.named_scenes["Scene"].clone(),
-                    transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                    ..Default::default()
-                };
-
-                commands.spawn(player_mesh);
-            }
-        }
-    }
 }

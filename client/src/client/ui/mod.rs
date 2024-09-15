@@ -5,15 +5,14 @@ mod lobby_screen;
 mod main_screen;
 
 use self::{lobby_screen::*, main_screen::*};
-use crate::shared::protocol::lobby_structs::Lobbies;
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Lobbies>();
         app.add_systems(Startup, spawn_begin_camera);
         app.add_systems(OnEnter(MyAppState::MainMenu), menu_screen);
+        // FUCK YOU
         app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);
         app.add_systems(Update, start_button.run_if(in_state(MyAppState::MainMenu)));
         app.add_systems(Update, exit_button.run_if(in_state(MyAppState::MainMenu)));

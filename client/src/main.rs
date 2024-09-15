@@ -10,12 +10,11 @@ mod shared;
 
 fn main() {
     let cli = Cli::default();
+    // Commong config settings being disdposed
     let settings_str = include_str!("../assets/settings.ron");
     let settings = read_settings::<Settings>(settings_str);
-    // build the bevy app (this adds common plugin such as the DefaultPlugins)
-    // and returns the `ClientConfig` and `ServerConfig` so that we can modify them if needed
     let mut apps = Apps::new(settings, cli);
-    // add the `ClientPlugins` and `ServerPlugins` plugin groups
+    // Adding multipler lightyear plugins
     apps.add_lightyear_plugins()
         // add our plugins
         .add_user_plugins(ExampleClientPlugin, ExampleServerPlugin, SharedPlugin);

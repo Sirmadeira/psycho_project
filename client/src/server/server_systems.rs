@@ -8,9 +8,9 @@ use lightyear::prelude::*;
 
 // Start the server
 pub(crate) fn start_server(mut commands: Commands) {
+    commands.start_server();
     // Lobbies is a structure utilized to control players rooms
     commands.replicate_resource::<Lobbies, Channel1>(NetworkTarget::All);
-    commands.start_server();
 }
 
 // Gives me the current player amount
@@ -104,25 +104,27 @@ pub(crate) fn create_lobby(
 
     // If two are found make it so creates a lobby changes their states
     if clients_searching.len() % 2 == 0 && clients_searching.len() != 0 {
-        info!("Creating lobby");
         let mut lobby = Lobby::default();
+        info!("Grabbing lobby id");
         let lobby_id = lobbies.lobbies.len();
         lobby.lobby_id = lobby_id;
-        lobbies.lobbies.push(lobby);
         info!("Changing player network states to in game");
         for state in player_states.iter_mut() {
             state.in_game = true;
             state.searching = false;
         }
-        info!("Sending message specific clients to start their game");
+        info!("Sending message to specific clients to start their game");
         for clients in clients_searching {
+            lobby.players.push(clients);
             let _ = connection_manager
                 .send_message::<Channel1, StartGame>(clients, &mut StartGame { lobby_id });
         }
+        info!("Creating lobby and replicating to others {}", lobby_id);
+        lobbies.lobbies.push(lobby);
     }
 }
 
-/// Helper function spawns repicable players
+/// Helper function spawns repicable players - TURN THIS TO LOOP
 pub(crate) fn spawn_player_entity(
     commands: &mut Commands,
     client_id: ClientId,
