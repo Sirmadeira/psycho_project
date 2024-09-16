@@ -10,7 +10,6 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(MyAppState::MainMenu), create_character_customizer);
         // app.add_systems(Startup, spawn_begin_camera);
         // app.add_systems(OnEnter(MyAppState::MainMenu), menu_screen);
         // app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);

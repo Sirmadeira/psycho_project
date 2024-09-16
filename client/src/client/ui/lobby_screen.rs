@@ -1,4 +1,3 @@
-use crate::client::load_assets::ClientCharCollection;
 use crate::shared::protocol::lobby_structs::StartGame;
 use bevy::prelude::*;
 use bevy::{
@@ -8,12 +7,7 @@ use bevy::{
     },
     color::palettes::basic::WHITE,
     input::mouse::{MouseScrollUnit, MouseWheel},
-    render::{
-        render_resource::{
-            Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-        },
-        view::RenderLayers,
-    },
+    
 };
 use lightyear::prelude::client::*;
 
@@ -245,14 +239,6 @@ pub fn scrolling_list(
     }
 }
 
-// Marks the main pass cube, to which the texture is applied.
-#[derive(Component)]
-struct MainPassCube;
-
-// Marks the first pass cube (rendered to a texture.)
-#[derive(Component)]
-struct FirstPassCube;
-
 // When a game starts update the list to other clients
 pub fn display_matches(
     query_list: Query<Entity, With<ScrollingList>>,
@@ -281,73 +267,4 @@ pub fn display_matches(
         child_entity.set_parent(scroll_parent);
         info!("Current lobbies displayed {}", lobby_id);
     }
-}
-
-// Formulates all the assets needed for it
-pub fn create_character_customizer(
-    mut commands: Commands,
-    mut images: ResMut<Assets<Image>>,
-    asset_server: Res<AssetServer>,
-) {
-    let size = Extent3d {
-        width: 1980,
-        height: 512,
-        ..default()
-    };
-
-    // This is the texture that will be rendered to.
-    let mut image = Image {
-        texture_descriptor: TextureDescriptor {
-            label: None,
-            size,
-            dimension: TextureDimension::D2,
-            format: TextureFormat::Bgra8UnormSrgb,
-            mip_level_count: 1,
-            sample_count: 1,
-            usage: TextureUsages::TEXTURE_BINDING
-                | TextureUsages::COPY_DST
-                | TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        },
-        ..default()
-    };
-
-    // fill image.data with zeroes
-    image.resize(size);
-
-    let image_handle = images.add(image);
-
-    // The cube that will be rendered to the texture.
-    commands.spawn((
-        SceneBundle {
-            scene: asset_server.load("characters/character_mesh.glb#Scene0"),
-            transform: Transform::from_scale(Vec3::splat(5.0)),
-            ..default()
-        },
-        FirstPassCube,
-    ));
-
-    commands.spawn((PointLightBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
-        ..default()
-    },));
-
-    commands.spawn((Camera3dBundle {
-        camera: Camera {
-            // render before the "main pass" camera
-            order: -1,
-            target: image_handle.clone().into(),
-            clear_color: Color::WHITE.into(),
-            ..default()
-        },
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 15.0))
-            .looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    },));
-
-    // The main pass camera.
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 0.0, 15.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
 }
