@@ -62,6 +62,7 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
+                        width: Val::Percent(33.0),
                         ..default()
                     },
                     ..default()
@@ -72,7 +73,7 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                         "SEARCH FOR MATCH",
                         TextStyle {
                             font: asset_server.load("grafitti.ttf"),
-                            font_size: 80.0,
+                            font_size: 60.0,
                             ..default()
                         },
                     ));
@@ -100,7 +101,7 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
-                        width: Val::Percent(50.0),
+                        width: Val::Percent(33.0),
                         ..default()
                     },
                     background_color: Color::srgb(0.15, 0.15, 0.15).into(),
@@ -122,7 +123,7 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                             style: Style {
                                 flex_direction: FlexDirection::Column,
                                 align_self: AlignSelf::Stretch,
-                                height: Val::Percent(50.),
+                                height: Val::Percent(90.),
                                 overflow: Overflow::clip_y(),
                                 border: UiRect::all(Val::Px(20.)),
                                 ..default()
@@ -147,6 +148,18 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                             ));
                         });
                 });
+            // Third column
+            parent.spawn(NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    width: Val::Percent(33.0),
+                    ..default()
+                },
+                background_color: Color::srgb(0.15, 0.15, 0.15).into(),
+                ..default()
+            });
         });
 }
 
