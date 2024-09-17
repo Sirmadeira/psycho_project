@@ -28,7 +28,7 @@ pub(crate) fn naming_player(
 }
 
 // TODO - UI FOR THIS for now client only sends the default value
-pub(crate) fn insert_visuals(player_id: Query<Entity, With<PlayerId>>) {}
+// pub(crate) fn insert_visuals(player_id: Query<Entity, With<PlayerId>>) {}
 
 // This will spawn our main characters according TO THE AMOUNT OF ENTITIES, IN LOBBY. TODO LOBBY
 // pub(crate) fn spawn_character(

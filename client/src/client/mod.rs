@@ -14,6 +14,7 @@ mod ui;
 
 use self::load_assets::LoadingAssetsPlugin;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+use bevy_panorbit_camera::PanOrbitCameraPlugin;
 
 // Centralization of plugins
 pub struct ExampleClientPlugin;
@@ -26,9 +27,12 @@ impl Plugin for ExampleClientPlugin {
         app.register_type::<Lobbies>();
         app.add_plugins(ResourceInspectorPlugin::<Lobbies>::default());
 
+        //Imported plugins
+        app.add_plugins(PanOrbitCameraPlugin);
+
         // Self made plugins
         app.add_plugins(LoadingAssetsPlugin);
-        app.add_plugins(UiPlugin);
+        // app.add_plugins(UiPlugin);
         // app.add_plugins(CreateCharPlugin);
 
         // Listening systems - Systems that hear messages from server
