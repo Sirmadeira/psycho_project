@@ -1,7 +1,6 @@
 //! RESPONSIBILITIES - LOAD ALL ASSETS WHEN GAME STARTS
 //! Once loaded we will continue to state UI
 
-use bevy::math::VectorSpace;
 use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
 use bevy::window::PrimaryWindow;
 use bevy::{

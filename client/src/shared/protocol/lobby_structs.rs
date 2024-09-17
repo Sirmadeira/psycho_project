@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 // Components
 #[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Default, Reflect)]
+#[reflect(Resource, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct Lobbies {
     pub lobbies: Vec<Lobby>,
 }

@@ -4,7 +4,6 @@
 use bevy::prelude::*;
 use lightyear::shared::events::components::MessageEvent;
 
-use crate::client::create_char::CreateCharPlugin;
 use crate::shared::protocol::lobby_structs::Lobbies;
 use crate::{client::ui::UiPlugin, shared::protocol::lobby_structs::StartGame};
 
@@ -13,7 +12,6 @@ mod load_assets;
 mod ui;
 
 use self::load_assets::LoadingAssetsPlugin;
-use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_panorbit_camera::PanOrbitCameraPlugin;
 
 // Centralization of plugins
@@ -28,14 +26,13 @@ impl Plugin for ExampleClientPlugin {
 
         // Debugging
         app.register_type::<Lobbies>();
-        app.add_plugins(ResourceInspectorPlugin::<Lobbies>::default());
 
         //Imported plugins
         app.add_plugins(PanOrbitCameraPlugin);
 
         // Self made plugins
         app.add_plugins(LoadingAssetsPlugin);
-        // app.add_plugins(UiPlugin);
+        app.add_plugins(UiPlugin);
         // app.add_plugins(CreateCharPlugin);
 
         // Listening systems - Systems that hear messages from server
