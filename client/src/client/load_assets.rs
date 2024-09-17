@@ -3,6 +3,7 @@
 
 use bevy::math::VectorSpace;
 use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
+use bevy::window::PrimaryWindow;
 use bevy::{
     prelude::*,
     render::render_resource::{
@@ -11,7 +12,7 @@ use bevy::{
     utils::HashMap,
 };
 use bevy_asset_loader::prelude::*;
-use bevy_panorbit_camera::PanOrbitCamera;
+use bevy_panorbit_camera::{ActiveCameraData, PanOrbitCamera};
 
 pub struct LoadingAssetsPlugin;
 use crate::client::MyAppState;
@@ -23,8 +24,6 @@ impl Plugin for LoadingAssetsPlugin {
                 .continue_to_state(MyAppState::MainMenu)
                 .load_collection::<ClientCharCollection>(),
         );
-        app.add_systems(OnEnter(MyAppState::MainMenu), render_to_texture_character);
-        app.add_systems(Update, rotator_system);
         app.add_systems(Update, disable_culling);
     }
 }
@@ -39,17 +38,15 @@ pub struct ClientCharCollection {
     pub gltf_files: HashMap<String, Handle<Gltf>>,
 }
 
-#[derive(Component)]
-pub struct CubeWithRenderTexture;
-
 // This will create a cube that solely has the character assets as a texture on it
 pub fn render_to_texture_character(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut meshes: ResMut<Assets<Mesh>>,
     gltfs: ResMut<Assets<Gltf>>,
+    mut active_cam: ResMut<ActiveCameraData>,
     client_collection: Res<ClientCharCollection>,
+    windows: Query<&Window, With<PrimaryWindow>>,
 ) {
     info!("Creating image to texturize");
     let size = Extent3d {
@@ -89,15 +86,9 @@ pub fn render_to_texture_character(
 
     let character_scene = loaded_gltf.scenes[0].clone();
 
-    let character_transform = Transform::from_xyz(3.0, 0.0, 3.0);
-    // let base_transform = Transform::
+    let camera_offset = Vec3::new(0.0, 3.0, 2.5);
 
-    // ATTENTION - THIS IS 100 BECAUSE SCENES ARE VERY ANNOYING TO BE USED WITH RENDER LAYERS
-    let scene = SceneBundle {
-        scene: character_scene,
-        transform: character_transform,
-        ..default()
-    };
+    let char_position = Vec3::new(8.0, 0.0, 0.0);
 
     let rtt_camera = Camera3dBundle {
         camera: Camera {
@@ -107,9 +98,15 @@ pub fn render_to_texture_character(
             clear_color: Color::WHITE.into(),
             ..default()
         },
-        // ATTENTION - THIS IS 100 BECAUSE SCENES ARE VERY ANNOYING TO BE USED WITH RENDER LAYERS
-        transform: Transform::from_translation(Vec3::new(3.0, 0.0, 5.0))
-            .looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_translation(camera_offset),
+        ..default()
+    };
+
+    let scene = SceneBundle {
+        scene: character_scene,
+        transform: Transform::from_translation(char_position)
+            // If you want him to stare face front to camera
+            .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
         ..default()
     };
 
@@ -118,7 +115,10 @@ pub fn render_to_texture_character(
 
     info!("Spawning camera that it is gonna give us our wanted render");
     // Render to texture camera, renders a character
-    commands.spawn(rtt_camera).insert(PanOrbitCamera::default());
+    let pan_orbit_id = commands
+        .spawn(rtt_camera)
+        .insert(PanOrbitCamera::default())
+        .id();
 
     // Converting our rendered  image to an texture
     let material_handle = materials.add(StandardMaterial {
@@ -128,38 +128,33 @@ pub fn render_to_texture_character(
         ..default()
     });
 
-    // FORMING CUBE to see texture
-    let cube_handle = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
-
-    commands.spawn((
-        PbrBundle {
-            mesh: cube_handle,
-            material: material_handle,
-            transform: Transform::from_xyz(0.0, 0.0, 1.5),
-            ..default()
-        },
-        CubeWithRenderTexture,
-    ));
-
     // Simple light to see stuff on both
     commands.spawn(PointLightBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
+        transform: Transform::from_translation(Vec3::new(0.0, 1.0, 5.0)),
         ..default()
     });
 
     // this shall be the main camera
     commands.spawn((Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 0.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 0.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     },));
-}
 
-/// Rotates the inner cube (first pass)
-fn rotator_system(time: Res<Time>, mut query: Query<&mut Transform, With<CubeWithRenderTexture>>) {
-    for mut transform in &mut query {
-        transform.rotate_x(1.5 * time.delta_seconds());
-        transform.rotate_z(1.3 * time.delta_seconds());
-    }
+    info!("Adjusting panorbit camera to solely apply to the camera that renders the character");
+    let primary_window = windows
+        .get_single()
+        .expect("There is only ever one primary window");
+
+    active_cam.set_if_neq(ActiveCameraData {
+        entity: Some(pan_orbit_id),
+        // What you set these values to will depend on your use case, but generally you want the
+        // viewport size to match the size of the render target (image, viewport), and the window
+        // size to match the size of the window that you are interacting with.
+        viewport_size: Some(Vec2::new(size.width as f32, size.height as f32)),
+        window_size: Some(Vec2::new(primary_window.width(), primary_window.height())),
+        // Setting manual to true ensures PanOrbitCameraPlugin will not overwrite this resource
+        manual: true,
+    });
 }
 
 // Debugger function in animations
