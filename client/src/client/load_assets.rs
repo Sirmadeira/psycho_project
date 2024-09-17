@@ -19,11 +19,12 @@ use crate::client::MyAppState;
 
 impl Plugin for LoadingAssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<MyAppState>().add_loading_state(
+        app.add_loading_state(
             LoadingState::new(MyAppState::LoadingAssets)
                 .continue_to_state(MyAppState::MainMenu)
                 .load_collection::<ClientCharCollection>(),
         );
+        app.add_systems(OnEnter(MyAppState::MainMenu), form_rtt_character);
         app.add_systems(Update, disable_culling);
     }
 }
@@ -38,15 +39,18 @@ pub struct ClientCharCollection {
     pub gltf_files: HashMap<String, Handle<Gltf>>,
 }
 
-// This will create a cube that solely has the character assets as a texture on it
-pub fn render_to_texture_character(
-    mut commands: Commands,
+#[derive(Resource)]
+pub struct RttMaterial(Handle<StandardMaterial>);
+
+// This will make an rtt with an available pan orbit camera pointing at it. And saves the asset  as an materiral
+pub fn form_rtt_character(
+    windows: Query<&Window, With<PrimaryWindow>>,
     mut images: ResMut<Assets<Image>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     gltfs: ResMut<Assets<Gltf>>,
     mut active_cam: ResMut<ActiveCameraData>,
     client_collection: Res<ClientCharCollection>,
-    windows: Query<&Window, With<PrimaryWindow>>,
+    mut commands: Commands,
 ) {
     info!("Creating image to texturize");
     let size = Extent3d {
@@ -105,12 +109,12 @@ pub fn render_to_texture_character(
     let scene = SceneBundle {
         scene: character_scene,
         transform: Transform::from_translation(char_position)
-            // If you want him to stare face front to camera
+            // If you want him to stare face front to camera as from blender he usually stares at negative -z
             .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
         ..default()
     };
 
-    // The scene that oughta to be texturized
+    info!("Spawning character rtt scene");
     commands.spawn(scene);
 
     info!("Spawning camera that it is gonna give us our wanted render");
@@ -119,26 +123,6 @@ pub fn render_to_texture_character(
         .spawn(rtt_camera)
         .insert(PanOrbitCamera::default())
         .id();
-
-    // Converting our rendered  image to an texture
-    let material_handle = materials.add(StandardMaterial {
-        base_color_texture: Some(image_handle.clone()),
-        reflectance: 0.02,
-        unlit: false,
-        ..default()
-    });
-
-    // Simple light to see stuff on both
-    commands.spawn(PointLightBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 1.0, 5.0)),
-        ..default()
-    });
-
-    // this shall be the main camera
-    commands.spawn((Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 0.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    },));
 
     info!("Adjusting panorbit camera to solely apply to the camera that renders the character");
     let primary_window = windows
@@ -155,6 +139,22 @@ pub fn render_to_texture_character(
         // Setting manual to true ensures PanOrbitCameraPlugin will not overwrite this resource
         manual: true,
     });
+
+    // Simple light to see stuff on both
+    commands.spawn(PointLightBundle {
+        transform: Transform::from_translation(Vec3::new(0.0, 1.0, 5.0)),
+        ..default()
+    });
+
+    // Converting our rendered  image to an texture
+    let material_handle = materials.add(StandardMaterial {
+        base_color_texture: Some(image_handle.clone()),
+        reflectance: 0.02,
+        unlit: false,
+        ..default()
+    });
+
+    commands.insert_resource(RttMaterial(material_handle));
 }
 
 // Debugger function in animations

@@ -21,8 +21,11 @@ pub struct ExampleClientPlugin;
 
 impl Plugin for ExampleClientPlugin {
     fn build(&self, app: &mut App) {
-        // Inserting resources
+        // Inserting resources that must exist first
         app.insert_resource(Lobbies::default());
+        // Initializing states that must exist
+        app.init_state::<MyAppState>();
+
         // Debugging
         app.register_type::<Lobbies>();
         app.add_plugins(ResourceInspectorPlugin::<Lobbies>::default());
