@@ -88,9 +88,9 @@ pub fn form_rtt_character(
 
     let character_scene = loaded_gltf.scenes[0].clone();
 
-    let camera_offset = Vec3::new(0.0, 3.0, 2.5);
+    let camera_offset = Vec3::new(0.0, 1.5, 3.5);
 
-    let char_position = Vec3::new(8.0, 0.0, 0.0);
+    let char_position = Vec3::new(0.0, 0.0, 0.0);
 
     let rtt_camera = Camera3dBundle {
         camera: Camera {
@@ -119,7 +119,10 @@ pub fn form_rtt_character(
     // Render to texture camera, renders a character
     let pan_orbit_id = commands
         .spawn(rtt_camera)
-        .insert(PanOrbitCamera::default())
+        .insert(PanOrbitCamera {
+            focus: char_position,
+            ..default()
+        })
         .id();
 
     info!("Adjusting panorbit camera to solely apply to the camera that renders the character");
