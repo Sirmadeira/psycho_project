@@ -16,8 +16,8 @@ impl PlayerBundle {
         Self {
             id: PlayerId(id),
             visuals: PlayerVisuals {
-                character: vec![String::from("character_mesh.glb")],
-                weapon: vec![String::from("Katana")],
+                character: String::from("characters/character_mesh.glb"),
+                weapon: vec![String::from("weapons/katana.glb")],
             },
         }
     }
@@ -33,11 +33,16 @@ pub struct PlayerId(pub ClientId);
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct PlayerVisuals {
     // Character related visuals - Vec of file paths
-    character: Vec<String>,
-    // Character weapons - Vec of weapons
+    character: String,
+    // Character weapons - Vec of weapons file paths
     weapon: Vec<String>,
 }
 
 // Channels
 #[derive(Channel)]
 pub struct Channel1;
+
+// Messages
+// An event message sent by client to server that gives the player currently chosen loadout
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct PlayerLoadout(PlayerVisuals);
