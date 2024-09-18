@@ -52,8 +52,8 @@ pub fn form_rtt_character(
 ) {
     info!("Creating image to texturize");
     let size = Extent3d {
-        width: 512,
-        height: 512,
+        width: 4096,
+        height: 4096,
         ..default()
     };
 
@@ -97,10 +97,17 @@ pub fn form_rtt_character(
             // render before the "main pass" camera so we
             order: -1,
             target: image_handle.clone().into(),
-            clear_color: Color::WHITE.into(),
+            clear_color: ClearColorConfig::Custom(Color::srgb(0.212, 0.271, 0.31)),
             ..default()
         },
         transform: Transform::from_translation(camera_offset),
+        ..default()
+    };
+
+    let pan_orbit = PanOrbitCamera {
+        focus: Vec3::new(0.0, 1.0, 0.0),
+        zoom_upper_limit: Some(3.5),
+        zoom_lower_limit: Some(1.0),
         ..default()
     };
 
@@ -117,13 +124,7 @@ pub fn form_rtt_character(
 
     info!("Spawning camera that it is gonna give us our wanted render");
     // Render to texture camera, renders a character
-    let pan_orbit_id = commands
-        .spawn(rtt_camera)
-        .insert(PanOrbitCamera {
-            focus: char_position,
-            ..default()
-        })
-        .id();
+    let pan_orbit_id = commands.spawn(rtt_camera).insert(pan_orbit).id();
 
     info!("Adjusting panorbit camera to solely apply to the camera that renders the character");
     let primary_window = windows
@@ -143,6 +144,11 @@ pub fn form_rtt_character(
 
     // Simple light to see stuff on both
     commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            color: Color::srgb(0.98, 0.95, 0.87),
+            shadows_enabled: true,
+            ..default()
+        },
         transform: Transform::from_translation(Vec3::new(0.0, 1.0, 5.0)),
         ..default()
     });

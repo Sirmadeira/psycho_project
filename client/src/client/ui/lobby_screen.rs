@@ -167,6 +167,14 @@ pub fn lobby_screen(
                     ..default()
                 })
                 .with_children(|parent| {
+                    parent.spawn(TextBundle::from_section(
+                        "YOUR CHARACTER",
+                        TextStyle {
+                            font: asset_server.load("grafitti.ttf"),
+                            font_size: 40.,
+                            ..default()
+                        },
+                    ));
                     parent.spawn((
                         NodeBundle {
                             style: Style {
