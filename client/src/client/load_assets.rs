@@ -39,13 +39,12 @@ pub struct ClientCharCollection {
 }
 
 #[derive(Resource)]
-pub struct RttMaterial(Handle<StandardMaterial>);
+pub struct RttMaterial(pub Handle<Image>);
 
 // This will make an rtt with an available pan orbit camera pointing at it. And saves the asset  as an materiral
 pub fn form_rtt_character(
     windows: Query<&Window, With<PrimaryWindow>>,
     mut images: ResMut<Assets<Image>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     gltfs: ResMut<Assets<Gltf>>,
     mut active_cam: ResMut<ActiveCameraData>,
     client_collection: Res<ClientCharCollection>,
@@ -145,15 +144,7 @@ pub fn form_rtt_character(
         ..default()
     });
 
-    // Converting our rendered  image to an texture
-    let material_handle = materials.add(StandardMaterial {
-        base_color_texture: Some(image_handle.clone()),
-        reflectance: 0.02,
-        unlit: false,
-        ..default()
-    });
-
-    commands.insert_resource(RttMaterial(material_handle));
+    commands.insert_resource(RttMaterial(image_handle));
 }
 
 // Debugger function in animations

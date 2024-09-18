@@ -1,3 +1,4 @@
+use crate::client::load_assets::RttMaterial;
 use crate::shared::protocol::lobby_structs::StartGame;
 use bevy::prelude::*;
 use bevy::{
@@ -7,7 +8,6 @@ use bevy::{
     },
     color::palettes::basic::WHITE,
     input::mouse::{MouseScrollUnit, MouseWheel},
-    
 };
 use lightyear::prelude::client::*;
 
@@ -26,7 +26,11 @@ pub struct ScrollingList {
     position: f32,
 }
 
-pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn lobby_screen(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    rtt_material: Res<RttMaterial>,
+) {
     let button_style = Style {
         width: Val::Px(350.0),
         height: Val::Px(125.0),
@@ -151,16 +155,31 @@ pub fn lobby_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                         });
                 });
             // Third column
-            parent.spawn(NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    width: Val::Percent(33.0),
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        width: Val::Percent(33.0),
+                        ..default()
+                    },
                     ..default()
-                },
-                ..default()
-            });
+                })
+                .with_children(|parent| {
+                    parent.spawn((
+                        NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Column,
+                                align_self: AlignSelf::Stretch,
+                                height: Val::Percent(90.),
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        UiImage::new(rtt_material.0.clone()),
+                    ));
+                });
         });
 }
 

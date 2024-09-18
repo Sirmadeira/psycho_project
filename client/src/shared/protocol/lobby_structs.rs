@@ -10,6 +10,7 @@ pub struct Lobbies {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default, Reflect)]
+#[reflect(PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct Lobby {
     // List of lobby players
     pub players: Vec<ClientId>,

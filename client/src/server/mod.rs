@@ -17,7 +17,6 @@ impl Plugin for ExampleServerPlugin {
 
         // Initializing sever current has head
         app.add_systems(Startup, (init, start_server));
-
         // What happens when you connects to server
         app.add_systems(Update, handle_connections);
         // What happens when you disconnect from server
