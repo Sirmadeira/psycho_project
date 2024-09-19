@@ -1,5 +1,5 @@
 use crate::shared::protocol::lobby_structs::Lobbies;
-use crate::shared::protocol::player_structs::{PlayerLoadout, PlayerVisuals};
+use crate::shared::protocol::player_structs::{PlayerId, PlayerLoadout, PlayerVisuals};
 use bevy::prelude::*;
 use lightyear::server::events::*;
 mod server_systems;
@@ -35,8 +35,11 @@ impl Plugin for ExampleServerPlugin {
     }
 }
 
-// Responsible for changing the loadout right now it doesnt do anything just receive the message
-fn listener_player_loadout(mut events: EventReader<MessageEvent<PlayerLoadout>>) {
+// Responsible for changing the loadout right now it just 
+fn listener_player_loadout(
+    mut events: EventReader<MessageEvent<PlayerLoadout>>,
+    query: Query<(&PlayerId, &PlayerVisuals)>,
+) {
     for event in events.read() {
         let message = event.message();
         let client_id = event.context();

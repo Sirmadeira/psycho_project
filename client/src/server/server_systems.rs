@@ -9,8 +9,9 @@ use lightyear::prelude::*;
 // Start the server
 pub(crate) fn start_server(mut commands: Commands) {
     commands.start_server();
-    // Lobbies is a structure utilized to control players rooms
+    // Replicating resources to clients
     commands.replicate_resource::<Lobbies, Channel1>(NetworkTarget::All);
+    commands.replicate_resource::<PlayerBundleMap, Channel1>(NetworkTarget::All);
 }
 
 // Gives me the current player amount
@@ -18,6 +19,7 @@ pub(crate) fn start_server(mut commands: Commands) {
 pub struct PlayerAmount {
     quantity: u32,
 }
+
 // Tells me the player/client state of connection
 #[derive(Component, Default, Clone)]
 pub struct PlayStateConnection {
