@@ -55,6 +55,7 @@ pub(crate) fn handle_connections(
     mut current_players: ResMut<PlayerAmount>,
     mut connections: EventReader<ConnectEvent>,
     mut commands: Commands,
+    mut player_map: ResMut<PlayerBundleMap>,
 ) {
     for connection in connections.read() {
         info!("Settin their status to searching for matchmaking");
@@ -63,12 +64,16 @@ pub(crate) fn handle_connections(
             in_game: false,
         };
 
-        spawn_player_entity(
+        let (client_id, player_bundle) = spawn_player_entity(
             &mut commands,
             connection.client_id,
             false,
             player_state.clone(),
         );
+
+        info!("Inserting into save resource configs from that client");
+        player_map.0.insert(client_id, player_bundle);
+
         current_players.quantity += 1;
         info!("Current players online is {}", current_players.quantity);
     }
@@ -132,7 +137,7 @@ pub(crate) fn spawn_player_entity(
     client_id: ClientId,
     dedicated_server: bool,
     player_state: PlayStateConnection,
-) -> Entity {
+) -> (ClientId, PlayerBundle) {
     let replicate = Replicate {
         sync: SyncTarget {
             prediction: NetworkTarget::Single(client_id),
@@ -152,7 +157,10 @@ pub(crate) fn spawn_player_entity(
 
     let name = Name::new(format!("Player {:?}", client_id));
 
-    let entity = commands.spawn((PlayerBundle::new(client_id), player_state, name, replicate));
+    let player_bundle = PlayerBundle::new(client_id);
+
+    let entity = commands.spawn((player_bundle.clone(), player_state, name, replicate));
     info!("Create entity {:?} for client {:?}", entity.id(), client_id);
-    return entity.id();
+
+    return (client_id, player_bundle);
 }

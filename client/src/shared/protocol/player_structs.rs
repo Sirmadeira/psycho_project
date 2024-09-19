@@ -11,13 +11,13 @@ use serde::{Deserialize, Serialize};
 //Resources
 // A map utilized to easily grab player info via it is client id. Avoids iterating through playerid when unecessary
 #[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Default, Reflect)]
-pub struct PlayerBundleMap(HashMap<ClientId, PlayerBundle>);
+pub struct PlayerBundleMap(pub HashMap<ClientId, PlayerBundle>);
 
 // Player bundle - Shared player related info important to server and client
 #[derive(Bundle, Serialize, Deserialize, Reflect, Clone, Debug, PartialEq)]
 pub struct PlayerBundle {
-    id: PlayerId,
-    visuals: PlayerVisuals,
+    pub id: PlayerId,
+    pub visuals: PlayerVisuals,
 }
 
 impl PlayerBundle {

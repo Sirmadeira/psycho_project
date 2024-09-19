@@ -1,5 +1,5 @@
 use crate::shared::protocol::lobby_structs::Lobbies;
-use crate::shared::protocol::player_structs::{PlayerId, PlayerLoadout, PlayerVisuals};
+use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerLoadout, PlayerVisuals};
 use bevy::prelude::*;
 use lightyear::server::events::*;
 mod server_systems;
@@ -12,6 +12,7 @@ impl Plugin for ExampleServerPlugin {
     fn build(&self, app: &mut App) {
         // Initializing resources
         app.init_resource::<Lobbies>();
+        app.init_resource::<PlayerBundleMap>();
         app.init_resource::<PlayerAmount>();
 
         // Debug registering
@@ -35,15 +36,22 @@ impl Plugin for ExampleServerPlugin {
     }
 }
 
-// Responsible for changing the loadout right now it just 
+// Responsible for changing the loadout right now it just
 fn listener_player_loadout(
     mut events: EventReader<MessageEvent<PlayerLoadout>>,
-    query: Query<(&PlayerId, &PlayerVisuals)>,
+    mut player_map: ResMut<PlayerBundleMap>,
 ) {
     for event in events.read() {
         let message = event.message();
         let client_id = event.context();
 
-        info!("Receiveing new player loadout from {}", client_id)
+        info!("Receiveing new player loadout from {}", client_id);
+
+        if let Some(player_bundle) = player_map.0.get_mut(client_id) {
+            player_bundle.visuals = message.0.clone();
+            info!("Found it is bundle and changing it for what client said");
+        } else {
+            error!("Something went worng in grabing this id info in server");
+        }
     }
 }

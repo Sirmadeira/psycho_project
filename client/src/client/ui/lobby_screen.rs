@@ -2,7 +2,6 @@ use crate::client::load_assets::RttMaterial;
 use crate::shared::protocol::lobby_structs::StartGame;
 use crate::shared::protocol::player_structs::{Channel1, PlayerLoadout, PlayerVisuals};
 use bevy::prelude::*;
-use bevy::render::view::visibility;
 use bevy::{
     a11y::{
         accesskit::{NodeBuilder, Role},
@@ -20,8 +19,6 @@ const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 #[derive(Component)]
 pub struct ScreenLobby;
 
-#[derive(Component)]
-pub struct ConnectButton;
 
 #[derive(Component)]
 pub struct SaveCharacter;
@@ -69,44 +66,16 @@ pub fn lobby_screen(
         ))
         .with_children(|parent| {
             // First column
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        width: Val::Percent(33.0),
-                        ..default()
-                    },
+            parent.spawn(NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    width: Val::Percent(33.0),
                     ..default()
-                })
-                // SIMPLE TITLE TEXT
-                .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "SEARCH FOR MATCH",
-                        TextStyle {
-                            font: asset_server.load("grafitti.ttf"),
-                            font_size: 45.0,
-                            ..default()
-                        },
-                    ));
-                    // CONNECT BUTTON
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: button_style.clone(),
-                                border_color: BorderColor(Color::BLACK),
-                                ..default()
-                            },
-                            ConnectButton, // Insert DuelButton here
-                        ))
-                        .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section(
-                                "CONNECT TO SERVER",
-                                button_text_style.clone(),
-                            ));
-                        });
-                });
+                },
+                ..default()
+            });
             // Second columns
             parent
                 .spawn(NodeBundle {
@@ -213,56 +182,6 @@ pub fn lobby_screen(
         });
 }
 
-// Responsible for doing connections and sending character info - TODO ASSETS
-pub fn connect_button(
-    mut interaction_query: Query<
-        (
-            &Interaction,
-            &mut BackgroundColor,
-            &mut BorderColor,
-            &Children,
-        ),
-        (Changed<Interaction>, With<ConnectButton>),
-    >,
-    mut text_query: Query<&mut Text>,
-    network_state: Res<State<NetworkingState>>,
-    mut commands: Commands,
-) {
-    // Thus button bundle only contains one child text
-    if let Ok((interaction, mut color, mut border_color, children)) =
-        interaction_query.get_single_mut()
-    {
-        let mut text = text_query.get_mut(children[0]).unwrap();
-
-        match network_state.get() {
-            NetworkingState::Disconnected => match *interaction {
-                Interaction::Pressed => {
-                    text.sections[0].value = "LETS DUEL!".to_string();
-                    *color = PRESSED_BUTTON.into();
-                    border_color.0 = Color::srgb(255.0, 0.0, 0.0);
-                    commands.connect_client();
-                }
-                Interaction::Hovered => {
-                    text.sections[0].value = "DO IT ".to_string();
-                    *color = HOVERED_BUTTON.into();
-                    border_color.0 = Color::WHITE;
-                }
-                Interaction::None => {
-                    text.sections[0].value = "CONNECT TO SERVER".to_string();
-                    *color = NORMAL_BUTTON.into();
-                    border_color.0 = Color::BLACK;
-                }
-            },
-            NetworkingState::Connecting => {
-                text.sections[0].value = "Connecting".to_string();
-            }
-            NetworkingState::Connected => {
-                text.sections[0].value = "Connected".to_string();
-            }
-        }
-    }
-}
-
 // Send a message to server telling me player loadout
 pub fn save_character_button(
     mut interaction_query: Query<
@@ -271,48 +190,48 @@ pub fn save_character_button(
             &mut BackgroundColor,
             &mut BorderColor,
             &Children,
-            &mut Visibility,
         ),
         (Changed<Interaction>, With<SaveCharacter>),
     >,
     mut text_query: Query<&mut Text>,
     network_state: Res<State<NetworkingState>>,
     mut connection_manager: ResMut<ConnectionManager>,
-    mut commands: Commands,
 ) {
-    if let Ok((interaction, mut color, mut border_color, children, mut visibility)) =
+    if let Ok((interaction, mut color, mut border_color, children)) =
         interaction_query.get_single_mut()
     {
         let mut text = text_query.get_mut(children[0]).unwrap();
 
         match network_state.get() {
-            NetworkingState::Disconnected => {
-                *visibility = Visibility::Hidden;
-            }
+            NetworkingState::Disconnected => {}
             NetworkingState::Connecting => {
                 text.sections[0].value = "OH HE COMING".to_string();
             }
-            NetworkingState::Connected => match *interaction {
-                Interaction::Pressed => {
-                    text.sections[0].value = "SAVED!".to_string();
-                    *color = PRESSED_BUTTON.into();
-                    border_color.0 = Color::srgb(255.0, 0.0, 0.0);
-                    // Todo - SAVE MECHANIC
-                    let _ = connection_manager.send_message::<Channel1, PlayerLoadout>(
-                        &mut PlayerLoadout(PlayerVisuals::default()),
-                    );
+            NetworkingState::Connected => {
+                // Handle button interaction states
+                match *interaction {
+                    Interaction::Pressed => {
+                        text.sections[0].value = "SAVED!".to_string();
+                        *color = PRESSED_BUTTON.into();
+                        border_color.0 = Color::srgb(1.0, 0.0, 0.0); // Use rgb values between 0 and 1
+
+                        // Call the save mechanic when pressed
+                        let _ = connection_manager.send_message::<Channel1, PlayerLoadout>(
+                            &mut PlayerLoadout(PlayerVisuals::default()),
+                        );
+                    }
+                    Interaction::Hovered => {
+                        text.sections[0].value = "OH MY GOD HE BEAUTY".to_string();
+                        *color = HOVERED_BUTTON.into();
+                        border_color.0 = Color::WHITE;
+                    }
+                    Interaction::None => {
+                        text.sections[0].value = "SAVE YOUR CHARACTER".to_string();
+                        *color = NORMAL_BUTTON.into();
+                        border_color.0 = Color::BLACK;
+                    }
                 }
-                Interaction::Hovered => {
-                    text.sections[0].value = "OH MY GOD HE BEUTY".to_string();
-                    *color = HOVERED_BUTTON.into();
-                    border_color.0 = Color::WHITE;
-                }
-                Interaction::None => {
-                    text.sections[0].value = "SAVE YOUR CHARACTER".to_string();
-                    *color = NORMAL_BUTTON.into();
-                    border_color.0 = Color::BLACK;
-                }
-            },
+            }
         }
     }
 }
