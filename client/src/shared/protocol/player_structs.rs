@@ -1,6 +1,9 @@
 use std::vec;
 
-use bevy::prelude::{Bundle, Component};
+use bevy::{
+    prelude::{Bundle, Component},
+    reflect::Reflect,
+};
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -15,10 +18,7 @@ impl PlayerBundle {
     pub(crate) fn new(id: ClientId) -> Self {
         Self {
             id: PlayerId(id),
-            visuals: PlayerVisuals {
-                character: String::from("characters/character_mesh.glb"),
-                weapon: vec![String::from("weapons/katana.glb")],
-            },
+            visuals: PlayerVisuals::default(),
         }
     }
 }
@@ -30,12 +30,21 @@ impl PlayerBundle {
 pub struct PlayerId(pub ClientId);
 
 // Since our character are modular we will be able to attach a series of visuals to it
-#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 pub struct PlayerVisuals {
     // Character related visuals - Vec of file paths
-    character: String,
+    pub character: String,
     // Character weapons - Vec of weapons file paths
-    weapon: Vec<String>,
+    pub weapon: Vec<String>,
+}
+
+impl Default for PlayerVisuals {
+    fn default() -> Self {
+        Self {
+            character: String::from("characters/character_mesh.glb"),
+            weapon: vec![String::from("weapons/katana.glb")],
+        }
+    }
 }
 
 // Channels
@@ -45,4 +54,4 @@ pub struct Channel1;
 // Messages
 // An event message sent by client to server that gives the player currently chosen loadout
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-pub struct PlayerLoadout(PlayerVisuals);
+pub struct PlayerLoadout(pub PlayerVisuals);

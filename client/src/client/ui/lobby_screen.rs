@@ -1,5 +1,6 @@
 use crate::client::load_assets::RttMaterial;
 use crate::shared::protocol::lobby_structs::StartGame;
+use crate::shared::protocol::player_structs::{Channel1, PlayerLoadout, PlayerVisuals};
 use bevy::prelude::*;
 use bevy::render::view::visibility;
 use bevy::{
@@ -276,6 +277,7 @@ pub fn save_character_button(
     >,
     mut text_query: Query<&mut Text>,
     network_state: Res<State<NetworkingState>>,
+    mut connection_manager: ResMut<ConnectionManager>,
     mut commands: Commands,
 ) {
     if let Ok((interaction, mut color, mut border_color, children, mut visibility)) =
@@ -296,6 +298,9 @@ pub fn save_character_button(
                     *color = PRESSED_BUTTON.into();
                     border_color.0 = Color::srgb(255.0, 0.0, 0.0);
                     // Todo - SAVE MECHANIC
+                    let _ = connection_manager.send_message::<Channel1, PlayerLoadout>(
+                        &mut PlayerLoadout(PlayerVisuals::default()),
+                    );
                 }
                 Interaction::Hovered => {
                     text.sections[0].value = "OH MY GOD HE BEUTY".to_string();
