@@ -1,20 +1,19 @@
 use std::vec;
 
-use bevy::{
-    prelude::{Bundle, Component, Resource},
-    reflect::Reflect,
-    utils::HashMap,
-};
+use bevy::prelude::*;
+use bevy::{reflect::Reflect, utils::HashMap};
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 
 //Resources
 // A map utilized to easily grab player info via it is client id. Avoids iterating through playerid when unecessary
-#[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Default, Reflect)]
+#[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect, Default)]
+#[reflect(Resource, PartialEq, Debug, Serialize, Deserialize)]
 pub struct PlayerBundleMap(pub HashMap<ClientId, PlayerBundle>);
 
 // Player bundle - Shared player related info important to server and client
-#[derive(Bundle, Serialize, Deserialize, Reflect, Clone, Debug, PartialEq)]
+#[derive(Bundle, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
+#[reflect(PartialEq, Debug, Serialize, Deserialize)]
 pub struct PlayerBundle {
     pub id: PlayerId,
     pub visuals: PlayerVisuals,

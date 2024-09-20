@@ -1,5 +1,7 @@
 use crate::shared::protocol::lobby_structs::Lobbies;
-use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerLoadout, PlayerVisuals};
+use crate::shared::protocol::player_structs::{
+    PlayerBundle, PlayerBundleMap, PlayerLoadout, PlayerVisuals,
+};
 use bevy::prelude::*;
 use lightyear::server::events::*;
 mod server_systems;
@@ -17,6 +19,7 @@ impl Plugin for ExampleServerPlugin {
 
         // Debug registering
         app.register_type::<Lobbies>();
+        app.register_type::<PlayerBundleMap>();
         app.register_type::<PlayerVisuals>();
 
         // Initializing sever current has head
@@ -50,6 +53,9 @@ fn listener_player_loadout(
         if let Some(player_bundle) = player_map.0.get_mut(client_id) {
             player_bundle.visuals = message.0.clone();
             info!("Found it is bundle and changing it for what client said");
+            let encoded = bincode::serialize(&player_bundle).unwrap();
+            let decoded: PlayerBundle = bincode::deserialize(&encoded[..]).unwrap();
+            info!("SHow me decoded {:?}", decoded);
         } else {
             error!("Something went worng in grabing this id info in server");
         }
