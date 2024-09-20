@@ -34,9 +34,9 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(PanOrbitCameraPlugin);
 
         // Self made plugins
-        // app.add_plugins(LoadingAssetsPlugin);
-        // app.add_plugins(UiPlugin);
-        // app.add_plugins(CreateCharPlugin);
+        app.add_plugins(LoadingAssetsPlugin);
+        app.add_plugins(UiPlugin);
+        app.add_plugins(CreateCharPlugin);
 
         // Listening systems - Systems that hear messages from server
         app.add_systems(Update, start_game);

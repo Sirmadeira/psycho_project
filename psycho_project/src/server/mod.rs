@@ -23,7 +23,7 @@ impl Plugin for ExampleServerPlugin {
         app.register_type::<PlayerVisuals>();
 
         // Initializing sever current has head
-        app.add_systems(Startup, (read_save_files, init, start_server));
+        app.add_systems(Startup, (start_server, init, read_save_files));
 
         // What happens when you connects to server
         app.add_systems(Update, handle_connections);
@@ -37,6 +37,16 @@ impl Plugin for ExampleServerPlugin {
         // Listeners
         app.add_systems(Update, listener_player_loadout);
     }
+}
+
+// IF you adjust one of the player bundle sub-structures you will need to run this solely, if not memory alloc error
+#[allow(dead_code)]
+fn create_save_files() {
+    let mut f = BufWriter::new(
+        File::create("./psycho_project/src/server/save_files/player_info.bar").unwrap(),
+    );
+    let player_bundle = PlayerBundleMap::default();
+    serialize_into(&mut f, &player_bundle).unwrap();
 }
 
 // Overwrites or create new file that will currently store only the player_bundle_map
