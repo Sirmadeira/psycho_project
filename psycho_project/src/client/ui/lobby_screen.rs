@@ -1,4 +1,4 @@
-use crate::client::load_assets::RttMaterial;
+use crate::client::create_char::RttMaterial;
 use crate::shared::protocol::lobby_structs::StartGame;
 use crate::shared::protocol::player_structs::{Channel1, PlayerLoadout, PlayerVisuals};
 use bevy::prelude::*;
@@ -18,7 +18,6 @@ const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 #[derive(Component)]
 pub struct ScreenLobby;
-
 
 #[derive(Component)]
 pub struct SaveCharacter;

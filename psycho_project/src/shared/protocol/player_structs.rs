@@ -39,6 +39,7 @@ pub struct PlayerId(pub ClientId);
 pub struct PlayerVisuals {
     // Character related visuals - Vec of file paths
     pub character: String,
+    pub head: String,
     // Character weapons - Vec of weapons file paths
     pub weapon: Vec<String>,
 }
@@ -47,6 +48,7 @@ impl Default for PlayerVisuals {
     fn default() -> Self {
         Self {
             character: String::from("characters/character_mesh.glb"),
+            head: String::from("character/adventurer/space_head.glb"),
             weapon: vec![String::from("weapons/katana.glb")],
         }
     }

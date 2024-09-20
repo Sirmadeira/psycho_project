@@ -11,7 +11,10 @@ mod create_char;
 mod load_assets;
 mod ui;
 
+// SElLF MADE IMPORTS
+use self::create_char::CreateCharPlugin;
 use self::load_assets::LoadingAssetsPlugin;
+// OTHER PLUGINS
 use bevy_panorbit_camera::PanOrbitCameraPlugin;
 
 // Centralization of plugins
@@ -31,8 +34,8 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(PanOrbitCameraPlugin);
 
         // Self made plugins
-        app.add_plugins(LoadingAssetsPlugin);
-        app.add_plugins(UiPlugin);
+        // app.add_plugins(LoadingAssetsPlugin);
+        // app.add_plugins(UiPlugin);
         // app.add_plugins(CreateCharPlugin);
 
         // Listening systems - Systems that hear messages from server
