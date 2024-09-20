@@ -1,13 +1,11 @@
 use crate::shared::protocol::lobby_structs::Lobbies;
-use crate::shared::protocol::player_structs::{
-    PlayerBundle, PlayerBundleMap, PlayerLoadout, PlayerVisuals,
-};
+use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerLoadout, PlayerVisuals};
 use bevy::prelude::*;
 use lightyear::server::events::*;
 mod server_systems;
-use bincode::serialize_into;
+use bincode::{deserialize_from, serialize_into};
 use std::fs::File;
-use std::io::BufWriter;
+use std::io::{BufReader, BufWriter};
 
 use self::server_systems::*;
 
@@ -17,7 +15,6 @@ impl Plugin for ExampleServerPlugin {
     fn build(&self, app: &mut App) {
         // Initializing resources
         app.init_resource::<Lobbies>();
-        app.init_resource::<PlayerBundleMap>();
         app.init_resource::<PlayerAmount>();
 
         // Debug registering
@@ -25,9 +22,8 @@ impl Plugin for ExampleServerPlugin {
         app.register_type::<PlayerBundleMap>();
         app.register_type::<PlayerVisuals>();
 
-        app.add_systems(Startup, create_save_files);
         // Initializing sever current has head
-        app.add_systems(Startup, (init, start_server));
+        app.add_systems(Startup, (read_save_files, init, start_server));
 
         // What happens when you connects to server
         app.add_systems(Update, handle_connections);
@@ -43,6 +39,27 @@ impl Plugin for ExampleServerPlugin {
     }
 }
 
+// Overwrites or create new file that will currently store only the player_bundle_map
+fn save_file(save_info: PlayerBundleMap) {
+    info!("Saving");
+    let mut f = BufWriter::new(
+        File::create("./psycho_project/src/server/save_files/player_info.bar").unwrap(),
+    );
+    let player_bundle = &save_info;
+    serialize_into(&mut f, &player_bundle).unwrap();
+}
+
+// Reads current save files and fill up the resource playerbundlemap each basically gives me all player info
+fn read_save_files(mut commands: Commands) {
+    let f = BufReader::new(
+        File::open("./psycho_project/src/server/save_files/player_info.bar").unwrap(),
+    );
+    let player_bundle_map: PlayerBundleMap = deserialize_from(f).unwrap();
+    info!("Read from save file: {:?}", player_bundle_map);
+
+    commands.insert_resource(player_bundle_map);
+}
+
 // Responsible for changing the loadout right now it just
 fn listener_player_loadout(
     mut events: EventReader<MessageEvent<PlayerLoadout>>,
@@ -55,23 +72,12 @@ fn listener_player_loadout(
         info!("Receiveing new player loadout from {}", client_id);
 
         if let Some(player_bundle) = player_map.0.get_mut(client_id) {
-            player_bundle.visuals = message.0.clone();
             info!("Found it is bundle and changing it for what client said");
-            let encoded = bincode::serialize(&player_bundle).unwrap();
-            let decoded: PlayerBundle = bincode::deserialize(&encoded[..]).unwrap();
-            info!("SHow me decoded {:?}", decoded);
+            player_bundle.visuals = message.0.clone();
+            info!("Saving this bundle {:?}", player_bundle);
+            save_file(player_map.clone());
         } else {
-            error!("Something went worng in grabing this id info in server");
+            error!("Something went wrong in grabing this id info in server");
         }
     }
 }
-
-// Create server side binencoded files really important in case server goes down and such
-fn create_save_files() {
-    let mut f =
-        BufWriter::new(File::create("./psycho_project/src/server/save_files/foo.bar").unwrap());
-    let player_bundle = PlayerBundleMap::default();
-    serialize_into(&mut f, &player_bundle).unwrap();
-}
-
-fn read_save_files() {}

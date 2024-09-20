@@ -20,10 +20,10 @@ pub struct PlayerBundle {
 }
 
 impl PlayerBundle {
-    pub fn new(id: ClientId) -> Self {
+    pub fn new(id: ClientId, visuals: PlayerVisuals) -> Self {
         Self {
             id: PlayerId(id),
-            visuals: PlayerVisuals::default(),
+            visuals: visuals,
         }
     }
 }

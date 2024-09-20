@@ -1,5 +1,4 @@
-//! Essential systems to run server
-
+//! Essential systems to run when server boot ups or connections occur to him
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use bevy::prelude::*;
@@ -50,29 +49,86 @@ pub(crate) fn init(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
+/// Helper function spawns repicable players - TURN THIS TO LOOP
+pub(crate) fn spawn_player_entity(
+    client_id: ClientId,
+    dedicated_server: bool,
+    commands: &mut Commands,
+    player_bundle: Option<PlayerBundle>,
+) -> Option<PlayerBundle> {
+    // Replicating component important to define who sees the player or not
+    let replicate = Replicate {
+        sync: SyncTarget {
+            prediction: NetworkTarget::Single(client_id),
+            interpolation: NetworkTarget::AllExceptSingle(client_id),
+        },
+        controlled_by: ControlledBy {
+            target: NetworkTarget::Single(client_id),
+            ..default()
+        },
+        relevance_mode: if dedicated_server {
+            NetworkRelevanceMode::InterestManagement
+        } else {
+            NetworkRelevanceMode::All
+        },
+        ..default()
+    };
+
+    let name = Name::new(format!("Player {:?}", client_id));
+
+    info!("Settin their status to searching for matchmaking");
+    let player_state = PlayStateConnection {
+        searching: true,
+        in_game: false,
+    };
+
+    if let Some(player_bun) = player_bundle {
+        commands
+            .spawn(player_bun)
+            .insert(player_state)
+            .insert(name)
+            .insert(replicate);
+        info!("Replicating veteran player");
+        return None;
+    } else {
+        // Setting default visuals
+        let player_visual = PlayerVisuals::default();
+        let new_player_bundle = PlayerBundle::new(client_id, player_visual);
+        commands
+            .spawn(new_player_bundle.clone())
+            .insert(player_state)
+            .insert(name)
+            .insert(replicate);
+        info!("Replicating new player");
+        return Some(new_player_bundle);
+    }
+}
+
 // Handles connections
 pub(crate) fn handle_connections(
     mut current_players: ResMut<PlayerAmount>,
     mut connections: EventReader<ConnectEvent>,
-    mut commands: Commands,
     mut player_map: ResMut<PlayerBundleMap>,
+    mut commands: Commands,
 ) {
     for connection in connections.read() {
-        info!("Settin their status to searching for matchmaking");
-        let player_state = PlayStateConnection {
-            searching: true,
-            in_game: false,
-        };
-
-        let (client_id, player_bundle) = spawn_player_entity(
-            &mut commands,
-            connection.client_id,
-            false,
-            player_state.clone(),
-        );
-
-        info!("Inserting into save resource configs from that client");
-        player_map.0.insert(client_id, player_bundle);
+        info!("Checking if new client or if already exists");
+        if let Some(old_player_bundle) = player_map.0.get(&connection.client_id) {
+            info!(
+                "This player {:?} already connected once spawn it is entity according to it is settings",old_player_bundle.id
+            );
+            spawn_player_entity(
+                connection.client_id,
+                false,
+                &mut commands,
+                Some(old_player_bundle.clone()),
+            );
+        } else {
+            info!("New player make him learn! And insert him into resource");
+            let new_bundle =
+                spawn_player_entity(connection.client_id, false, &mut commands, None).unwrap();
+            player_map.0.insert(connection.client_id, new_bundle);
+        }
 
         current_players.quantity += 1;
         info!("Current players online is {}", current_players.quantity);
@@ -129,38 +185,4 @@ pub(crate) fn create_lobby(
         info!("Creating lobby and replicating to others {}", lobby_id);
         lobbies.lobbies.push(lobby);
     }
-}
-
-/// Helper function spawns repicable players - TURN THIS TO LOOP
-pub(crate) fn spawn_player_entity(
-    commands: &mut Commands,
-    client_id: ClientId,
-    dedicated_server: bool,
-    player_state: PlayStateConnection,
-) -> (ClientId, PlayerBundle) {
-    let replicate = Replicate {
-        sync: SyncTarget {
-            prediction: NetworkTarget::Single(client_id),
-            interpolation: NetworkTarget::AllExceptSingle(client_id),
-        },
-        controlled_by: ControlledBy {
-            target: NetworkTarget::Single(client_id),
-            ..default()
-        },
-        relevance_mode: if dedicated_server {
-            NetworkRelevanceMode::InterestManagement
-        } else {
-            NetworkRelevanceMode::All
-        },
-        ..default()
-    };
-
-    let name = Name::new(format!("Player {:?}", client_id));
-
-    let player_bundle = PlayerBundle::new(client_id);
-
-    let entity = commands.spawn((player_bundle.clone(), player_state, name, replicate));
-    info!("Create entity {:?} for client {:?}", entity.id(), client_id);
-
-    return (client_id, player_bundle);
 }
