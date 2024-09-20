@@ -5,6 +5,9 @@ use crate::shared::protocol::player_structs::{
 use bevy::prelude::*;
 use lightyear::server::events::*;
 mod server_systems;
+use bincode::serialize_into;
+use std::fs::File;
+use std::io::BufWriter;
 
 use self::server_systems::*;
 
@@ -22,6 +25,7 @@ impl Plugin for ExampleServerPlugin {
         app.register_type::<PlayerBundleMap>();
         app.register_type::<PlayerVisuals>();
 
+        app.add_systems(Startup, create_save_files);
         // Initializing sever current has head
         app.add_systems(Startup, (init, start_server));
 
@@ -61,3 +65,13 @@ fn listener_player_loadout(
         }
     }
 }
+
+// Create server side binencoded files really important in case server goes down and such
+fn create_save_files() {
+    let mut f =
+        BufWriter::new(File::create("./psycho_project/src/server/save_files/foo.bar").unwrap());
+    let player_bundle = PlayerBundleMap::default();
+    serialize_into(&mut f, &player_bundle).unwrap();
+}
+
+fn read_save_files() {}

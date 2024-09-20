@@ -1,10 +1,10 @@
 [workspace]
 members = [
-    "client",
+    "psycho_project",
     "common"
 ]
 resolver = "2"
-default-members = ["client"]
+default-members = ["psycho_project"]
 
 [profile.dev.package."*"]
 opt-level = 3
