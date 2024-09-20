@@ -108,6 +108,7 @@ pub(crate) fn spawn_player_entity(
 pub(crate) fn handle_connections(
     mut current_players: ResMut<PlayerAmount>,
     mut connections: EventReader<ConnectEvent>,
+    mut connection_manager: ResMut<ConnectionManager>,
     mut player_map: ResMut<PlayerBundleMap>,
     mut commands: Commands,
 ) {
@@ -123,11 +124,28 @@ pub(crate) fn handle_connections(
                 &mut commands,
                 Some(old_player_bundle.clone()),
             );
+            info!("Sending message to client for RTT his given character");
+            let client_visuals = old_player_bundle.visuals.clone();
+
+            let _ = connection_manager.send_message::<Channel1, PlayerLoadout>(
+                connection.client_id,
+                &mut PlayerLoadout(client_visuals),
+            );
         } else {
             info!("New player make him learn! And insert him into resource");
             let new_bundle =
                 spawn_player_entity(connection.client_id, false, &mut commands, None).unwrap();
-            player_map.0.insert(connection.client_id, new_bundle);
+            player_map
+                .0
+                .insert(connection.client_id, new_bundle.clone());
+
+            info!("New player visuals being sent for RTT obviusly default");
+            let client_visuals = new_bundle.visuals;
+
+            let _ = connection_manager.send_message::<Channel1, PlayerLoadout>(
+                connection.client_id,
+                &mut PlayerLoadout(client_visuals),
+            );
         }
 
         current_players.quantity += 1;

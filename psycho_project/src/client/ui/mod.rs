@@ -12,15 +12,15 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_begin_camera);
         app.add_systems(OnEnter(MyAppState::MainMenu), menu_screen);
-        app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);
         app.add_systems(Update, start_button.run_if(in_state(MyAppState::MainMenu)));
         app.add_systems(Update, exit_button.run_if(in_state(MyAppState::MainMenu)));
-        app.add_systems(
-            Update,
-            save_character_button.run_if(in_state(MyAppState::Lobby)),
-        );
-        app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
-        app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
+        // app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);
+        // app.add_systems(
+        //     Update,
+        //     save_character_button.run_if(in_state(MyAppState::Lobby)),
+        // );
+        // app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
+        // app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
     }
 }
 

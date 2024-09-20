@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use lightyear::shared::events::components::MessageEvent;
 
 use crate::shared::protocol::lobby_structs::Lobbies;
+use crate::shared::protocol::player_structs::PlayerBundleMap;
 use crate::{client::ui::UiPlugin, shared::protocol::lobby_structs::StartGame};
 
 mod create_char;
@@ -24,15 +25,16 @@ impl Plugin for ExampleClientPlugin {
     fn build(&self, app: &mut App) {
         // Inserting resources that must exist first
         app.insert_resource(Lobbies::default());
+        app.insert_resource(PlayerBundleMap::default());
         // Initializing states that must exist
         app.init_state::<MyAppState>();
 
         // Debugging
         app.register_type::<Lobbies>();
+        app.register_type::<PlayerBundleMap>();
 
         //Imported plugins
         app.add_plugins(PanOrbitCameraPlugin);
-
         // Self made plugins
         app.add_plugins(LoadingAssetsPlugin);
         app.add_plugins(UiPlugin);
