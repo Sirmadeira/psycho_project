@@ -1,4 +1,4 @@
-use crate::client::create_char::RttMaterial;
+use crate::client::create_char::RttImage;
 use crate::shared::protocol::lobby_structs::StartGame;
 use crate::shared::protocol::player_structs::{Channel1, PlayerLoadout, PlayerVisuals};
 use bevy::prelude::*;
@@ -30,7 +30,7 @@ pub struct ScrollingList {
 pub fn lobby_screen(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    rtt_material: Res<RttMaterial>,
+    rtt_image: Res<RttImage>,
 ) {
     let button_style = Style {
         width: Val::Px(350.0),
@@ -159,7 +159,7 @@ pub fn lobby_screen(
                             },
                             ..default()
                         },
-                        UiImage::new(rtt_material.0.clone()),
+                        UiImage::new(rtt_image.0.clone()),
                     ));
                     // Button utilized for saving character
                     parent

@@ -22,6 +22,7 @@ impl Plugin for ExampleServerPlugin {
         app.register_type::<PlayerBundleMap>();
         app.register_type::<PlayerVisuals>();
 
+        // app.add_systems(Startup, create_save_files);
         // Initializing sever current has head
         app.add_systems(Startup, (start_server, init, read_save_files));
 

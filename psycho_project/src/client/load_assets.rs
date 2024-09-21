@@ -21,7 +21,11 @@ impl Plugin for LoadingAssetsPlugin {
 #[derive(AssetCollection, Resource)]
 pub struct ClientCharCollection {
     #[asset(
-        paths("characters/adventurer/space_head.glb", "weapons/katana.glb"),
+        paths(
+            "characters/adventurer/space_head.glb",
+            "weapons/katana.glb",
+            "characters/character_mesh.glb",
+        ),
         collection(typed, mapped)
     )]
     pub gltf_files: HashMap<String, Handle<Gltf>>,
