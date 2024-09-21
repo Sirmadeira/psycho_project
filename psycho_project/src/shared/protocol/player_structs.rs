@@ -41,6 +41,10 @@ pub struct PlayerVisuals {
     pub character: String,
     // Character head visuals - Vec of file paths
     pub head: String,
+    // Character torso visuals - Vec of file paths
+    pub torso: String,
+    // Character torso visuals - Vec of file paths
+    pub legs: String,
     // Character weapons - Vec of weapons file paths
     pub weapon: Vec<String>,
 }
@@ -49,7 +53,9 @@ impl Default for PlayerVisuals {
     fn default() -> Self {
         Self {
             character: String::from("characters/character_mesh.glb"),
-            head: String::from("characters/adventurer/space_head.glb"),
+            head: String::from("characters/mod_char/farmer_head.glb"),
+            torso: String::from("character/mod_char/scifi_torso.glb"),
+            legs: String::from("character/mod_char/witch_legs.glb"),
             weapon: vec![String::from("weapons/katana.glb")],
         }
     }

@@ -23,7 +23,7 @@ impl Plugin for ExampleServerPlugin {
         app.register_type::<PlayerVisuals>();
 
         // app.add_systems(Startup, create_save_files);
-        // Initializing sever current has head
+        // Init server in head mode
         app.add_systems(Startup, (start_server, init, read_save_files));
 
         // What happens when you connects to server
