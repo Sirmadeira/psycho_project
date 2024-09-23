@@ -45,8 +45,10 @@ pub struct PlayerVisuals {
     pub torso: String,
     // Character torso visuals - Vec of file paths
     pub legs: String,
-    // Character weapons - Vec of weapons file paths
-    pub weapon: Vec<String>,
+    // Character available weapon - Vec of weapons file paths
+    pub weapon_1: String,
+    // Also know as the "glue" of modular characters
+    pub skeleton: String,
 }
 
 impl Default for PlayerVisuals {
@@ -54,10 +56,18 @@ impl Default for PlayerVisuals {
         Self {
             character: String::from("characters/character_mesh.glb"),
             head: String::from("characters/mod_char/farmer_head.glb"),
-            torso: String::from("character/mod_char/scifi_torso.glb"),
-            legs: String::from("character/mod_char/witch_legs.glb"),
-            weapon: vec![String::from("weapons/katana.glb")],
+            torso: String::from("characters/mod_char/scifi_torso.glb"),
+            legs: String::from("characters/mod_char/witch_legs.glb"),
+            weapon_1: String::from("weapons/katana.glb"),
+            skeleton: String::from("characters/mod_char/main_skeleton.glb"),
         }
+    }
+}
+
+impl PlayerVisuals {
+    // Returns an iterator over the visual components. Really usefull for pretty code
+    pub fn iter_visuals(&self) -> impl Iterator<Item = &String> {
+        vec![&self.head, &self.torso, &self.legs].into_iter()
     }
 }
 

@@ -17,6 +17,7 @@ pub struct CreateCharPlugin;
 impl Plugin for CreateCharPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_rtt_camera);
+        app.add_systems(Startup, spawn_light_bundle);
         app.add_systems(
             Update,
             form_rtt_character.run_if(in_state(MyAppState::Lobby)),
@@ -101,6 +102,19 @@ pub fn spawn_rtt_camera(
     commands.insert_resource(RttImage(image_handle));
 }
 
+pub fn spawn_light_bundle(mut commands: Commands) {
+    commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            color: Color::srgb(0.98, 0.95, 0.87),
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform::from_translation(Vec3::new(0.0, 1.0, 5.0)),
+        ..default()
+    });
+}
+
+// Occurs everytime you login in basically, gives you your current loadout in the save file
 pub fn form_rtt_character(
     // Easy way of grabbing
     mut events: EventReader<MessageEvent<PlayerLoadout>>,
@@ -110,43 +124,40 @@ pub fn form_rtt_character(
 ) {
     for event in events.read() {
         info!("Grabbing saved loadout from server and applying to rtt");
-        let player_visual = &event.message().0.character;
+        let player_visuals = &event.message().0;
 
-        let gltf = client_collection
-            .gltf_files
-            .get(player_visual)
-            .expect("Gltf to be loaded");
+        // GRAB THEM
+        // GRAB THEIR BONES
+        // MAKE EACH OF THEM CHILDS OF MAIN SKELETON
+        // TRANSFER ANIMATION TARGET IDS
+        // SUCESS
 
-        let loaded_gltf = gltfs
-            .get(gltf)
-            .expect("To find gltf handle in loaded gltfs");
+        // Spawns each scene in current worlds
+        for visual in player_visuals.iter_visuals() {
+            let gltf = client_collection
+                .gltf_files
+                .get(visual)
+                .expect("Gltf to be loaded");
 
-        let character_scene = loaded_gltf.scenes[0].clone();
+            let loaded_gltf = gltfs
+                .get(gltf)
+                .expect("To find gltf handle in loaded gltfs");
 
-        let char_position = Vec3::new(0.0, 0.0, 0.0);
-
-        let scene = SceneBundle {
-            scene: character_scene,
-            transform: Transform::from_translation(char_position)
+            let visual_scene = loaded_gltf.scenes[0].clone();
+            let char_position = Vec3::new(0.0, 0.0, 0.0);
+            let scene = SceneBundle {
+                scene: visual_scene,
+                transform: Transform::from_translation(char_position),
                 // If you want him to stare face front to camera as from blender he usually stares at negative -z
-                .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
-            ..default()
-        };
-
-        info!("Spawning character rtt scene");
-        commands.spawn(scene);
-
-        // Simple light to see stuff on both
-        commands.spawn(PointLightBundle {
-            point_light: PointLight {
-                color: Color::srgb(0.98, 0.95, 0.87),
-                shadows_enabled: true,
+                // .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
                 ..default()
-            },
-            transform: Transform::from_translation(Vec3::new(0.0, 1.0, 5.0)),
-            ..default()
-        });
+            };
+
+            info!("Spawning character rtt scene");
+            commands.spawn(scene);
+        }
     }
+    // // Simple light to see stuff on both - TODO REPLICATE THIS
 }
 
 // Debugger function in animations
@@ -155,35 +166,3 @@ pub fn disable_culling(mut commands: Commands, skinned: Query<Entity, Added<Skin
         commands.entity(entity).insert(NoFrustumCulling);
     }
 }
-
-// TODO - UI FOR THIS for now client only sends the default value
-// pub(crate) fn insert_visuals(player_id: Query<Entity, With<PlayerId>>) {}
-
-// This will spawn our main characters according TO THE AMOUNT OF ENTITIES, IN LOBBY. TODO LOBBY
-// pub(crate) fn spawn_character(
-//     player: Query<Entity, With<Predicted>>,
-//     client_collection: Res<ClientCharCollection>,
-//     assets_gltf: Res<Assets<Gltf>>,
-//     mut commands: Commands,
-// ) {
-//     for _ in player.iter() {
-//         info!("All players being created");
-//         for (file_name, han_gltf) in &client_collection.gltf_files {
-//             if file_name.contains("character_mesh") {
-//                 // Loading gltf from asset_server
-//                 let gltf_scene = assets_gltf
-//                     .get(han_gltf)
-//                     .expect("The handle in server to be loaded");
-
-//                 // Grabbng mesh
-//                 let player_mesh = SceneBundle {
-//                     scene: gltf_scene.named_scenes["Scene"].clone(),
-//                     transform: Transform::from_xyz(0.0, 0.0, 0.0),
-//                     ..Default::default()
-//                 };
-
-//                 commands.spawn(player_mesh);
-//             }
-//         }
-//     }
-// }
