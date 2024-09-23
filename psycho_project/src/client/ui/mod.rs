@@ -24,9 +24,10 @@ impl Plugin for UiPlugin {
     }
 }
 
+// Marker component tells me who is my main camera - A lot of mechanic in the future gonna be based on it
 #[derive(Component)]
-pub struct UiCamera;
+pub struct MainCamera;
 
 fn spawn_begin_camera(mut commands: Commands) {
-    commands.spawn(Camera3dBundle::default()).insert(UiCamera);
+    commands.spawn(Camera3dBundle::default()).insert(MainCamera);
 }

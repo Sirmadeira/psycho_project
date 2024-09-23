@@ -1,4 +1,4 @@
-use crate::client::create_char::RttImage;
+use crate::client::form_player::RttImage;
 use crate::shared::protocol::lobby_structs::StartGame;
 use crate::shared::protocol::player_structs::{Channel1, PlayerLoadout, PlayerVisuals};
 use bevy::prelude::*;

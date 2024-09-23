@@ -65,9 +65,9 @@ impl Default for PlayerVisuals {
 }
 
 impl PlayerVisuals {
-    // Returns an iterator over the visual components. Really usefull for pretty code
+    // Returns an iterator over the visual components. Inclu
     pub fn iter_visuals(&self) -> impl Iterator<Item = &String> {
-        vec![&self.head, &self.torso, &self.legs].into_iter()
+        vec![&self.head, &self.torso, &self.legs, &self.skeleton].into_iter()
     }
 }
 

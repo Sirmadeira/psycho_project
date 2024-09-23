@@ -8,12 +8,12 @@ use crate::shared::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::PlayerBundleMap;
 use crate::{client::ui::UiPlugin, shared::protocol::lobby_structs::StartGame};
 
-mod create_char;
+mod form_player;
 mod load_assets;
 mod ui;
 
 // SElLF MADE IMPORTS
-use self::create_char::CreateCharPlugin;
+use self::form_player::CreateCharPlugin;
 use self::load_assets::LoadingAssetsPlugin;
 // OTHER PLUGINS
 use bevy_panorbit_camera::PanOrbitCameraPlugin;
