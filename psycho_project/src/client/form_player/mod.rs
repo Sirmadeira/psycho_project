@@ -10,11 +10,12 @@ use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
 use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
-use bevy::transform::commands;
 use bevy::utils::HashMap;
 use bevy::window::PrimaryWindow;
 use bevy_panorbit_camera::{ActiveCameraData, PanOrbitCamera};
 use lightyear::client::events::MessageEvent;
+use lightyear::shared::replication::components::Controlled;
+use lightyear::shared::replication::components::Replicated;
 mod helpers;
 
 pub struct CreateCharPlugin;
@@ -28,7 +29,15 @@ impl Plugin for CreateCharPlugin {
             Update,
             form_rtt_character.run_if(in_state(MyAppState::Lobby)),
         );
-        app.add_systems(OnEnter(MyCharState::TransferAnimations), transfer_animation);
+        app.add_systems(
+            OnEnter(MyCharState::TransferComp),
+            transfer_essential_components,
+        );
+        app.add_systems(OnExit(MyCharState::TransferComp), despawn_old_bones);
+        app.add_systems(
+            Update,
+            finish_player.run_if(in_state(MyCharState::Replicating)),
+        );
         app.add_systems(Update, disable_culling);
     }
 }
@@ -43,8 +52,9 @@ pub enum MyCharState {
     // Spawns necessary scenes
     FormPlayer,
     // Transfer animation targets
-    TransferAnimations,
-
+    TransferComp,
+    // Making final replicated entity
+    Replicating,
     Done,
 }
 
@@ -183,17 +193,18 @@ pub fn form_rtt_character(
                 commands.spawn((Visual, scene));
             }
         }
-        char_state.set(MyCharState::TransferAnimations);
+        char_state.set(MyCharState::TransferComp);
     }
 }
 
 // Transfer the animations to all the visual bones
-fn transfer_animation(
+fn transfer_essential_components(
     skeleton: Query<Entity, With<Skeleton>>,
     visuals: Query<Entity, With<Visual>>,
     animation_target: Query<&AnimationTarget>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
+    mut char_state: ResMut<NextState<MyCharState>>,
     mut commands: Commands,
 ) {
     let skeleton = skeleton
@@ -203,7 +214,7 @@ fn transfer_animation(
     info!("Grabbing old skeleton bones");
     let old_entity =
         find_child_with_name_containing(&children_entities, &names, &skeleton, "Armature")
-            .expect("Armature 1");
+            .expect("Skeleton to have root armature");
 
     let mut old_bones = HashMap::new();
     collect_bones(&children_entities, &names, &old_entity, &mut old_bones);
@@ -212,7 +223,7 @@ fn transfer_animation(
     for visual in visuals.iter() {
         let new_entity =
             find_child_with_name_containing(&children_entities, &names, &visual, "Armature")
-                .expect("Armature 2");
+                .expect("Visual to have root armature");
 
         commands
             .entity(new_entity)
@@ -221,23 +232,26 @@ fn transfer_animation(
         let mut new_bones = HashMap::new();
         collect_bones(&children_entities, &names, &new_entity, &mut new_bones);
 
-        for (name, entity) in old_bones.iter() {
+        for (name, old_bone) in old_bones.iter() {
             let old_animation_target = animation_target
-                .get(*entity)
+                .get(*old_bone)
                 .expect("To have target if it doesnt well shit");
 
-            if let Some(new_match_entity) = new_bones.get(name) {
-                commands.entity(*new_match_entity).insert(AnimationTarget {
-                    id: old_animation_target.id,
-                    player: new_entity,
-                });
+            if let Some(corresponding_bone) = new_bones.get(name) {
+                commands
+                    .entity(*corresponding_bone)
+                    .insert(AnimationTarget {
+                        id: old_animation_target.id,
+                        player: new_entity,
+                    });
             }
         }
     }
+    char_state.set(MyCharState::Replicating);
 }
 
-// Despawns uncessary old skeleton
-pub fn despawn_old_bones(
+// Despawns uncessary old skeleton- Lots of entities here so extremely uneeded
+fn despawn_old_bones(
     skeleton: Query<Entity, With<Skeleton>>,
     mut commands: Commands,
     children_entities: Query<&Children>,
@@ -256,8 +270,17 @@ pub fn despawn_old_bones(
 }
 
 // Sets bones in place of original skeleton
-pub fn finish_player(visuals: Query<Entity, With<Visual>>) {
-    for visual in visuals.iter() {}
+fn finish_player(
+    player_replicated: Query<Entity, (Added<Replicated>, Added<Controlled>)>,
+    visuals: Query<Entity, With<Visual>>,
+    mut commands: Commands,
+) {
+    if let Ok(player) = player_replicated.get_single() {
+        info!("Aggregating into one single entity for easy of use");
+        for visual in visuals.iter() {
+            commands.entity(visual).set_parent(player);
+        }
+    }
 }
 
 // Constructs final skeleton entity - Makes visual armatures child of it and parents  weapons correctly. Also despawn old armatures
