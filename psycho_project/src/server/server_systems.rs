@@ -1,7 +1,9 @@
 //! Essential systems to run when server boot ups or connections occur to him
+use crate::server::save_file;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use bevy::prelude::*;
+use bevy::utils::hashbrown::HashMap;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
@@ -135,6 +137,7 @@ pub(crate) fn handle_connections(
             info!("New player make him learn! And insert him into resource");
             let new_bundle =
                 spawn_player_entity(connection.client_id, false, &mut commands, None).unwrap();
+
             player_map
                 .0
                 .insert(connection.client_id, new_bundle.clone());
@@ -146,6 +149,9 @@ pub(crate) fn handle_connections(
                 connection.client_id,
                 &mut PlayerLoadout(client_visuals),
             );
+
+            info!("Saving player info in file for first time");
+            save_file(player_map.clone());
         }
 
         current_players.quantity += 1;
