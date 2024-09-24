@@ -1,24 +1,32 @@
-//! Plugin responsible for customizing the player character in rtt and in game
-use crate::client::form_player::helpers::*;
+//! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
 use crate::client::load_assets::ClientCharCollection;
-use crate::client::MyAppState;
+use crate::client::{form_player::helpers::*, MyAppState};
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use lightyear::client::events::MessageEvent;
+use lightyear::shared::replication::components::{Controlled, Replicated};
 
 pub struct CustomizeChar;
 
 impl Plugin for CustomizeChar {
     fn build(&self, app: &mut App) {
         app.init_state::<MyCharState>();
-        app.add_systems(Update, form_character.run_if(in_state(MyAppState::Lobby)));
+        app.add_systems(Update, form_character.run_if(is_loaded));
         app.add_systems(
             OnEnter(MyCharState::TransferComp),
             transfer_essential_components,
         );
         app.add_systems(OnExit(MyCharState::TransferComp), despawn_old_bones);
+    }
+}
+
+// Rc - Only run this system if it has all assets available
+fn is_loaded(state: Res<State<MyAppState>>) -> bool {
+    if *state != MyAppState::LoadingAssets {
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -43,48 +51,51 @@ struct Skeleton;
 #[derive(Component)]
 struct Visual;
 
-// Occurs everytime you login in basically, gives you your current loadout in the save file
+// Occurs everytime a player is replicated in basically, gives you your current loadout in the save file
 pub fn form_character(
-    mut events: EventReader<MessageEvent<PlayerLoadout>>,
+    player_to_form: Query<&PlayerId, (Added<Replicated>, Added<Controlled>)>,
     client_collection: Res<ClientCharCollection>,
     gltfs: Res<Assets<Gltf>>,
     mut char_state: ResMut<NextState<MyCharState>>,
+    bundle_map: Res<PlayerBundleMap>,
     mut commands: Commands,
 ) {
-    for event in events.read() {
+    if let Ok(player) = player_to_form.get_single() {
         info!("Grabbing saved loadout from server and applying to rtt");
-        let player_visuals = &event.message().0;
+        let client_id = player.0;
+        if let Some(player_info) = bundle_map.0.get(&client_id) {
+            info!("Grabbing stored visuals in replicated resource");
+            let visuals = &player_info.visuals;
+            for visual in visuals.iter_visuals() {
+                let gltf = client_collection
+                    .gltf_files
+                    .get(visual)
+                    .expect("Gltf to be loaded");
 
-        // Spawns each scene in current worlds
-        for visual in player_visuals.iter_visuals() {
-            let gltf = client_collection
-                .gltf_files
-                .get(visual)
-                .expect("Gltf to be loaded");
+                let loaded_gltf = gltfs
+                    .get(gltf)
+                    .expect("To find gltf handle in loaded gltfs");
 
-            let loaded_gltf = gltfs
-                .get(gltf)
-                .expect("To find gltf handle in loaded gltfs");
-
-            let visual_scene = loaded_gltf.scenes[0].clone();
-            let char_position = Vec3::new(0.0, 0.0, 0.0);
-            let scene = SceneBundle {
-                scene: visual_scene,
-                transform: Transform::from_translation(char_position),
-                // If you want him to stare face front to camera as from blender he usually stares at negative -z
-                // .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
-                ..default()
-            };
-            info!("Spawning scene entities to be utilized in creating our character");
-            if visual.contains("skeleton") {
-                info!("Spawning and marking main skeleton entity");
-                commands.spawn((Skeleton, scene));
-            } else {
-                info!("Spawning visual {} scene", visual);
-                commands.spawn((Visual, scene));
+                let visual_scene = loaded_gltf.scenes[0].clone();
+                let char_position = Vec3::new(0.0, 0.0, 0.0);
+                let scene = SceneBundle {
+                    scene: visual_scene,
+                    transform: Transform::from_translation(char_position),
+                    // If you want him to stare face front to camera as from blender he usually stares at negative -z
+                    // .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
+                    ..default()
+                };
+                info!("Spawning scene entities to be utilized in creating our character");
+                if visual.contains("skeleton") {
+                    info!("Spawning and marking main skeleton entity");
+                    commands.spawn((Skeleton, scene));
+                } else {
+                    info!("Spawning visual {} scene", visual);
+                    commands.spawn((Visual, scene));
+                }
             }
+            char_state.set(MyCharState::TransferComp);
         }
-        char_state.set(MyCharState::TransferComp);
     }
 }
 

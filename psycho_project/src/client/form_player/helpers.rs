@@ -1,4 +1,4 @@
-//! Just a bunch of really usefull interators
+//! Just a bunch of really usefull functions
 
 use bevy::prelude::*;
 use bevy::utils::HashMap;

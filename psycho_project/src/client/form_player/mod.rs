@@ -3,6 +3,7 @@
 use bevy::prelude::*;
 use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
 
+mod animations;
 mod char_customizer;
 mod helpers;
 pub mod rtt;

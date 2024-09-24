@@ -19,7 +19,7 @@ impl Plugin for ProtocolPlugin {
         app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
         // Messages
         app.register_message::<StartGame>(ChannelDirection::ServerToClient);
-        app.register_message::<PlayerLoadout>(ChannelDirection::Bidirectional);
+        app.register_message::<PlayerLoadout>(ChannelDirection::ClientToServer);
         // Components
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)

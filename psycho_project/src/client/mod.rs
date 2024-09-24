@@ -2,6 +2,7 @@
 //! This plugin will act as the entire client meaning every single plugin that relies on the user computer is gonna run here
 
 use bevy::prelude::*;
+use lightyear::prelude::client::ClientCommands;
 use lightyear::shared::events::components::MessageEvent;
 
 use crate::shared::protocol::lobby_structs::Lobbies;
@@ -40,7 +41,9 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(UiPlugin);
         app.add_plugins(CreateCharPlugin);
 
-        // Listening systems - Systems that hear messages from server
+        // Connection systems - Systems that dialogues with server
+        app.add_systems(OnEnter(MyAppState::MainMenu), connect_client);
+
         app.add_systems(Update, start_game);
     }
 }
@@ -48,10 +51,18 @@ impl Plugin for ExampleClientPlugin {
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub enum MyAppState {
     #[default]
+    // Started loading assets
     LoadingAssets,
+    // In main menu for setting player options and such
     MainMenu,
     Lobby,
     Game,
+}
+
+// First thing we will do is connect the client to server as our server is really important for grabing specific info
+pub fn connect_client(mut commands: Commands) {
+    info!("Gonna connect to server");
+    commands.connect_client();
 }
 
 // Starts the game the message filters out the specific clients

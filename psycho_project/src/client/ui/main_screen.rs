@@ -1,6 +1,5 @@
 use crate::client::MyAppState;
 use bevy::prelude::*;
-use lightyear::prelude::client::*;
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -145,8 +144,6 @@ pub fn start_button(
                 let menu = on_main_menu.get_single_mut().unwrap();
                 commands.entity(menu).despawn_descendants().despawn();
                 my_app_state.set(MyAppState::Lobby);
-                info!("Gonna connect to server");
-                commands.connect_client();
             }
             Interaction::Hovered => {
                 text.sections[0].value = "IDIOT!".to_string();
