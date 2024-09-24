@@ -3,6 +3,7 @@ use crate::server::save_file;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
@@ -19,6 +20,10 @@ pub(crate) fn start_server(mut commands: Commands) {
 pub struct PlayerAmount {
     quantity: u32,
 }
+
+// A simple map TODO - Easy way of grabbing player entity to change it is component
+#[derive(Resource, Default)]
+pub struct MapPlayer(HashMap<ClientId, Entity>);
 
 /// Add some debugging text to the screen
 pub(crate) fn init(mut commands: Commands) {
