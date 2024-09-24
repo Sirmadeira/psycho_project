@@ -19,6 +19,7 @@ impl Plugin for UiPlugin {
             Update,
             save_character_button.run_if(in_state(MyAppState::Lobby)),
         );
+        app.add_systems(Update, search_button.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
     }

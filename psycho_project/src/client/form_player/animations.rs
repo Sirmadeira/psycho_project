@@ -1,16 +1,19 @@
 //! Player related animations are here
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use lightyear::prelude::Replicated;
 
 use crate::client::load_assets::ClientCharCollection;
 use crate::client::MyAppState;
+use crate::shared::protocol::player_structs::PlayerVisuals;
 
+use crate::client::form_player::is_loaded;
 pub struct AnimPlayer;
 
 impl Plugin for AnimPlayer {
     fn build(&self, app: &mut App) {
         app.register_type::<Animations>();
-        app.add_systems(OnEnter(MyAppState::Lobby), grab_gltf_animations);
+        app.add_systems(Update, grab_gltf_animations.run_if(is_loaded));
     }
 }
 
@@ -25,6 +28,7 @@ pub struct Animations {
 
 // Grabbing animations from gltf
 pub fn grab_gltf_animations(
+    player_visual: Query<&PlayerVisuals, Added<Replicated>>,
     char_collection: Res<ClientCharCollection>,
     assets_gltf: Res<Assets<Gltf>>,
     mut animations: ResMut<Animations>,

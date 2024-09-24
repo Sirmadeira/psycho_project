@@ -23,3 +23,6 @@ pub struct Lobby {
 pub struct StartGame {
     pub lobby_id: usize,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct SearchMatch;

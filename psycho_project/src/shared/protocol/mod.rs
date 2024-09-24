@@ -19,12 +19,14 @@ impl Plugin for ProtocolPlugin {
         app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
         // Messages
         app.register_message::<StartGame>(ChannelDirection::ServerToClient);
+        app.register_message::<SearchMatch>(ChannelDirection::ClientToServer);
         app.register_message::<PlayerLoadout>(ChannelDirection::ClientToServer);
         // Components
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
         app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient);
+        app.register_component::<PlayerStateConnection>(ChannelDirection::ServerToClient);
         // Channels
         app.add_channel::<Channel1>(ChannelSettings {
             mode: ChannelMode::OrderedReliable(ReliableSettings::default()),

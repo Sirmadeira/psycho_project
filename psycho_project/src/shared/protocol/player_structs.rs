@@ -17,13 +17,15 @@ pub struct PlayerBundleMap(pub HashMap<ClientId, PlayerBundle>);
 pub struct PlayerBundle {
     pub id: PlayerId,
     pub visuals: PlayerVisuals,
+    pub state_connection: PlayerStateConnection,
 }
 
 impl PlayerBundle {
-    pub fn new(id: ClientId, visuals: PlayerVisuals) -> Self {
+    pub fn new(id: ClientId, visuals: PlayerVisuals, online_state: PlayerStateConnection) -> Self {
         Self {
             id: PlayerId(id),
             visuals: visuals,
+            state_connection: online_state,
         }
     }
 }
@@ -34,7 +36,7 @@ impl PlayerBundle {
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 pub struct PlayerId(pub ClientId);
 
-// Since our character are modular we will be able to attach a series of visuals to it
+// Visuals of our character IMPORTANT THIS IS SOLELY DEFINED BY SERVER NEVER LET THIS INFO BE ACESSIBLE VIA CLIENT or shared with client
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 pub struct PlayerVisuals {
     // Character related visuals - Vec of file paths
@@ -69,6 +71,16 @@ impl PlayerVisuals {
     pub fn iter_visuals(&self) -> impl Iterator<Item = &String> {
         vec![&self.head, &self.torso, &self.legs, &self.skeleton].into_iter()
     }
+}
+
+// Visuals of our character IMPORTANT THIS IS SOLELY DEFINED BY SERVER NEVER LET THIS INFO BE ACESSIBLE VIA CLIENT or shared with client
+#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
+pub struct PlayerStateConnection {
+    pub online: bool,
+    // If is searching or not
+    pub searching: bool,
+    // If in game or not
+    pub in_game: bool,
 }
 
 // Channels

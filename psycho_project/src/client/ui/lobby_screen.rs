@@ -1,6 +1,8 @@
 use crate::client::form_player::rtt::RttImage;
-use crate::shared::protocol::lobby_structs::StartGame;
-use crate::shared::protocol::player_structs::{Channel1, PlayerLoadout, PlayerVisuals};
+use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame};
+use crate::shared::protocol::player_structs::{
+    Channel1, PlayerLoadout, PlayerStateConnection, PlayerVisuals,
+};
 use bevy::prelude::*;
 use bevy::{
     a11y::{
@@ -11,10 +13,14 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
 };
 use lightyear::prelude::client::*;
+use lightyear::shared::replication::components::Controlled;
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
+
+#[derive(Component)]
+pub struct SearchButton;
 
 #[derive(Component)]
 pub struct ScreenLobby;
@@ -65,16 +71,57 @@ pub fn lobby_screen(
         ))
         .with_children(|parent| {
             // First column
-            parent.spawn(NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    width: Val::Percent(33.0),
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        width: Val::Percent(33.0),
+                        ..default()
+                    },
                     ..default()
-                },
-                ..default()
-            });
+                })
+                .with_children(|parent| {
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Column,
+                                align_items: AlignItems::Center,
+                                justify_content: JustifyContent::Center,
+                                width: Val::Percent(33.0),
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        // SIMPLE TITLE TEXT
+                        .with_children(|parent| {
+                            parent.spawn(TextBundle::from_section(
+                                "SEARCH FOR MATCH",
+                                TextStyle {
+                                    font: asset_server.load("grafitti.ttf"),
+                                    font_size: 45.0,
+                                    ..default()
+                                },
+                            ));
+                            // CONNECT BUTTON
+                            parent
+                                .spawn((
+                                    ButtonBundle {
+                                        style: button_style.clone(),
+                                        border_color: BorderColor(Color::BLACK),
+                                        ..default()
+                                    },
+                                    SearchButton, // Insert DuelButton here
+                                ))
+                                .with_children(|parent| {
+                                    parent.spawn(TextBundle::from_section(
+                                        "CONNECT TO SERVER",
+                                        button_text_style.clone(),
+                                    ));
+                                });
+                        });
+                });
             // Second columns
             parent
                 .spawn(NodeBundle {
@@ -179,6 +226,47 @@ pub fn lobby_screen(
                         });
                 });
         });
+}
+
+pub fn search_button(
+    mut interaction_query: Query<
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            &mut BorderColor,
+            &Children,
+        ),
+        (Changed<Interaction>, With<SearchButton>),
+    >,
+    mut connection_manager: ResMut<ConnectionManager>,
+    mut text_query: Query<&mut Text>,
+) {
+    // Thus button bundle only contains one child text
+    if let Ok((interaction, mut color, mut border_color, children)) =
+        interaction_query.get_single_mut()
+    {
+        let mut text = text_query.get_mut(children[0]).unwrap();
+
+        match *interaction {
+            Interaction::Pressed => {
+                text.sections[0].value = "LETS DUEL!".to_string();
+                *color = PRESSED_BUTTON.into();
+                border_color.0 = Color::srgb(255.0, 0.0, 0.0);
+                info!("Sending message to server to set player state to searching");
+                let _ = connection_manager.send_message::<Channel1, SearchMatch>(&mut SearchMatch);
+            }
+            Interaction::Hovered => {
+                text.sections[0].value = "DO IT ".to_string();
+                *color = HOVERED_BUTTON.into();
+                border_color.0 = Color::WHITE;
+            }
+            Interaction::None => {
+                text.sections[0].value = "SEARCH YOUR RIVAL".to_string();
+                *color = NORMAL_BUTTON.into();
+                border_color.0 = Color::BLACK;
+            }
+        }
+    }
 }
 
 // Send a message to server telling me player loadout

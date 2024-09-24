@@ -1,5 +1,7 @@
-use crate::shared::protocol::lobby_structs::Lobbies;
-use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerLoadout, PlayerVisuals};
+use crate::shared::protocol::lobby_structs::{Lobbies, SearchMatch};
+use crate::shared::protocol::player_structs::{
+    PlayerBundleMap, PlayerId, PlayerLoadout, PlayerStateConnection, PlayerVisuals,
+};
 use bevy::prelude::*;
 use lightyear::server::events::*;
 mod server_systems;
@@ -37,6 +39,7 @@ impl Plugin for ExampleServerPlugin {
 
         // Listeners
         app.add_systems(Update, listener_player_loadout);
+        app.add_systems(Update, listener_search_match);
     }
 }
 
@@ -89,6 +92,31 @@ fn listener_player_loadout(
             save_file(player_map.clone());
         } else {
             error!("Something went wrong in grabing this id info in server");
+        }
+    }
+}
+
+// Responsible for searching for match - JEBUS THIS IS UGLY
+fn listener_search_match(
+    mut events: EventReader<MessageEvent<SearchMatch>>,
+    player_ids: Query<(Entity, &PlayerId), With<PlayerId>>,
+    mut online_state: Query<&mut PlayerStateConnection>,
+) {
+    for event in events.read() {
+        let client_id = event.context();
+
+        let id_to_compare = PlayerId(*client_id);
+
+        for (entity, player_id) in player_ids.iter() {
+            if *player_id == id_to_compare {
+                info!("This player is searching for match {}", client_id);
+                let mut on_state = online_state.get_mut(entity).expect("I a mtired boss");
+                *on_state = PlayerStateConnection {
+                    online: true,
+                    searching: true,
+                    in_game: false,
+                }
+            }
         }
     }
 }

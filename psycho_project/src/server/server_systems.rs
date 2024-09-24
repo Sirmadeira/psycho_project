@@ -20,15 +20,6 @@ pub struct PlayerAmount {
     quantity: u32,
 }
 
-// Tells me the player/client state of connection
-#[derive(Component, Default, Clone)]
-pub struct PlayStateConnection {
-    // If is searching or not
-    searching: bool,
-    // If in game or not
-    in_game: bool,
-}
-
 /// Add some debugging text to the screen
 pub(crate) fn init(mut commands: Commands) {
     commands.spawn(
@@ -78,15 +69,16 @@ pub(crate) fn spawn_player_entity(
     let name = Name::new(format!("Player {:?}", client_id));
 
     info!("Settin their status to searching for matchmaking");
-    let player_state = PlayStateConnection {
-        searching: true,
+    let online_state = PlayerStateConnection {
+        online: true,
+        searching: false,
         in_game: false,
     };
 
     if let Some(player_bun) = player_bundle {
         commands
             .spawn(player_bun)
-            .insert(player_state)
+            .insert(online_state)
             .insert(name)
             .insert(replicate);
         info!("Replicating veteran player");
@@ -94,10 +86,10 @@ pub(crate) fn spawn_player_entity(
     } else {
         // Setting default visuals
         let player_visual = PlayerVisuals::default();
-        let new_player_bundle = PlayerBundle::new(client_id, player_visual);
+        let new_player_bundle = PlayerBundle::new(client_id, player_visual, online_state.clone());
         commands
             .spawn(new_player_bundle.clone())
-            .insert(player_state)
+            .insert(online_state)
             .insert(name)
             .insert(replicate);
         info!("Replicating new player");
@@ -156,19 +148,19 @@ pub(crate) fn handle_disconnections(
 // Creates a lobby if two players are actively searching
 pub(crate) fn create_lobby(
     mut lobbies: ResMut<Lobbies>,
-    mut query: Query<(&PlayerId, &mut PlayStateConnection), With<PlayStateConnection>>,
+    mut query: Query<(&PlayerId, &mut PlayerStateConnection), With<PlayerStateConnection>>,
     mut connection_manager: ResMut<ConnectionManager>,
 ) {
     // Client id searching
     let mut clients_searching = Vec::default();
 
-    let mut player_states = Vec::default();
+    let mut online_states = Vec::default();
 
     // Loop through find total of players searching
     for (client_id, player_state) in query.iter_mut() {
         if player_state.searching == true {
             clients_searching.push(client_id.0);
-            player_states.push(player_state);
+            online_states.push(player_state);
         }
     }
 
@@ -179,7 +171,7 @@ pub(crate) fn create_lobby(
         let lobby_id = lobbies.lobbies.len();
         lobby.lobby_id = lobby_id;
         info!("Changing player network states to in game");
-        for state in player_states.iter_mut() {
+        for state in online_states.iter_mut() {
             state.in_game = true;
             state.searching = false;
         }
