@@ -10,6 +10,7 @@ use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
 use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
+use bevy::transform::commands;
 use bevy::utils::HashMap;
 use bevy::window::PrimaryWindow;
 use bevy_panorbit_camera::{ActiveCameraData, PanOrbitCamera};
@@ -39,8 +40,11 @@ pub struct RttImage(pub Handle<Image>);
 #[reflect(Debug, PartialEq, Hash, Default)]
 pub enum MyCharState {
     #[default]
+    // Spawns necessary scenes
     FormPlayer,
+    // Transfer animation targets
     TransferAnimations,
+
     Done,
 }
 
@@ -143,7 +147,7 @@ pub fn form_rtt_character(
     mut events: EventReader<MessageEvent<PlayerLoadout>>,
     client_collection: Res<ClientCharCollection>,
     gltfs: Res<Assets<Gltf>>,
-    mut player_state: ResMut<NextState<MyCharState>>,
+    mut char_state: ResMut<NextState<MyCharState>>,
     mut commands: Commands,
 ) {
     for event in events.read() {
@@ -179,7 +183,7 @@ pub fn form_rtt_character(
                 commands.spawn((Visual, scene));
             }
         }
-        player_state.set(MyCharState::TransferAnimations);
+        char_state.set(MyCharState::TransferAnimations);
     }
 }
 
@@ -222,9 +226,6 @@ fn transfer_animation(
                 .get(*entity)
                 .expect("To have target if it doesnt well shit");
 
-            // let new_match_entity = new_bones
-            //     .get(name)
-            //     .expect(&format!("To have matching bone {}", name).to_string());
             if let Some(new_match_entity) = new_bones.get(name) {
                 commands.entity(*new_match_entity).insert(AnimationTarget {
                     id: old_animation_target.id,
@@ -233,6 +234,30 @@ fn transfer_animation(
             }
         }
     }
+}
+
+// Despawns uncessary old skeleton
+pub fn despawn_old_bones(
+    skeleton: Query<Entity, With<Skeleton>>,
+    mut commands: Commands,
+    children_entities: Query<&Children>,
+    names: Query<&Name>,
+) {
+    let skeleton = skeleton
+        .get_single()
+        .expect("For player to solely have one skeleton");
+
+    info!("Despawning unecessary old armature");
+    let old_base_armature =
+        find_child_with_name_containing(&children_entities, &names, &skeleton, "Armature")
+            .expect("Old armature");
+
+    commands.entity(old_base_armature).despawn_recursive();
+}
+
+// Sets bones in place of original skeleton
+pub fn finish_player(visuals: Query<Entity, With<Visual>>) {
+    for visual in visuals.iter() {}
 }
 
 // Constructs final skeleton entity - Makes visual armatures child of it and parents  weapons correctly. Also despawn old armatures
