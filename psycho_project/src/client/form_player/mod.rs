@@ -3,12 +3,13 @@
 use crate::client::MyAppState;
 use bevy::prelude::*;
 use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
+
 mod animations;
 mod char_customizer;
 mod helpers;
 pub mod rtt;
 
-use self::{char_customizer::*, rtt::*};
+use self::{animations::*, char_customizer::*, rtt::*};
 
 pub struct CreateCharPlugin;
 
@@ -20,6 +21,7 @@ impl Plugin for CreateCharPlugin {
         app.add_systems(Startup, spawn_light_bundle);
         // Self made plubings
         app.add_plugins(CustomizeChar);
+        app.add_plugins(AnimPlayer);
         // Necesssity
         app.add_systems(Update, disable_culling);
     }
@@ -45,20 +47,6 @@ fn spawn_light_bundle(mut commands: Commands) {
         ..default()
     });
 }
-
-// Sets bones in place of original skeleton
-// fn finish_player(
-//     player_replicated: Query<Entity, (Added<Replicated>, Added<Controlled>)>,
-//     visuals: Query<Entity, With<Visual>>,
-//     mut commands: Commands,
-// ) {
-//     if let Ok(player) = player_replicated.get_single() {
-//         info!("Aggregating into one single entity for easy of use");
-//         for visual in visuals.iter() {
-//             commands.entity(visual).set_parent(player);
-//         }
-//     }
-// }
 
 // Debugger function in animations
 pub fn disable_culling(mut commands: Commands, skinned: Query<Entity, Added<SkinnedMesh>>) {

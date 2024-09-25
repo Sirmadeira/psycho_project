@@ -13,12 +13,14 @@ pub struct AnimPlayer;
 impl Plugin for AnimPlayer {
     fn build(&self, app: &mut App) {
         app.register_type::<Animations>();
-        app.add_systems(Update, grab_gltf_animations.run_if(is_loaded));
+        app.add_systems(Startup, create_animations_resource);
+        app.add_systems(Update, insert_gltf_animations.run_if(is_loaded));
     }
 }
 
 //Resource utilized to tell me what animation to play in my animation graph
 #[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct Animations {
     // A node  that tells me exactly the name of an specific animation
     pub named_nodes: HashMap<String, AnimationNodeIndex>,
@@ -26,9 +28,24 @@ pub struct Animations {
     pub animation_graph: Handle<AnimationGraph>,
 }
 
-// Grabbing animations from gltf
-pub fn grab_gltf_animations(
-    player_visual: Query<&PlayerVisuals, Added<Replicated>>,
+fn create_animations_resource(
+    mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
+    mut commands: Commands,
+) {
+    let animation_named_nodes: HashMap<String, AnimationNodeIndex> = HashMap::default();
+    let animation_graph = AnimationGraph::default();
+
+    let hand_graph = assets_animation_graph.add(animation_graph.clone());
+
+    commands.insert_resource(Animations {
+        named_nodes: animation_named_nodes,
+        animation_graph: hand_graph,
+    });
+}
+
+// Grabbing animations from gltf and inserting into graph
+fn insert_gltf_animations(
+    player_visuals: Query<&PlayerVisuals, Added<Replicated>>,
     char_collection: Res<ClientCharCollection>,
     assets_gltf: Res<Assets<Gltf>>,
     mut animations: ResMut<Animations>,
@@ -39,21 +56,28 @@ pub fn grab_gltf_animations(
         .get_mut(&animations.animation_graph)
         .expect("To have created animation graph");
 
-    info!("Grabbing all the animation available in our assets and registering in resource");
-    for (_, gltf_handle) in &char_collection.gltf_files {
+    for player_visual in player_visuals.iter() {
+        //Skeleton should be the entity to carry all animations
+        let skeleton = &player_visual.skeleton;
+
+        let skeleton_gltf = char_collection
+            .gltf_files
+            .get(skeleton)
+            .expect("To find skeleton in client collection");
+
         let gltf = assets_gltf
-            .get(gltf_handle)
-            .expect("My asset pack to have GLTF");
+            .get(skeleton_gltf)
+            .expect("Skeleton path to be found");
 
         for (name_animation, animation_clip) in gltf.named_animations.iter() {
             let node = animation_graph.add_clip(animation_clip.clone(), 1.0, animation_graph.root);
             animations
                 .named_nodes
                 .insert(name_animation.to_string(), node);
+            info!(
+                "Current available animations are {} for skeleton {}",
+                name_animation, skeleton
+            );
         }
-    }
-
-    for (name, _) in animations.named_nodes.clone() {
-        info!("Current available animations are {} for player", name);
     }
 }
