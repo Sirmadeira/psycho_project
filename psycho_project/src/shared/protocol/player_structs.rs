@@ -91,3 +91,5 @@ pub struct Channel1;
 // An event message sent by client to server that gives the player currently chosen loadout
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct PlayerLoadout(pub PlayerVisuals);
+
+

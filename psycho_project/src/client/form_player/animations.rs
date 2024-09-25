@@ -4,7 +4,6 @@ use bevy::utils::HashMap;
 use lightyear::prelude::Replicated;
 
 use crate::client::load_assets::ClientCharCollection;
-use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::PlayerVisuals;
 
 use crate::client::form_player::is_loaded;
@@ -13,7 +12,10 @@ pub struct AnimPlayer;
 impl Plugin for AnimPlayer {
     fn build(&self, app: &mut App) {
         app.register_type::<Animations>();
+        app.register_type::<PlayerAnimationMap>();
         app.add_systems(Startup, create_animations_resource);
+        // In this state to avoid running animations when character still transfering animations
+        // app.add_systems(OnEnter(MyCharState::Done), mark_player_animation_players);
         app.add_systems(Update, create_anim_transitions);
         app.add_systems(Update, insert_gltf_animations.run_if(is_loaded));
     }
@@ -29,10 +31,11 @@ pub struct Animations {
     pub animation_graph: Handle<AnimationGraph>,
 }
 
-// Resource utilized to easily find the animation players that
+// Resource utilized to easily find the animation players that should be played
+// Pass player entity, get vec of entities that have animation players
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
-pub struct PlayerAnimationMap;
+struct PlayerAnimationMap(HashMap<Entity, Vec<Entity>>);
 
 fn create_animations_resource(
     mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
@@ -62,7 +65,7 @@ fn create_anim_transitions(
 }
 
 // THis function maps the animation players and their main parent entities
-fn mark_player_animationplayer() {}
+fn mark_player_animation_players() {}
 
 // Grabbing animations from gltf and inserting into graph
 fn insert_gltf_animations(
@@ -71,6 +74,7 @@ fn insert_gltf_animations(
     assets_gltf: Res<Assets<Gltf>>,
     mut animations: ResMut<Animations>,
     mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
+    
 ) {
     info_once!("Gettting handle for animation graph");
     let animation_graph = assets_animation_graph
