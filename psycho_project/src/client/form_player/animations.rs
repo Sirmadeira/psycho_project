@@ -14,6 +14,7 @@ impl Plugin for AnimPlayer {
     fn build(&self, app: &mut App) {
         app.register_type::<Animations>();
         app.add_systems(Startup, create_animations_resource);
+        app.add_systems(Update, create_anim_transitions);
         app.add_systems(Update, insert_gltf_animations.run_if(is_loaded));
     }
 }
@@ -27,6 +28,11 @@ pub struct Animations {
     // It is graph handle
     pub animation_graph: Handle<AnimationGraph>,
 }
+
+// Resource utilized to easily find the animation players that
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
+pub struct PlayerAnimationMap;
 
 fn create_animations_resource(
     mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
@@ -43,6 +49,21 @@ fn create_animations_resource(
     });
 }
 
+// Inserts in every enttiy with an animation player an animation transition
+fn create_anim_transitions(
+    animated_entities: Query<Entity, Added<AnimationPlayer>>,
+    mut commands: Commands,
+) {
+    info_once!("Inserting anim transition");
+    for entity in animated_entities.iter() {
+        let transitions = AnimationTransitions::new();
+        commands.entity(entity).insert(transitions);
+    }
+}
+
+// THis function maps the animation players and their main parent entities
+fn mark_player_animationplayer() {}
+
 // Grabbing animations from gltf and inserting into graph
 fn insert_gltf_animations(
     player_visuals: Query<&PlayerVisuals, Added<Replicated>>,
@@ -51,7 +72,7 @@ fn insert_gltf_animations(
     mut animations: ResMut<Animations>,
     mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
 ) {
-    info!("Gettting handle for animation graph");
+    info_once!("Gettting handle for animation graph");
     let animation_graph = assets_animation_graph
         .get_mut(&animations.animation_graph)
         .expect("To have created animation graph");
@@ -74,10 +95,12 @@ fn insert_gltf_animations(
             animations
                 .named_nodes
                 .insert(name_animation.to_string(), node);
-            info!(
-                "Current available animations are {} for skeleton {}",
-                name_animation, skeleton
-            );
+            // info!(
+            //     "Current available animations are {} for skeleton {}",
+            //     name_animation, skeleton
+            // );
         }
     }
 }
+
+fn play_animation(animation_entities: Query<Entity, With<AnimationPlayer>>) {}

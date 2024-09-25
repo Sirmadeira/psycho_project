@@ -30,8 +30,6 @@ pub enum MyCharState {
     FormPlayer,
     // Transfer animation targets
     TransferComp,
-    // Making final replicated entity
-    Replicating,
     Done,
 }
 
@@ -45,16 +43,22 @@ struct Visual;
 
 // Occurs everytime a player is replicated in basically, gives you your current loadout in the save file
 pub fn form_character(
-    player_to_form: Query<&PlayerId, (Added<Controlled>, Added<Replicated>)>,
+    player_to_form: Query<(Entity, &PlayerId), (Added<Controlled>, Added<Replicated>)>,
     client_collection: Res<ClientCharCollection>,
     gltfs: Res<Assets<Gltf>>,
     mut char_state: ResMut<NextState<MyCharState>>,
     bundle_map: Res<PlayerBundleMap>,
     mut commands: Commands,
 ) {
-    if let Ok(player) = player_to_form.get_single() {
+    for (player_entity, player) in player_to_form.iter() {
+        info!("Preparing player entity (this avoid warnings)");
+        commands
+            .entity(player_entity)
+            .insert(SpatialBundle::default());
+
         info!("Grabbing saved loadout from server and applying to rtt");
         let client_id = player.0;
+
         if let Some(player_info) = bundle_map.0.get(&client_id) {
             info!("Grabbing stored visuals in replicated resource");
             let visuals = &player_info.visuals;
@@ -80,10 +84,10 @@ pub fn form_character(
                 info!("Spawning scene entities to be utilized in creating our character");
                 if visual.contains("skeleton") {
                     info!("Spawning and marking main skeleton entity");
-                    commands.spawn((Skeleton, scene));
+                    commands.spawn((Skeleton, scene)).set_parent(player_entity);
                 } else {
                     info!("Spawning visual {} scene", visual);
-                    commands.spawn((Visual, scene));
+                    commands.spawn((Visual, scene)).set_parent(player_entity);
                 }
             }
             char_state.set(MyCharState::TransferComp);
@@ -139,7 +143,7 @@ fn transfer_essential_components(
             }
         }
     }
-    char_state.set(MyCharState::Replicating);
+    char_state.set(MyCharState::Done);
 }
 
 // Despawns uncessary old skeleton- Lots of entities here so extremely uneeded
