@@ -21,9 +21,10 @@ pub struct PlayerAmount {
     quantity: u32,
 }
 
-// A simple map TODO - Easy way of grabbing player entity to change it is component
-#[derive(Resource, Default)]
-pub struct MapPlayer(HashMap<ClientId, Entity>);
+// A server side map, that tells me corresponding player entity according to id
+#[derive(Resource, Clone, Default, Reflect)]
+#[reflect(Resource, Default)]
+pub struct PlayerEntityMap(pub HashMap<ClientId, Entity>);
 
 /// Add some debugging text to the screen
 pub(crate) fn init(mut commands: Commands) {
@@ -52,6 +53,7 @@ pub(crate) fn spawn_player_entity(
     dedicated_server: bool,
     commands: &mut Commands,
     player_bundle: Option<PlayerBundle>,
+    player_entity_map: &mut ResMut<PlayerEntityMap>,
 ) -> Option<PlayerBundle> {
     // Replicating component important to define who sees the player or not
     let replicate = Replicate {
@@ -81,23 +83,28 @@ pub(crate) fn spawn_player_entity(
     };
 
     if let Some(player_bun) = player_bundle {
-        commands
+        info!("Inserting into server map resource");
+        let id = commands
             .spawn(player_bun)
             .insert(online_state)
             .insert(name)
-            .insert(replicate);
-        info!("Replicating veteran player");
+            .insert(replicate)
+            .id();
+        player_entity_map.0.insert(client_id, id);
         return None;
     } else {
+        info!("Inserting new player into server map");
         // Setting default visuals
         let player_visual = PlayerVisuals::default();
         let new_player_bundle = PlayerBundle::new(client_id, player_visual, online_state.clone());
-        commands
+        let id = commands
             .spawn(new_player_bundle.clone())
             .insert(online_state)
             .insert(name)
-            .insert(replicate);
-        info!("Replicating new player");
+            .insert(replicate)
+            .id();
+
+        player_entity_map.0.insert(client_id, id);
         return Some(new_player_bundle);
     }
 }
@@ -107,6 +114,7 @@ pub(crate) fn handle_connections(
     mut current_players: ResMut<PlayerAmount>,
     mut connections: EventReader<ConnectEvent>,
     mut player_map: ResMut<PlayerBundleMap>,
+    mut player_entity_map: ResMut<PlayerEntityMap>,
     mut commands: Commands,
 ) {
     for connection in connections.read() {
@@ -120,11 +128,18 @@ pub(crate) fn handle_connections(
                 false,
                 &mut commands,
                 Some(old_player_bundle.clone()),
+                &mut player_entity_map,
             );
         } else {
             info!("New player make him learn! And insert him into resource");
-            let new_bundle =
-                spawn_player_entity(connection.client_id, false, &mut commands, None).unwrap();
+            let new_bundle = spawn_player_entity(
+                connection.client_id,
+                false,
+                &mut commands,
+                None,
+                &mut player_entity_map,
+            )
+            .unwrap();
 
             player_map
                 .0

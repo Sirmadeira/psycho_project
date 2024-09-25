@@ -1,6 +1,6 @@
 use crate::shared::protocol::lobby_structs::{Lobbies, SearchMatch};
 use crate::shared::protocol::player_structs::{
-    PlayerBundleMap, PlayerId, PlayerLoadout, PlayerStateConnection, PlayerVisuals,
+    PlayerBundleMap, PlayerLoadout, PlayerStateConnection, PlayerVisuals,
 };
 use bevy::prelude::*;
 use lightyear::server::events::*;
@@ -18,6 +18,7 @@ impl Plugin for ExampleServerPlugin {
         // Initializing resources
         app.init_resource::<Lobbies>();
         app.init_resource::<PlayerAmount>();
+        app.init_resource::<PlayerEntityMap>();
 
         // Debug registering
         app.register_type::<Lobbies>();
@@ -99,24 +100,25 @@ fn listener_player_loadout(
 // Responsible for searching for match - JEBUS THIS IS UGLY
 fn listener_search_match(
     mut events: EventReader<MessageEvent<SearchMatch>>,
-    player_ids: Query<(Entity, &PlayerId), With<PlayerId>>,
+    player_entity_map: Res<PlayerEntityMap>,
     mut online_state: Query<&mut PlayerStateConnection>,
 ) {
     for event in events.read() {
         let client_id = event.context();
 
-        let id_to_compare = PlayerId(*client_id);
+        let player_entity = player_entity_map
+            .0
+            .get(client_id)
+            .expect("To find player in map when searching for his player state");
 
-        for (entity, player_id) in player_ids.iter() {
-            if *player_id == id_to_compare {
-                info!("This player is searching for match {}", client_id);
-                let mut on_state = online_state.get_mut(entity).expect("I a mtired boss");
-                *on_state = PlayerStateConnection {
-                    online: true,
-                    searching: true,
-                    in_game: false,
-                }
-            }
+        let mut on_state = online_state
+            .get_mut(*player_entity)
+            .expect("For online player to have player state component");
+
+        *on_state = PlayerStateConnection {
+            online: true,
+            searching: true,
+            in_game: false,
         }
     }
 }
