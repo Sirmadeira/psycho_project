@@ -1,8 +1,6 @@
 use crate::client::form_player::rtt::RttImage;
 use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame};
-use crate::shared::protocol::player_structs::{
-    Channel1, PlayerLoadout, PlayerStateConnection, PlayerVisuals,
-};
+use crate::shared::protocol::player_structs::{Channel1, PlayerLoadout, PlayerVisuals};
 use bevy::prelude::*;
 use bevy::{
     a11y::{
@@ -13,8 +11,6 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
 };
 use lightyear::prelude::client::*;
-use lightyear::shared::replication::components::Controlled;
-
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
