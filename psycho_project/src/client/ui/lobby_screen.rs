@@ -1,6 +1,6 @@
 use crate::client::form_player::rtt::RttImage;
 use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame};
-use crate::shared::protocol::player_structs::{Channel1, PlayerLoadout, PlayerVisuals};
+use crate::shared::protocol::player_structs::{Channel1, SavePlayer};
 use bevy::prelude::*;
 use bevy::{
     a11y::{
@@ -299,9 +299,8 @@ pub fn save_character_button(
                         border_color.0 = Color::srgb(1.0, 0.0, 0.0); // Use rgb values between 0 and 1
 
                         // Call the save mechanic when pressed
-                        let _ = connection_manager.send_message::<Channel1, PlayerLoadout>(
-                            &mut PlayerLoadout(PlayerVisuals::default()),
-                        );
+                        let _ = connection_manager
+                            .send_message::<Channel1, SavePlayer>(&mut SavePlayer);
                     }
                     Interaction::Hovered => {
                         text.sections[0].value = "OH MY GOD HE BEAUTY".to_string();

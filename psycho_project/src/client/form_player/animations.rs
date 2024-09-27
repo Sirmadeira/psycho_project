@@ -1,12 +1,14 @@
 //! Player related animations are here
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use lightyear::prelude::Replicated;
 
 use crate::client::load_assets::ClientCharCollection;
-use crate::shared::protocol::player_structs::PlayerVisuals;
 
-use crate::client::form_player::is_loaded;
+use crate::client::MyAppState;
+
+use super::MyCharState;
 pub struct AnimPlayer;
 
 impl Plugin for AnimPlayer {
@@ -14,10 +16,9 @@ impl Plugin for AnimPlayer {
         app.register_type::<Animations>();
         app.register_type::<PlayerAnimationMap>();
         app.add_systems(Startup, create_animations_resource);
-        // In this state to avoid running animations when character still transfering animations
-        // app.add_systems(OnEnter(MyCharState::Done), mark_player_animation_players);
-        app.add_systems(Update, create_anim_transitions);
-        app.add_systems(Update, insert_gltf_animations.run_if(is_loaded));
+        app.add_systems(Update, (create_anim_transitions, add_animation_graph));
+        app.add_systems(OnEnter(MyAppState::MainMenu), insert_gltf_animations);
+        app.add_systems(OnEnter(MyCharState::Done), play_animation);
     }
 }
 
@@ -64,47 +65,65 @@ fn create_anim_transitions(
     }
 }
 
-// THis function maps the animation players and their main parent entities
-fn mark_player_animation_players() {}
+// Loads from assets and put into our animations players must have for animation playing
+pub fn add_animation_graph(
+    animations: Res<Animations>,
+    mut commands: Commands,
+    mut players: Query<Entity, Added<AnimationPlayer>>,
+) {
+    // Each skinned mesh already  comes with a prespawned animation player struct
+    for entity in &mut players {
+        commands
+            .entity(entity)
+            .insert(animations.animation_graph.clone());
+    }
+}
 
 // Grabbing animations from gltf and inserting into graph
 fn insert_gltf_animations(
-    player_visuals: Query<&PlayerVisuals, Added<Replicated>>,
     char_collection: Res<ClientCharCollection>,
     assets_gltf: Res<Assets<Gltf>>,
     mut animations: ResMut<Animations>,
     mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
-    
 ) {
     info_once!("Gettting handle for animation graph");
     let animation_graph = assets_animation_graph
         .get_mut(&animations.animation_graph)
         .expect("To have created animation graph");
 
-    for player_visual in player_visuals.iter() {
-        //Skeleton should be the entity to carry all animations
-        let skeleton = &player_visual.skeleton;
+    let skeleton_gltf = char_collection
+        .gltf_files
+        .get("characters/mod_char/main_skeleton.glb")
+        .expect("To find skeleton in client collection");
 
-        let skeleton_gltf = char_collection
-            .gltf_files
-            .get(skeleton)
-            .expect("To find skeleton in client collection");
+    let gltf = assets_gltf
+        .get(skeleton_gltf)
+        .expect("Skeleton path to be found");
 
-        let gltf = assets_gltf
-            .get(skeleton_gltf)
-            .expect("Skeleton path to be found");
-
-        for (name_animation, animation_clip) in gltf.named_animations.iter() {
-            let node = animation_graph.add_clip(animation_clip.clone(), 1.0, animation_graph.root);
-            animations
-                .named_nodes
-                .insert(name_animation.to_string(), node);
-            // info!(
-            //     "Current available animations are {} for skeleton {}",
-            //     name_animation, skeleton
-            // );
-        }
+    for (name_animation, animation_clip) in gltf.named_animations.iter() {
+        let node = animation_graph.add_clip(animation_clip.clone(), 1.0, animation_graph.root);
+        animations
+            .named_nodes
+            .insert(name_animation.to_string(), node);
+        info!(
+            "Current available animations are {} for skeleton {}",
+            name_animation, "characters/mod_char/main_skeleton.glb"
+        );
     }
 }
 
-fn play_animation(animation_entities: Query<Entity, With<AnimationPlayer>>) {}
+fn play_animation(
+    mut animation_entities: Query<
+        (&mut AnimationTransitions, &mut AnimationPlayer),
+        Added<AnimationPlayer>,
+    >,
+    animations: Res<Animations>,
+) {
+    let named_animations = animations.named_nodes.clone();
+    for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
+        let node = named_animations.get("Walk").unwrap();
+        animation_transitions
+            .play(&mut animation_player, *node, Duration::ZERO)
+            .repeat();
+    }
+}

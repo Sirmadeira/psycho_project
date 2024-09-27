@@ -6,25 +6,18 @@ use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use lightyear::connection::netcode::ClientId;
-use lightyear::shared::replication::components::{Controlled, Replicated};
+use lightyear::client::events::MessageEvent;
 
 pub struct CustomizeChar;
 
 impl Plugin for CustomizeChar {
     fn build(&self, app: &mut App) {
         app.init_state::<MyCharState>();
-        app.add_systems(
-            Update,
-            (form_main_player_character, form_other_players)
-                .chain()
-                .run_if(is_loaded),
-        );
+        app.add_systems(Update, form_main_player_character.run_if(is_loaded));
         app.add_systems(
             OnEnter(MyCharState::TransferComp),
             transfer_essential_components,
         );
-        app.add_systems(OnExit(MyCharState::TransferComp), despawn_old_bones);
     }
 }
 
@@ -41,7 +34,7 @@ pub enum MyCharState {
 
 // Marker component tells me who is the skeletons
 #[derive(Component)]
-struct Skeleton;
+pub struct Skeleton;
 
 // Marker components tells me who is the visual
 #[derive(Component)]
@@ -49,14 +42,11 @@ struct Visual;
 
 fn spawn_char(
     player_info: &PlayerBundle,
-    player_entity: Entity,
     client_collection: &Res<ClientCharCollection>,
     gltfs: &Res<Assets<Gltf>>,
     commands: &mut Commands,
 ) {
-    info!("Grabbing stored visuals in replicated resource");
-    let visuals = &player_info.visuals;
-    for visual in visuals.iter_visuals() {
+    for visual in player_info.visuals.iter_visuals() {
         let gltf = client_collection
             .gltf_files
             .get(visual)
@@ -78,69 +68,32 @@ fn spawn_char(
         info!("Spawning scene entities to be utilized in creating our character");
         if visual.contains("skeleton") {
             info!("Spawning and marking main skeleton entity");
-            commands.spawn((Skeleton, scene)).set_parent(player_entity);
+            commands.spawn((Skeleton, scene));
         } else {
             info!("Spawning visual {} scene", visual);
-            commands.spawn((Visual, scene)).set_parent(player_entity);
+            commands.spawn((Visual, scene));
         }
     }
-
-    info!("Preparing player entity spatial bundle spawn(this avoid warnings)");
-    commands
-        .entity(player_entity)
-        .insert(SpatialBundle::default());
 }
 
-// Occurs everytime main player spawns, good way of avoiding conflict with secondary spawns
+// Forms main player, important to occur before the start game, as customizer and rtt requires it
 pub fn form_main_player_character(
-    player_to_form: Query<(Entity, &PlayerId), (Added<Controlled>, Added<Replicated>)>,
-    client_collection: Res<ClientCharCollection>,
-    gltfs: Res<Assets<Gltf>>,
-    bundle_map: Res<PlayerBundleMap>,
-    mut commands: Commands,
-) {
-    for (player_entity, player) in player_to_form.iter() {
-        info!("Grabbing saved loadout from server and applying to rtt");
-        let client_id = player.0;
-        if let Some(player_info) = bundle_map.0.get(&client_id) {
-            spawn_char(
-                player_info,
-                player_entity,
-                &client_collection,
-                &gltfs,
-                &mut commands,
-            );
-        } else {
-            warn!("Could find player info for {}", client_id);
-        }
-    }
-}
-// Form other player entities
-pub fn form_other_players(
-    player_to_form: Query<(Entity, &PlayerId), (Without<Controlled>, Added<Replicated>)>,
     client_collection: Res<ClientCharCollection>,
     gltfs: Res<Assets<Gltf>>,
     mut char_state: ResMut<NextState<MyCharState>>,
-    bundle_map: Res<PlayerBundleMap>,
+    mut events: EventReader<MessageEvent<SendBundle>>,
     mut commands: Commands,
 ) {
-    info_once!("Spawning other players");
-    for (player_entity, player) in player_to_form.iter() {
-        info!("Grabbing saved loadout from server and applying to rtt");
-        let client_id = player.0;
-        if let Some(player_info) = bundle_map.0.get(&client_id) {
-            spawn_char(
-                player_info,
-                player_entity,
-                &client_collection,
-                &gltfs,
-                &mut commands,
-            );
-        } else {
-            warn!("Could find player info for {}", client_id);
-        }
+    for event in events.read() {
+        let server_bundle = &event.message().0;
+
+        let client_id = server_bundle.id.0;
+        info!("Spawning visuals for client_id {}", client_id);
+
+        spawn_char(server_bundle, &client_collection, &gltfs, &mut commands);
+        info!("Transfering animations");
+        char_state.set(MyCharState::TransferComp);
     }
-    char_state.set(MyCharState::TransferComp);
 }
 
 // Transfer the animations to all the visual bones
@@ -192,21 +145,4 @@ fn transfer_essential_components(
         }
     }
     char_state.set(MyCharState::Done);
-}
-
-// Despawns uncessary old skeleton- Lots of entities here so extremely uneeded
-fn despawn_old_bones(
-    skeletons: Query<Entity, With<Skeleton>>,
-    mut commands: Commands,
-    children_entities: Query<&Children>,
-    names: Query<&Name>,
-) {
-    for skeleton in skeletons.iter() {
-        info!("Despawning unecessary old armature");
-        let old_base_armature =
-            find_child_with_name_containing(&children_entities, &names, &skeleton, "Armature")
-                .expect("Old armature");
-
-        commands.entity(old_base_armature).despawn_recursive();
-    }
 }

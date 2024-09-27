@@ -47,32 +47,13 @@ pub(crate) fn init(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-/// Helper function spawns repicable players - TURN THIS TO LOOP
+/// Helper function spawns repicable players
 pub(crate) fn spawn_player_entity(
     client_id: ClientId,
-    dedicated_server: bool,
     commands: &mut Commands,
     player_bundle: Option<PlayerBundle>,
     player_entity_map: &mut ResMut<PlayerEntityMap>,
-) -> Option<PlayerBundle> {
-    // Replicating component important to define who sees the player or not
-    let replicate = Replicate {
-        sync: SyncTarget {
-            prediction: NetworkTarget::Single(client_id),
-            interpolation: NetworkTarget::AllExceptSingle(client_id),
-        },
-        controlled_by: ControlledBy {
-            target: NetworkTarget::Single(client_id),
-            ..default()
-        },
-        relevance_mode: if dedicated_server {
-            NetworkRelevanceMode::InterestManagement
-        } else {
-            NetworkRelevanceMode::All
-        },
-        ..default()
-    };
-
+) -> PlayerBundle {
     let name = Name::new(format!("Player {:?}", client_id));
 
     info!("Settin their status to searching for matchmaking");
@@ -82,16 +63,15 @@ pub(crate) fn spawn_player_entity(
         in_game: false,
     };
 
-    if let Some(player_bun) = player_bundle {
+    if let Some(old_player_bun) = player_bundle {
         info!("Inserting into server map resource");
         let id = commands
-            .spawn(player_bun)
+            .spawn(old_player_bun.clone())
             .insert(online_state)
             .insert(name)
-            .insert(replicate)
             .id();
         player_entity_map.0.insert(client_id, id);
-        return None;
+        return old_player_bun;
     } else {
         info!("Inserting new player into server map");
         // Setting default visuals
@@ -101,11 +81,10 @@ pub(crate) fn spawn_player_entity(
             .spawn(new_player_bundle.clone())
             .insert(online_state)
             .insert(name)
-            .insert(replicate)
             .id();
 
         player_entity_map.0.insert(client_id, id);
-        return Some(new_player_bundle);
+        return new_player_bundle;
     }
 }
 
@@ -115,6 +94,7 @@ pub(crate) fn handle_connections(
     mut connections: EventReader<ConnectEvent>,
     mut player_map: ResMut<PlayerBundleMap>,
     mut player_entity_map: ResMut<PlayerEntityMap>,
+    mut connection_manager: ResMut<ConnectionManager>,
     mut commands: Commands,
 ) {
     for connection in connections.read() {
@@ -123,23 +103,24 @@ pub(crate) fn handle_connections(
             info!(
                 "This player {:?} already connected once spawn it is entity according to it is settings",old_player_bundle.id
             );
-            spawn_player_entity(
+            let old_bundle = spawn_player_entity(
                 connection.client_id,
-                false,
                 &mut commands,
                 Some(old_player_bundle.clone()),
                 &mut player_entity_map,
+            );
+            let _ = connection_manager.send_message::<Channel1, SendBundle>(
+                connection.client_id,
+                &mut SendBundle(old_bundle),
             );
         } else {
             info!("New player make him learn! And insert him into resource");
             let new_bundle = spawn_player_entity(
                 connection.client_id,
-                false,
                 &mut commands,
                 None,
                 &mut player_entity_map,
-            )
-            .unwrap();
+            );
 
             player_map
                 .0
@@ -147,6 +128,13 @@ pub(crate) fn handle_connections(
 
             info!("Saving player info in file for first time");
             save_file(player_map.clone());
+
+            info!("Sending their current loadout to client for the RTT");
+
+            let _ = connection_manager.send_message::<Channel1, SendBundle>(
+                connection.client_id,
+                &mut SendBundle(new_bundle),
+            );
         }
 
         current_players.quantity += 1;
@@ -168,8 +156,10 @@ pub(crate) fn handle_disconnections(
 // Creates a lobby if two players are actively searching
 pub(crate) fn create_lobby(
     mut lobbies: ResMut<Lobbies>,
+    players: Res<PlayerEntityMap>,
     mut query: Query<(&PlayerId, &mut PlayerStateConnection), With<PlayerStateConnection>>,
     mut connection_manager: ResMut<ConnectionManager>,
+    mut commands: Commands,
 ) {
     // Client id searching
     let mut clients_searching = Vec::default();
@@ -187,19 +177,39 @@ pub(crate) fn create_lobby(
     // If two are found make it so creates a lobby changes their states
     if clients_searching.len() % 2 == 0 && clients_searching.len() != 0 {
         let mut lobby = Lobby::default();
+
         info!("Grabbing lobby id");
         let lobby_id = lobbies.lobbies.len();
         lobby.lobby_id = lobby_id;
+
         info!("Changing player network states to in game");
         for state in online_states.iter_mut() {
             state.in_game = true;
             state.searching = false;
         }
-        info!("Sending message to specific clients to start their game");
-        for clients in clients_searching {
-            lobby.players.push(clients);
+        info!("Sending message to specific clients to start their game and start replicating their player entities");
+        for client in clients_searching {
+            info!("Defining type of replicatinon");
+            let replicate = Replicate {
+                sync: SyncTarget {
+                    prediction: NetworkTarget::Single(client),
+                    interpolation: NetworkTarget::AllExceptSingle(client),
+                },
+                controlled_by: ControlledBy {
+                    target: NetworkTarget::Single(client),
+                    ..default()
+                },
+                ..default()
+            };
+            if let Some(player) = players.0.get(&client) {
+                info!("Replicate the player to all clients");
+                commands.entity(*player).insert(replicate);
+                lobby.players.push(client);
+            } else {
+                error!("Couldnt grab player from resource")
+            }
             let _ = connection_manager
-                .send_message::<Channel1, StartGame>(clients, &mut StartGame { lobby_id });
+                .send_message::<Channel1, StartGame>(client, &mut StartGame { lobby_id });
         }
         info!("Creating lobby and replicating to others {}", lobby_id);
         lobbies.lobbies.push(lobby);

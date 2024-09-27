@@ -1,6 +1,6 @@
 use crate::shared::protocol::lobby_structs::{Lobbies, SearchMatch};
 use crate::shared::protocol::player_structs::{
-    PlayerBundleMap, PlayerLoadout, PlayerStateConnection, PlayerVisuals,
+    PlayerBundleMap, PlayerStateConnection, PlayerVisuals, SavePlayer,
 };
 use bevy::prelude::*;
 use lightyear::server::events::*;
@@ -39,7 +39,7 @@ impl Plugin for ExampleServerPlugin {
         app.add_systems(Update, create_lobby);
 
         // Listeners
-        app.add_systems(Update, listener_player_loadout);
+        app.add_systems(Update, listener_save_player);
         app.add_systems(Update, listener_search_match);
     }
 }
@@ -75,20 +75,18 @@ fn read_save_files(mut commands: Commands) {
     commands.insert_resource(player_bundle_map);
 }
 
-// Responsible for changing the loadout right now it just
-fn listener_player_loadout(
-    mut events: EventReader<MessageEvent<PlayerLoadout>>,
+// Responsible for saving player info
+fn listener_save_player(
+    mut events: EventReader<MessageEvent<SavePlayer>>,
     mut player_map: ResMut<PlayerBundleMap>,
 ) {
     for event in events.read() {
-        let message = event.message();
         let client_id = event.context();
 
-        info!("Receiveing new player loadout from {}", client_id);
+        info!("Saving player info {}", client_id);
 
         if let Some(player_bundle) = player_map.0.get_mut(client_id) {
             info!("Found it is bundle and changing it for what client said");
-            player_bundle.visuals = message.0.clone();
             info!("Saving this bundle {:?}", player_bundle);
             save_file(player_map.clone());
         } else {

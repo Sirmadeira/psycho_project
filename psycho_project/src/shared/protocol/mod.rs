@@ -20,7 +20,8 @@ impl Plugin for ProtocolPlugin {
         // Messages
         app.register_message::<StartGame>(ChannelDirection::ServerToClient);
         app.register_message::<SearchMatch>(ChannelDirection::ClientToServer);
-        app.register_message::<PlayerLoadout>(ChannelDirection::ClientToServer);
+        app.register_message::<SavePlayer>(ChannelDirection::ClientToServer);
+        app.register_message::<SendBundle>(ChannelDirection::ServerToClient);
         // Components
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
