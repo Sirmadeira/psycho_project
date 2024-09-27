@@ -17,15 +17,13 @@ pub struct PlayerBundleMap(pub HashMap<ClientId, PlayerBundle>);
 pub struct PlayerBundle {
     pub id: PlayerId,
     pub visuals: PlayerVisuals,
-    pub state_connection: PlayerStateConnection,
 }
 
 impl PlayerBundle {
-    pub fn new(id: ClientId, visuals: PlayerVisuals, online_state: PlayerStateConnection) -> Self {
+    pub fn new(id: ClientId, visuals: PlayerVisuals) -> Self {
         Self {
             id: PlayerId(id),
             visuals: visuals,
-            state_connection: online_state,
         }
     }
 }
@@ -71,16 +69,6 @@ impl PlayerVisuals {
     pub fn iter_visuals(&self) -> impl Iterator<Item = &String> {
         vec![&self.head, &self.torso, &self.legs, &self.skeleton].into_iter()
     }
-}
-
-// Visuals of our character
-#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
-pub struct PlayerStateConnection {
-    pub online: bool,
-    // If is searching or not
-    pub searching: bool,
-    // If in game or not
-    pub in_game: bool,
 }
 
 // Channels

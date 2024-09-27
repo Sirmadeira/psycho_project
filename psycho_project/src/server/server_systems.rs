@@ -26,6 +26,16 @@ pub struct PlayerAmount {
 #[reflect(Resource, Default)]
 pub struct PlayerEntityMap(pub HashMap<ClientId, Entity>);
 
+// Visuals of our character
+#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
+pub struct PlayerStateConnection {
+    pub online: bool,
+    // If is searching or not
+    pub searching: bool,
+    // If in game or not
+    pub in_game: bool,
+}
+
 /// Add some debugging text to the screen
 pub(crate) fn init(mut commands: Commands) {
     commands.spawn(
@@ -56,7 +66,7 @@ pub(crate) fn spawn_player_entity(
 ) -> PlayerBundle {
     let name = Name::new(format!("Player {:?}", client_id));
 
-    info!("Settin their status to searching for matchmaking");
+    info!("Setting their status to online");
     let online_state = PlayerStateConnection {
         online: true,
         searching: false,
@@ -76,7 +86,7 @@ pub(crate) fn spawn_player_entity(
         info!("Inserting new player into server map");
         // Setting default visuals
         let player_visual = PlayerVisuals::default();
-        let new_player_bundle = PlayerBundle::new(client_id, player_visual, online_state.clone());
+        let new_player_bundle = PlayerBundle::new(client_id, player_visual);
         let id = commands
             .spawn(new_player_bundle.clone())
             .insert(online_state)
@@ -145,11 +155,23 @@ pub(crate) fn handle_connections(
 pub(crate) fn handle_disconnections(
     mut disconnections: EventReader<DisconnectEvent>,
     mut current_players: ResMut<PlayerAmount>,
+    mut player_entity_map: ResMut<PlayerEntityMap>,
+    mut commands: Commands,
 ) {
     for disconnection in disconnections.read() {
         let client_id = disconnection.client_id;
         info!("Client disconnected {}", client_id);
+
+        // Decrease player count
         current_players.quantity -= 1;
+        info!("Stop replicating this shitfuck entity on the server");
+
+        // Find and despawn the player's entity
+        if let Some(disconnecting_player) = player_entity_map.0.remove(&client_id) {
+            commands.entity(disconnecting_player).despawn();
+        } else {
+            error!("Player entity not found for client ID: {}", client_id);
+        }
     }
 }
 

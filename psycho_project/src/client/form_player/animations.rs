@@ -79,7 +79,7 @@ pub fn add_animation_graph(
     }
 }
 
-// Grabbing animations from gltf and inserting into graph
+// Grabbing animations from gltf and inserting into graph - TODO EXPAND THIS TO GRAB ALL SKELETONS
 fn insert_gltf_animations(
     char_collection: Res<ClientCharCollection>,
     assets_gltf: Res<Assets<Gltf>>,
@@ -105,13 +105,14 @@ fn insert_gltf_animations(
         animations
             .named_nodes
             .insert(name_animation.to_string(), node);
-        info!(
-            "Current available animations are {} for skeleton {}",
-            name_animation, "characters/mod_char/main_skeleton.glb"
-        );
+        // info!(
+        //     "Current available animations are {} for skeleton {}",
+        //     name_animation, "characters/mod_char/main_skeleton.glb"
+        // );
     }
 }
 
+//
 fn play_animation(
     mut animation_entities: Query<
         (&mut AnimationTransitions, &mut AnimationPlayer),

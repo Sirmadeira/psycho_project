@@ -44,6 +44,7 @@ pub fn menu_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                     justify_content: JustifyContent::Center,
                     ..default()
                 },
+                background_color: Color::srgb(0.10, 0.10, 0.10).into(),
                 ..default()
             },
             ScreenMainMenu,

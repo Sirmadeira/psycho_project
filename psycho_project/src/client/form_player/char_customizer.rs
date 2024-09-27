@@ -47,31 +47,30 @@ fn spawn_char(
     commands: &mut Commands,
 ) {
     for visual in player_info.visuals.iter_visuals() {
-        let gltf = client_collection
-            .gltf_files
-            .get(visual)
-            .expect("Gltf to be loaded");
+        if let Some(gltf) = client_collection.gltf_files.get(visual) {
+            let loaded_gltf = gltfs
+                .get(gltf)
+                .expect("To find gltf handle in loaded gltfs");
 
-        let loaded_gltf = gltfs
-            .get(gltf)
-            .expect("To find gltf handle in loaded gltfs");
-
-        let visual_scene = loaded_gltf.scenes[0].clone();
-        let char_position = Vec3::new(0.0, 0.0, 0.0);
-        let scene = SceneBundle {
-            scene: visual_scene,
-            transform: Transform::from_translation(char_position),
-            // If you want him to stare face front to camera as from blender he usually stares at negative -z
-            // .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
-            ..default()
-        };
-        info!("Spawning scene entities to be utilized in creating our character");
-        if visual.contains("skeleton") {
-            info!("Spawning and marking main skeleton entity");
-            commands.spawn((Skeleton, scene));
+            let visual_scene = loaded_gltf.scenes[0].clone();
+            let char_position = Vec3::new(0.0, 0.0, 0.0);
+            let scene = SceneBundle {
+                scene: visual_scene,
+                transform: Transform::from_translation(char_position),
+                // If you want him to stare face front to camera as from blender he usually stares at negative -z
+                // .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
+                ..default()
+            };
+            info!("Spawning scene entities to be utilized in creating our character");
+            if visual.contains("skeleton") {
+                info!("Spawning and marking main skeleton entity");
+                commands.spawn((Skeleton, scene));
+            } else {
+                info!("Spawning visual {} scene", visual);
+                commands.spawn((Visual, scene));
+            }
         } else {
-            info!("Spawning visual {} scene", visual);
-            commands.spawn((Visual, scene));
+            error!("This gltf doesnt exist or isnt loaded {}", visual);
         }
     }
 }

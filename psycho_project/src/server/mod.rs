@@ -1,7 +1,5 @@
-use crate::shared::protocol::lobby_structs::{Lobbies, SearchMatch};
-use crate::shared::protocol::player_structs::{
-    PlayerBundleMap, PlayerStateConnection, PlayerVisuals, SavePlayer,
-};
+use crate::shared::protocol::lobby_structs::{Lobbies, SearchMatch, StopSearch};
+use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerVisuals, SavePlayer};
 use bevy::prelude::*;
 use lightyear::server::events::*;
 mod server_systems;
@@ -23,6 +21,7 @@ impl Plugin for ExampleServerPlugin {
         // Debug registering
         app.register_type::<Lobbies>();
         app.register_type::<PlayerBundleMap>();
+        app.register_type::<PlayerStateConnection>();
         app.register_type::<PlayerVisuals>();
 
         // app.add_systems(Startup, create_save_files);
@@ -41,6 +40,7 @@ impl Plugin for ExampleServerPlugin {
         // Listeners
         app.add_systems(Update, listener_save_player);
         app.add_systems(Update, listener_search_match);
+        app.add_systems(Update, listener_stop_search);
     }
 }
 
@@ -95,7 +95,7 @@ fn listener_save_player(
     }
 }
 
-// Responsible for searching for match - JEBUS THIS IS UGLY
+// Responsible for searching for match
 fn listener_search_match(
     mut events: EventReader<MessageEvent<SearchMatch>>,
     player_entity_map: Res<PlayerEntityMap>,
@@ -116,6 +116,32 @@ fn listener_search_match(
         *on_state = PlayerStateConnection {
             online: true,
             searching: true,
+            in_game: false,
+        }
+    }
+}
+
+// Responsible for stop searhcing for match
+fn listener_stop_search(
+    mut events: EventReader<MessageEvent<StopSearch>>,
+    player_entity_map: Res<PlayerEntityMap>,
+    mut online_state: Query<&mut PlayerStateConnection>,
+) {
+    for event in events.read() {
+        let client_id = event.context();
+
+        let player_entity = player_entity_map
+            .0
+            .get(client_id)
+            .expect("To find player in map when searching for his player state");
+
+        let mut on_state = online_state
+            .get_mut(*player_entity)
+            .expect("For online player to have player state component");
+
+        *on_state = PlayerStateConnection {
+            online: true,
+            searching: false,
             in_game: false,
         }
     }

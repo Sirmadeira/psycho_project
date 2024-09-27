@@ -26,3 +26,6 @@ pub struct StartGame {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct SearchMatch;
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct StopSearch;
