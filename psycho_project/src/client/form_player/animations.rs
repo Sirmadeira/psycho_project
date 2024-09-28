@@ -93,7 +93,7 @@ fn insert_gltf_animations(
 
     let skeleton_gltf = char_collection
         .gltf_files
-        .get("characters/mod_char/main_skeleton.glb")
+        .get("characters/parts/main_skeleton.glb")
         .expect("To find skeleton in client collection");
 
     let gltf = assets_gltf

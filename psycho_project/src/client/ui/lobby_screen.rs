@@ -18,6 +18,9 @@ const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 #[derive(Component)]
 pub struct SearchButton;
 
+#[derive(Component)]
+pub struct ChangeHead;
+
 // Made to tell me if player is searching for match in server, I avoided state here because I want the user
 // To still be capable of sending messages to server
 #[derive(Component)]
@@ -90,7 +93,6 @@ pub fn lobby_screen(
                                 flex_direction: FlexDirection::Column,
                                 align_items: AlignItems::Center,
                                 justify_content: JustifyContent::Center,
-                                width: Val::Percent(33.0),
                                 ..default()
                             },
                             ..default()
@@ -105,7 +107,7 @@ pub fn lobby_screen(
                                     ..default()
                                 },
                             ));
-                            // CONNECT BUTTON
+                            // SEARCH FOR MATCH BUTTON
                             parent
                                 .spawn((
                                     ButtonBundle {
@@ -117,7 +119,7 @@ pub fn lobby_screen(
                                 ))
                                 .with_children(|parent| {
                                     parent.spawn(TextBundle::from_section(
-                                        "CONNECT TO SERVER",
+                                        "",
                                         button_text_style.clone(),
                                     ));
                                 });
@@ -136,6 +138,52 @@ pub fn lobby_screen(
                     ..default()
                 })
                 .with_children(|parent| {
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                border_color: BorderColor(Color::BLACK),
+                                ..default()
+                            },
+                            ChangeHead,
+                        ))
+                        .with_children(|parent| {
+                            parent.spawn(TextBundle::from_section(
+                                "CHANGE HEAD",
+                                button_text_style.clone(),
+                            ));
+                        });
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                border_color: BorderColor(Color::BLACK),
+                                ..default()
+                            },
+                            ChangeHead,
+                        ))
+                        .with_children(|parent| {
+                            parent.spawn(TextBundle::from_section(
+                                "CHANGE TORSO",
+                                button_text_style.clone(),
+                            ));
+                        });
+
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                border_color: BorderColor(Color::BLACK),
+                                ..default()
+                            },
+                            ChangeHead,
+                        ))
+                        .with_children(|parent| {
+                            parent.spawn(TextBundle::from_section(
+                                "CHANGE LEG",
+                                button_text_style.clone(),
+                            ));
+                        });
                     // Title for scrolling list
                     parent.spawn(TextBundle::from_section(
                         "WHO IS FIGHTING",
@@ -151,7 +199,7 @@ pub fn lobby_screen(
                             style: Style {
                                 flex_direction: FlexDirection::Column,
                                 align_self: AlignSelf::Stretch,
-                                height: Val::Percent(90.),
+                                height: Val::Percent(75.),
                                 overflow: Overflow::clip_y(),
                                 border: UiRect::all(Val::Px(20.)),
                                 ..default()
