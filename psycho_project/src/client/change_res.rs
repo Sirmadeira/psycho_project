@@ -8,6 +8,7 @@ pub struct ChangeResPlugin;
 impl Plugin for ChangeResPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ResolutionSettings::default());
+        app.add_systems(Startup, def_resolution);
         app.add_systems(Update, toggle_resolution);
     }
 }
@@ -15,6 +16,7 @@ impl Plugin for ChangeResPlugin {
 /// Stores the various window-resolutions we can select between.
 #[derive(Resource)]
 struct ResolutionSettings {
+    full: Vec2,
     large: Vec2,
     medium: Vec2,
     small: Vec2,
@@ -23,6 +25,7 @@ struct ResolutionSettings {
 impl Default for ResolutionSettings {
     fn default() -> Self {
         Self {
+            full: Vec2::new(2560.0, 1440.0),
             large: Vec2::new(1920.0, 1080.0),
             medium: Vec2::new(800.0, 600.0),
             small: Vec2::new(640.0, 360.0),
@@ -30,6 +33,14 @@ impl Default for ResolutionSettings {
     }
 }
 
+// Sets default resolution runs once
+fn def_resolution(mut windows: Query<&mut Window>, resolution: Res<ResolutionSettings>) {
+    let mut window = windows.single_mut();
+    let res = resolution.full;
+    window.resolution.set(res.x, res.y);
+}
+
+// Makes it so resolutions are interchangeable
 fn toggle_resolution(
     keys: Res<ButtonInput<KeyCode>>,
     mut windows: Query<&mut Window>,
@@ -47,6 +58,10 @@ fn toggle_resolution(
     }
     if keys.just_pressed(KeyCode::Digit3) {
         let res = resolution.large;
+        window.resolution.set(res.x, res.y);
+    }
+    if keys.just_pressed(KeyCode::Digit4) {
+        let res = resolution.full;
         window.resolution.set(res.x, res.y);
     }
 }
