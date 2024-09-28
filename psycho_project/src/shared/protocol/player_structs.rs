@@ -55,11 +55,11 @@ impl Default for PlayerVisuals {
     fn default() -> Self {
         Self {
             character: String::from("characters/character_mesh.glb"),
-            head: String::from("characters/mod_char/farmer_head.glb"),
-            torso: String::from("characters/mod_char/scifi_torso.glb"),
-            legs: String::from("characters/mod_char/witch_legs.glb"),
+            head: String::from("characters/parts/suit_head.glb"),
+            torso: String::from("characters/parts/scifi_torso.glb"),
+            legs: String::from("characters/parts/witch_legs.glb"),
             weapon_1: String::from("weapons/katana.glb"),
-            skeleton: String::from("characters/mod_char/main_skeleton.glb"),
+            skeleton: String::from("characters/parts/main_skeleton.glb"),
         }
     }
 }

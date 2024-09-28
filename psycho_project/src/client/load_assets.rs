@@ -22,12 +22,20 @@ impl Plugin for LoadingAssetsPlugin {
 pub struct ClientCharCollection {
     #[asset(
         paths(
+            // Weapons
             "weapons/katana.glb",
             "characters/character_mesh.glb",
-            "characters/mod_char/farmer_head.glb",
-            "characters/mod_char/scifi_torso.glb",
-            "characters/mod_char/witch_legs.glb",
-            "characters/mod_char/main_skeleton.glb"
+            // Heads
+            "characters/parts/suit_head.glb",
+            "characters/parts/soldier_head.glb",
+            // Torsos
+            "characters/parts/scifi_torso.glb",
+            "characters/parts/soldier_torso.glb",
+            // Legs
+            "characters/parts/witch_legs.glb",
+            "characters/parts/soldier_legs.glb",
+            //Skeletons
+            "characters/parts/main_skeleton.glb"
         ),
         collection(typed, mapped)
     )]
