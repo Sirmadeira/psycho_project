@@ -7,10 +7,11 @@ use bevy::window::PrimaryWindow;
 use bevy_panorbit_camera::{ActiveCameraData, PanOrbitCamera};
 
 use super::load_assets::ClientCharCollection;
+use super::MyAppState;
 
 #[derive(Resource, Reflect, Default)]
 #[reflect(Resource)]
-pub struct RttImages(HashMap<String, Handle<Image>>);
+pub struct RttImages(pub HashMap<String, Handle<Image>>);
 
 pub struct FormRttsPlugin;
 
@@ -20,7 +21,7 @@ impl Plugin for FormRttsPlugin {
         app.register_type::<RttImages>();
 
         // Rtt system
-        // app.add_systems(Startup, spawn_rtt_camera);
+        app.add_systems(OnEnter(MyAppState::MainMenu), form_rtts_for_assets);
     }
 }
 
@@ -30,11 +31,12 @@ pub fn spawn_rtt_camera(
     images: &mut ResMut<Assets<Image>>,
     active_cam: &mut ResMut<ActiveCameraData>,
     commands: &mut Commands,
+    camera_offset: Vec3,
 ) -> Handle<Image> {
     info!("Creating image to texturize");
     let size = Extent3d {
-        width: 4096,
-        height: 4096,
+        width: 512,
+        height: 512,
         ..default()
     };
 
@@ -57,8 +59,6 @@ pub fn spawn_rtt_camera(
 
     let image_handle = images.add(image);
 
-    let camera_offset = Vec3::new(0.0, 1.5, 3.5);
-
     let rtt_camera = Camera3dBundle {
         camera: Camera {
             // render before the "main pass" camera so we
@@ -72,7 +72,6 @@ pub fn spawn_rtt_camera(
     };
     // Important component to let player control
     let pan_orbit = PanOrbitCamera {
-        focus: Vec3::new(0.0, 1.0, 0.0),
         zoom_upper_limit: Some(3.5),
         zoom_lower_limit: Some(1.0),
         ..default()
@@ -101,14 +100,41 @@ fn form_rtts_for_assets(
     client_collection: Res<ClientCharCollection>,
     windows: Query<&Window, With<PrimaryWindow>>,
     mut images: ResMut<Assets<Image>>,
+    mut assets_gltf: ResMut<Assets<Gltf>>,
     mut active_cam: ResMut<ActiveCameraData>,
     mut commands: Commands,
 ) {
     let gltfs = &client_collection.gltf_files;
     let mut rtt_images = HashMap::new();
 
-    for (name, _) in gltfs.iter() {
-        let handle = spawn_rtt_camera(&windows, &mut images, &mut active_cam, &mut commands);
+    info!("This sets up the offset");
+    let mut offset = Vec3::new(0.0, 1.0, 0.0);
+    let mut camera_offset = Vec3::new(0.0, 1.5, 3.5);
+
+    for (name, gltf) in gltfs.iter() {
+        info_once!("Spawning camera");
+        let handle = spawn_rtt_camera(
+            &windows,
+            &mut images,
+            &mut active_cam,
+            &mut commands,
+            camera_offset,
+        );
+        info_once!("Spawning scene with specific transform");
+        let asset = assets_gltf.get(gltf).expect("To be able to grab it");
+        let visual_scene = asset.scenes[0].clone();
+        let scene = SceneBundle {
+            scene: visual_scene,
+            transform: Transform::from_translation(offset),
+            // If you want him to stare face front to camera as from blender he usually stares at negative -z
+            // .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
+            ..default()
+        };
+        commands.spawn(scene);
+        info_once!("Offsetting so they dont overlap");
+        offset.x += 0.5;
+        camera_offset.x += 0.5;
+        info_once!("Insert in resource");
         rtt_images.insert(name.to_string(), handle);
     }
     commands.insert_resource(RttImages(rtt_images));

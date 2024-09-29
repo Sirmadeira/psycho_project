@@ -255,7 +255,7 @@ pub fn lobby_screen(
                             },
                             ..default()
                         },
-                        UiImage::new(rtt_image.0.clone()),
+                        // UiImage::new(rtt_image.0.get(k)),
                     ));
                     // Button utilized for saving character
                     parent
