@@ -1,6 +1,5 @@
 //! RESPONSIBILITIES - HANDLES ALL MODULAR CHARACTERS CREATIONS AND UPDATES LOBBY RTT
 
-use crate::client::MyAppState;
 use bevy::prelude::*;
 use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
 
@@ -24,14 +23,6 @@ impl Plugin for CreateCharPlugin {
     }
 }
 
-// Rc - Only run this system if it has all assets available
-pub fn is_loaded(state: Res<State<MyAppState>>) -> bool {
-    if *state != MyAppState::LoadingAssets {
-        return true;
-    } else {
-        return false;
-    }
-}
 
 fn spawn_light_bundle(mut commands: Commands) {
     commands.spawn(PointLightBundle {

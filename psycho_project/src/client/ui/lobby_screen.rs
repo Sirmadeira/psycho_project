@@ -1,4 +1,3 @@
-use crate::client::rtt::RttImages;
 use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame, StopSearch};
 use crate::shared::protocol::player_structs::{Channel1, SavePlayer};
 use bevy::prelude::*;
@@ -15,33 +14,36 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
+//When clicked set server status to looking for match
 #[derive(Component)]
 pub struct SearchButton;
+//Gonna delete later now sends event that saves character in server side
+#[derive(Component)]
+pub struct SaveCharacterButton;
 
 #[derive(Component)]
 pub struct ChangeHead;
+
+//Placedholder on where to put our ui image and what ui image to put grab via file path()
+#[derive(Component)]
+pub struct RttPlaceholder(String);
 
 // Made to tell me if player is searching for match in server, I avoided state here because I want the user
 // To still be capable of sending messages to server
 #[derive(Component)]
 pub struct IsSearching;
 
+// Marker component for general lobby screen just despawn this guy and it is children when done
 #[derive(Component)]
 pub struct ScreenLobby;
 
-#[derive(Component)]
-pub struct SaveCharacter;
-
+// Scrolling list of available fights
 #[derive(Component, Default)]
 pub struct ScrollingList {
     position: f32,
 }
 
-pub fn lobby_screen(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    rtt_image: Res<RttImages>,
-) {
+pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
     let button_style = Style {
         width: Val::Px(350.0),
         height: Val::Px(125.0),
@@ -245,8 +247,8 @@ pub fn lobby_screen(
                         },
                     ));
                     // RTT image with formating node
-                    parent.spawn((
-                        NodeBundle {
+                    parent
+                        .spawn(NodeBundle {
                             style: Style {
                                 flex_direction: FlexDirection::Column,
                                 align_self: AlignSelf::Stretch,
@@ -254,9 +256,12 @@ pub fn lobby_screen(
                                 ..default()
                             },
                             ..default()
-                        },
-                        // UiImage::new(rtt_image.0.get(k)),
-                    ));
+                        })
+                        .with_children(|parent| {
+                            parent
+                                .spawn(UiImage::default())
+                                .insert(RttPlaceholder("potato".to_string()));
+                        });
                     // Button utilized for saving character
                     parent
                         .spawn((
@@ -265,7 +270,7 @@ pub fn lobby_screen(
                                 border_color: BorderColor(Color::BLACK),
                                 ..default()
                             },
-                            SaveCharacter,
+                            SaveCharacterButton,
                         ))
                         .with_children(|parent| {
                             parent.spawn(TextBundle::from_section(
@@ -362,7 +367,7 @@ pub fn save_character_button(
             &mut BorderColor,
             &Children,
         ),
-        (Changed<Interaction>, With<SaveCharacter>),
+        (Changed<Interaction>, With<SaveCharacterButton>),
     >,
     mut text_query: Query<&mut Text>,
     network_state: Res<State<NetworkingState>>,
@@ -460,3 +465,6 @@ pub fn display_matches(
         info!("Current lobbies displayed {}", lobby_id);
     }
 }
+
+// Grabs marker component
+pub fn fill_ui_images() {}

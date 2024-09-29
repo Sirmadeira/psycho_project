@@ -1,6 +1,6 @@
 //! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
 use crate::client::form_player::helpers::*;
-use crate::client::form_player::is_loaded;
+use crate::client::is_loaded;
 use crate::client::load_assets::ClientCharCollection;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;

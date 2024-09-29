@@ -67,6 +67,15 @@ pub enum MyAppState {
     Game,
 }
 
+// Rc - Only run this system if it has all assets available
+pub fn is_loaded(state: Res<State<MyAppState>>) -> bool {
+    if *state != MyAppState::LoadingAssets {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 // First thing we will do is connect the client to server as our server is really important for grabing specific info
 pub fn connect_client(mut commands: Commands) {
     info!("Gonna connect to server");
