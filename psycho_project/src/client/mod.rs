@@ -12,12 +12,15 @@ use crate::{client::ui::UiPlugin, shared::protocol::lobby_structs::StartGame};
 mod change_res;
 mod form_player;
 mod load_assets;
+pub mod rtt;
 mod ui;
 
 // SElLF MADE IMPORTS
 use self::change_res::ChangeResPlugin;
 use self::form_player::CreateCharPlugin;
 use self::load_assets::LoadingAssetsPlugin;
+use self::rtt::FormRttsPlugin;
+
 // OTHER PLUGINS
 use bevy_panorbit_camera::PanOrbitCameraPlugin;
 
@@ -44,6 +47,7 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(LoadingAssetsPlugin);
         app.add_plugins(UiPlugin);
         app.add_plugins(CreateCharPlugin);
+        app.add_plugins(FormRttsPlugin);
 
         // Connection systems - Systems that dialogues with server
         app.add_systems(OnEnter(MyAppState::MainMenu), connect_client);

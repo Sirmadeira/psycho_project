@@ -1,23 +1,36 @@
-//! Just a separate sub-mod to handle the rtt camera asset maker
-//! Since it is used in lobby_screen I dissociated for now
-//! Worth noting most of it is logic is still very co dependent with customize character
 use bevy::prelude::*;
 use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
+use bevy::utils::HashMap;
 use bevy::window::PrimaryWindow;
 use bevy_panorbit_camera::{ActiveCameraData, PanOrbitCamera};
 
-#[derive(Resource)]
-pub struct RttImage(pub Handle<Image>);
+use super::load_assets::ClientCharCollection;
+
+#[derive(Resource, Reflect, Default)]
+#[reflect(Resource)]
+pub struct RttImages(HashMap<String, Handle<Image>>);
+
+pub struct FormRttsPlugin;
+
+impl Plugin for FormRttsPlugin {
+    fn build(&self, app: &mut App) {
+        // Debugging
+        app.register_type::<RttImages>();
+
+        // Rtt system
+        // app.add_systems(Startup, spawn_rtt_camera);
+    }
+}
 
 // This will make an rtt with an available pan orbit camera pointing at it. And saves the asset  as an material
 pub fn spawn_rtt_camera(
-    windows: Query<&Window, With<PrimaryWindow>>,
-    mut images: ResMut<Assets<Image>>,
-    mut active_cam: ResMut<ActiveCameraData>,
-    mut commands: Commands,
-) {
+    windows: &Query<&Window, With<PrimaryWindow>>,
+    images: &mut ResMut<Assets<Image>>,
+    active_cam: &mut ResMut<ActiveCameraData>,
+    commands: &mut Commands,
+) -> Handle<Image> {
     info!("Creating image to texturize");
     let size = Extent3d {
         width: 4096,
@@ -81,5 +94,22 @@ pub fn spawn_rtt_camera(
         // Setting manual to true ensures PanOrbitCameraPlugin will not overwrite this resource
         manual: true,
     });
-    commands.insert_resource(RttImage(image_handle));
+    return image_handle;
+}
+
+fn form_rtts_for_assets(
+    client_collection: Res<ClientCharCollection>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    mut images: ResMut<Assets<Image>>,
+    mut active_cam: ResMut<ActiveCameraData>,
+    mut commands: Commands,
+) {
+    let gltfs = &client_collection.gltf_files;
+    let mut rtt_images = HashMap::new();
+
+    for (name, _) in gltfs.iter() {
+        let handle = spawn_rtt_camera(&windows, &mut images, &mut active_cam, &mut commands);
+        rtt_images.insert(name.to_string(), handle);
+    }
+    commands.insert_resource(RttImages(rtt_images));
 }

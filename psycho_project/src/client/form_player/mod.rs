@@ -7,16 +7,13 @@ use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
 mod animations;
 mod char_customizer;
 mod helpers;
-pub mod rtt;
 
-use self::{animations::*, char_customizer::*, rtt::*};
+use self::{animations::*, char_customizer::*};
 
 pub struct CreateCharPlugin;
 
 impl Plugin for CreateCharPlugin {
     fn build(&self, app: &mut App) {
-        // Rtt system
-        app.add_systems(Startup, spawn_rtt_camera);
         // Simple system
         app.add_systems(Startup, spawn_light_bundle);
         // Self made plubings

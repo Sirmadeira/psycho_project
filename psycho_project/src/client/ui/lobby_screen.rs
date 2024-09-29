@@ -1,4 +1,4 @@
-use crate::client::form_player::rtt::RttImage;
+use crate::client::rtt::RttImages;
 use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame, StopSearch};
 use crate::shared::protocol::player_structs::{Channel1, SavePlayer};
 use bevy::prelude::*;
@@ -40,7 +40,7 @@ pub struct ScrollingList {
 pub fn lobby_screen(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    rtt_image: Res<RttImage>,
+    rtt_image: Res<RttImages>,
 ) {
     let button_style = Style {
         width: Val::Px(350.0),
