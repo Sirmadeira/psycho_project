@@ -27,6 +27,9 @@ pub struct SaveCharacterButton;
 #[derive(Component)]
 pub struct ChangeHead;
 
+#[derive(Component)]
+pub struct ChangeBody;
+
 //Placedholder on where to put our ui image and what ui image to put grab via file path()
 #[derive(Component)]
 pub struct RttPlaceholder(String);
@@ -64,8 +67,8 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
     };
 
     let image_button_style = Style {
-        width: Val::Px(350.0),
-        height: Val::Px(500.0),
+        width: Val::Px(300.0),
+        height: Val::Px(200.0),
         border: UiRect::all(Val::Px(15.0)),
         margin: UiRect::all(Val::Px(20.0)),
         ..default()
@@ -138,7 +141,7 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                                 });
                         });
                 });
-            // Second columns
+            // SECOND COLUMN
             parent
                 .spawn(NodeBundle {
                     style: Style {
@@ -152,27 +155,103 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                 })
                 .with_children(|parent| {
                     parent
-                        .spawn((
-                            ButtonBundle {
-                                style: button_style.clone(),
-                                border_color: BorderColor(Color::BLACK),
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                justify_content: JustifyContent::SpaceEvenly,
+                                align_items: AlignItems::Center,
+                                margin: UiRect::all(Val::Px(20.0)), // Optional spacing around the row
                                 ..default()
                             },
-                            ChangeHead,
-                        ))
+                            ..default()
+                        })
                         .with_children(|parent| {
-                            parent.spawn((
-                                NodeBundle {
+                            parent
+                                .spawn(NodeBundle {
                                     style: Style {
-                                        width: Val::Percent(100.0), // Image width fills the button
-                                        height: Val::Percent(100.0),
+                                        flex_direction: FlexDirection::Column,
+                                        justify_content: JustifyContent::Center,
+                                        align_items: AlignItems::Center,
                                         ..default()
                                     },
                                     ..default()
-                                },
-                                UiImage::solid_color(Color::WHITE),
-                            ));
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn(TextBundle::from_section(
+                                        "Change Head",
+                                        TextStyle {
+                                            font: asset_server.load("grafitti.ttf"),
+                                            font_size: 40.,
+                                            ..default()
+                                        },
+                                    ));
+                                    parent
+                                        .spawn((
+                                            ButtonBundle {
+                                                style: image_button_style.clone(),
+                                                border_color: BorderColor(Color::BLACK),
+                                                ..default()
+                                            },
+                                            ChangeHead,
+                                        ))
+                                        .with_children(|parent| {
+                                            parent.spawn((
+                                                NodeBundle {
+                                                    style: Style {
+                                                        width: Val::Percent(100.0), // Image width fills the button
+                                                        height: Val::Percent(100.0),
+                                                        ..default()
+                                                    },
+                                                    ..default()
+                                                },
+                                                UiImage::solid_color(Color::WHITE),
+                                            ));
+                                        });
+                                });
+                            parent
+                                .spawn(NodeBundle {
+                                    style: Style {
+                                        flex_direction: FlexDirection::Column,
+                                        justify_content: JustifyContent::Center,
+                                        align_items: AlignItems::Center,
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn(TextBundle::from_section(
+                                        "Change body",
+                                        TextStyle {
+                                            font: asset_server.load("grafitti.ttf"),
+                                            font_size: 40.,
+                                            ..default()
+                                        },
+                                    ));
+                                    parent
+                                        .spawn((
+                                            ButtonBundle {
+                                                style: image_button_style.clone(),
+                                                border_color: BorderColor(Color::BLACK),
+                                                ..default()
+                                            },
+                                            ChangeBody,
+                                        ))
+                                        .with_children(|parent| {
+                                            parent.spawn((
+                                                NodeBundle {
+                                                    style: Style {
+                                                        width: Val::Percent(100.0), // Image width fills the button
+                                                        height: Val::Percent(100.0),
+                                                        ..default()
+                                                    },
+                                                    ..default()
+                                                },
+                                                UiImage::solid_color(Color::WHITE),
+                                            ));
+                                        });
+                                });
                         });
+
                     // Title for scrolling list
                     parent.spawn(TextBundle::from_section(
                         "WHO IS FIGHTING",
