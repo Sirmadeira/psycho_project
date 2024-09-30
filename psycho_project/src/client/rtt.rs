@@ -1,4 +1,3 @@
-use super::load_assets::ClientCharCollection;
 use super::MyAppState;
 use bevy::prelude::*;
 use bevy::render::render_resource::{
@@ -14,15 +13,13 @@ pub struct RttImages(pub HashMap<String, ImageInfo>);
 pub struct ImageInfo {
     pub handle: Handle<Image>,
     pub size: Extent3d,
-    pub scene_location: Vec3,
 }
 
 impl ImageInfo {
-    fn new(handle: Handle<Image>, size: Extent3d, scene_location: Vec3) -> Self {
+    fn new(handle: Handle<Image>, size: Extent3d) -> Self {
         return Self {
             handle: handle,
             size: size,
-            scene_location: scene_location,
         };
     }
 }
@@ -62,10 +59,7 @@ fn spawn_empty_images(mut images: ResMut<Assets<Image>>, mut commands: Commands)
         ..default()
     };
     image.resize(size);
-
-    let scene_location = Vec3::new(0.0, 1.0, 0.0);
-
-    let image_info = ImageInfo::new(images.add(image.clone()), size, scene_location);
+    let image_info = ImageInfo::new(images.add(image.clone()), size);
 
     rtt_images.insert("Character".to_string(), image_info);
 
