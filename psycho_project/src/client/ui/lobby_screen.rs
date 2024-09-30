@@ -53,7 +53,7 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
         border: UiRect::all(Val::Px(15.0)),
         margin: UiRect::all(Val::Px(20.0)),
         justify_content: JustifyContent::Center,
-        align_items: AlignItems::Stretch,
+        align_items: AlignItems::Center,
         ..default()
     };
 
@@ -61,6 +61,14 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
         font: asset_server.load("grafitti.ttf"),
         font_size: 40.0,
         color: Color::srgb(0.9, 0.9, 0.9),
+    };
+
+    let image_button_style = Style {
+        width: Val::Px(350.0),
+        height: Val::Px(125.0),
+        border: UiRect::all(Val::Px(15.0)),
+        margin: UiRect::all(Val::Px(20.0)),
+        ..default()
     };
 
     // Root noded
@@ -153,43 +161,11 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                             ChangeHead,
                         ))
                         .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section(
-                                "CHANGE HEAD",
-                                button_text_style.clone(),
-                            ));
-                        });
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: button_style.clone(),
-                                border_color: BorderColor(Color::BLACK),
-                                ..default()
-                            },
-                            ChangeHead,
-                        ))
-                        .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section(
-                                "CHANGE TORSO",
-                                button_text_style.clone(),
-                            ));
-                        });
-
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: button_style.clone(),
-                                border_color: BorderColor(Color::BLACK),
-                                ..default()
-                            },
-                            ChangeHead,
-                        ))
-                        .with_children(|parent| {
                             parent.spawn((
                                 NodeBundle {
                                     style: Style {
-                                        width: Val::Px(500.0),
-                                        height: Val::Px(125.0),
-                                        margin: UiRect::top(Val::VMin(5.)),
+                                        width: Val::Percent(100.0), // Image width fills the button
+                                        height: Val::Percent(100.0),
                                         ..default()
                                     },
                                     ..default()
