@@ -1,6 +1,5 @@
 use super::load_assets::ClientCharCollection;
 use super::MyAppState;
-use crate::client::is_loaded;
 use bevy::prelude::*;
 use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
@@ -13,9 +12,9 @@ use bevy_panorbit_camera::{ActiveCameraData, PanOrbitCamera};
 pub struct RttImages(pub HashMap<String, ImageInfo>);
 
 pub struct ImageInfo {
-    handle: Handle<Image>,
-    size: Extent3d,
-    scene_location: Vec3,
+    pub handle: Handle<Image>,
+    pub size: Extent3d,
+    pub scene_location: Vec3,
 }
 
 impl ImageInfo {
@@ -101,8 +100,8 @@ fn spawn_empty_images(
     commands.insert_resource(RttImages(rtt_images));
 }
 
-fn spawn_rtt_orbit_camera(
-    rtt_image_info: ImageInfo,
+pub fn spawn_rtt_orbit_camera(
+    rtt_image_info: &ImageInfo,
     camera_offset: Vec3,
     windows: &Query<&Window, With<PrimaryWindow>>,
     active_cam: &mut ResMut<ActiveCameraData>,
@@ -113,7 +112,7 @@ fn spawn_rtt_orbit_camera(
         camera: Camera {
             // render before the "main pass" camera so we
             order: -1,
-            target: rtt_image_info.handle.into(),
+            target: rtt_image_info.handle.clone().into(),
             clear_color: ClearColorConfig::Custom(Color::srgb(0.212, 0.271, 0.31)),
             ..default()
         },

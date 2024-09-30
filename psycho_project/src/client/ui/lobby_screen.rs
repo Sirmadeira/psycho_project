@@ -1,6 +1,8 @@
+use crate::client::rtt::{spawn_rtt_orbit_camera, RttImages};
 use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame, StopSearch};
 use crate::shared::protocol::player_structs::{Channel1, SavePlayer};
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use bevy::{
     a11y::{
         accesskit::{NodeBuilder, Role},
@@ -9,6 +11,7 @@ use bevy::{
     color::palettes::basic::WHITE,
     input::mouse::{MouseScrollUnit, MouseWheel},
 };
+use bevy_panorbit_camera::ActiveCameraData;
 use lightyear::prelude::client::*;
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -247,8 +250,8 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                         },
                     ));
                     // RTT image with formating node
-                    parent
-                        .spawn(NodeBundle {
+                    parent.spawn((
+                        NodeBundle {
                             style: Style {
                                 flex_direction: FlexDirection::Column,
                                 align_self: AlignSelf::Stretch,
@@ -256,12 +259,9 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                                 ..default()
                             },
                             ..default()
-                        })
-                        .with_children(|parent| {
-                            parent
-                                .spawn(UiImage::default())
-                                .insert(RttPlaceholder("potato".to_string()));
-                        });
+                        },
+                        RttPlaceholder("characters/parts/suit_head.glb".to_string()),
+                    ));
                     // Button utilized for saving character
                     parent
                         .spawn((
@@ -467,4 +467,28 @@ pub fn display_matches(
 }
 
 // Grabs marker component
-pub fn fill_ui_images() {}
+pub fn fill_ui_images(
+    rtt_images: Res<RttImages>,
+    mut rtt_placeholders: Query<(Entity, &RttPlaceholder), Added<RttPlaceholder>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    mut active_cam: ResMut<ActiveCameraData>,
+    mut commands: Commands,
+) {
+    for (ui_image, placeholder) in rtt_placeholders.iter_mut() {
+        if let Some(corresponding_image) = rtt_images.0.get(&placeholder.0) {
+            let camera_offset = Vec3::new(0.0, 1.5, 3.5);
+            spawn_rtt_orbit_camera(
+                corresponding_image,
+                camera_offset,
+                &windows,
+                &mut active_cam,
+                &mut commands,
+            );
+            commands
+                .entity(ui_image)
+                .insert(UiImage::new(corresponding_image.handle.clone()));
+        } else {
+            warn!("Couldnt find the rtt for {}", placeholder.0);
+        }
+    }
+}

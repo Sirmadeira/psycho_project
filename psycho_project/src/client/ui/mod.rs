@@ -14,7 +14,10 @@ impl Plugin for UiPlugin {
         app.add_systems(OnEnter(MyAppState::MainMenu), menu_screen);
         app.add_systems(Update, start_button.run_if(in_state(MyAppState::MainMenu)));
         app.add_systems(Update, exit_button.run_if(in_state(MyAppState::MainMenu)));
+
+        //Lobby
         app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);
+        app.add_systems(Update, fill_ui_images.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(
             Update,
             save_character_button.run_if(in_state(MyAppState::Lobby)),
