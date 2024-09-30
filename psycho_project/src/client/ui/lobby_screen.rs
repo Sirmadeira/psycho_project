@@ -65,7 +65,7 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
 
     let image_button_style = Style {
         width: Val::Px(350.0),
-        height: Val::Px(125.0),
+        height: Val::Px(500.0),
         border: UiRect::all(Val::Px(15.0)),
         margin: UiRect::all(Val::Px(20.0)),
         ..default()
