@@ -53,7 +53,7 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
         border: UiRect::all(Val::Px(15.0)),
         margin: UiRect::all(Val::Px(20.0)),
         justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
+        align_items: AlignItems::Stretch,
         ..default()
     };
 
@@ -184,9 +184,17 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                             ChangeHead,
                         ))
                         .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section(
-                                "CHANGE LEG",
-                                button_text_style.clone(),
+                            parent.spawn((
+                                NodeBundle {
+                                    style: Style {
+                                        width: Val::Px(500.0),
+                                        height: Val::Px(125.0),
+                                        margin: UiRect::top(Val::VMin(5.)),
+                                        ..default()
+                                    },
+                                    ..default()
+                                },
+                                UiImage::solid_color(Color::WHITE),
                             ));
                         });
                     // Title for scrolling list
