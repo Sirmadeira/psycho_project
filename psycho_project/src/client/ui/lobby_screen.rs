@@ -1,4 +1,5 @@
 use crate::client::rtt::{spawn_rtt_orbit_camera, RttImages};
+use crate::client::MyAppState;
 use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame, StopSearch};
 use crate::shared::protocol::player_structs::{Channel1, SavePlayer};
 use bevy::prelude::*;
@@ -13,43 +14,62 @@ use bevy::{
 };
 use bevy_panorbit_camera::ActiveCameraData;
 use lightyear::prelude::client::*;
+
+// Plugin utilized to do all lobby related actions
+pub struct LobbyPlugin;
+
+impl Plugin for LobbyPlugin {
+    fn build(&self, app: &mut App) {
+        //Lobby
+        app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);
+        app.add_systems(Update, fill_ui_images.run_if(in_state(MyAppState::Lobby)));
+        app.add_systems(
+            Update,
+            save_character_button.run_if(in_state(MyAppState::Lobby)),
+        );
+        app.add_systems(Update, search_button.run_if(in_state(MyAppState::Lobby)));
+        app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
+        app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
+    }
+}
+
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 //When clicked set server status to looking for match
 #[derive(Component)]
-pub struct SearchButton;
+struct SearchButton;
 //Gonna delete later now sends event that saves character in server side
 #[derive(Component)]
-pub struct SaveCharacterButton;
+struct SaveCharacterButton;
 
 #[derive(Component)]
-pub struct ChangeHead;
+struct ChangeHead;
 
 #[derive(Component)]
-pub struct ChangeBody;
+struct ChangeBody;
 
 //Placedholder on where to put our ui image and what ui image to put grab via file path()
 #[derive(Component)]
-pub struct RttPlaceholder(String);
+struct RttPlaceholder(String);
 
 // Made to tell me if player is searching for match in server, I avoided state here because I want the user
 // To still be capable of sending messages to server
 #[derive(Component)]
-pub struct IsSearching;
+struct IsSearching;
 
 // Marker component for general lobby screen just despawn this guy and it is children when done
 #[derive(Component)]
-pub struct ScreenLobby;
+struct ScreenLobby;
 
 // Scrolling list of available fights
 #[derive(Component, Default)]
-pub struct ScrollingList {
+struct ScrollingList {
     position: f32,
 }
 
-pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
+fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
     let button_style = Style {
         width: Val::Px(350.0),
         height: Val::Px(125.0),
@@ -345,7 +365,7 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
         });
 }
 
-pub fn search_button(
+fn search_button(
     mut interaction_query: Query<
         (
             &Interaction,
@@ -422,7 +442,7 @@ pub fn search_button(
 }
 
 // Send a message to server telling me player loadout
-pub fn save_character_button(
+fn save_character_button(
     mut interaction_query: Query<
         (
             &Interaction,
@@ -475,7 +495,7 @@ pub fn save_character_button(
 }
 
 // Responsible for scrolling up and down the matches list
-pub fn scrolling_list(
+fn scrolling_list(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,
     query_node: Query<&Node>,
@@ -500,7 +520,7 @@ pub fn scrolling_list(
 }
 
 // When a game starts update the list to other clients
-pub fn display_matches(
+fn display_matches(
     query_list: Query<Entity, With<ScrollingList>>,
     mut events: EventReader<MessageEvent<StartGame>>,
     asset_server: Res<AssetServer>,
@@ -530,7 +550,7 @@ pub fn display_matches(
 }
 
 // Grabs marker component
-pub fn fill_ui_images(
+fn fill_ui_images(
     rtt_images: Res<RttImages>,
     mut rtt_placeholders: Query<(Entity, &RttPlaceholder), Added<RttPlaceholder>>,
     windows: Query<&Window, With<PrimaryWindow>>,

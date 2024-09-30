@@ -5,19 +5,29 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
+pub struct MainMenuPlugin;
+
+impl Plugin for MainMenuPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(MyAppState::MainMenu), menu_screen);
+        app.add_systems(Update, start_button.run_if(in_state(MyAppState::MainMenu)));
+        app.add_systems(Update, exit_button.run_if(in_state(MyAppState::MainMenu)));
+    }
+}
+
 #[derive(Component)]
 
-pub struct ScreenMainMenu;
+struct ScreenMainMenu;
 
 // Marker component for the start button
 #[derive(Component)]
-pub struct StartButton;
+struct StartButton;
 
 // Marker component for the exit button
 #[derive(Component)]
-pub struct ExitButton;
+struct ExitButton;
 
-pub fn menu_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn menu_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
     let button_style = Style {
         width: Val::Px(250.0),
         height: Val::Px(75.0),
@@ -118,7 +128,7 @@ pub fn menu_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-pub fn start_button(
+fn start_button(
     mut interaction_query: Query<
         (
             &Interaction,
@@ -160,7 +170,7 @@ pub fn start_button(
     }
 }
 
-pub fn exit_button(
+fn exit_button(
     mut interaction_query: Query<
         (
             &Interaction,
