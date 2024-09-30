@@ -260,7 +260,7 @@ pub fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                             },
                             ..default()
                         },
-                        RttPlaceholder("characters/parts/suit_head.glb".to_string()),
+                        RttPlaceholder("Character".to_string()),
                     ));
                     // Button utilized for saving character
                     parent
@@ -476,10 +476,8 @@ pub fn fill_ui_images(
 ) {
     for (ui_image, placeholder) in rtt_placeholders.iter_mut() {
         if let Some(corresponding_image) = rtt_images.0.get(&placeholder.0) {
-            let camera_offset = Vec3::new(0.0, 1.5, 3.5);
             spawn_rtt_orbit_camera(
                 corresponding_image,
-                camera_offset,
                 &windows,
                 &mut active_cam,
                 &mut commands,
