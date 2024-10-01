@@ -1,3 +1,4 @@
+use crate::client::load_assets::Images;
 use crate::client::rtt::{spawn_rtt_orbit_camera, RttImages};
 use crate::client::MyAppState;
 use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame, StopSearch};
@@ -22,7 +23,10 @@ impl Plugin for LobbyPlugin {
     fn build(&self, app: &mut App) {
         //Lobby
         app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);
-        app.add_systems(Update, fill_ui_images.run_if(in_state(MyAppState::Lobby)));
+        app.add_systems(
+            Update,
+            fill_rtt_ui_images.run_if(in_state(MyAppState::Lobby)),
+        );
         app.add_systems(
             Update,
             save_character_button.run_if(in_state(MyAppState::Lobby)),
@@ -50,6 +54,9 @@ struct ChangeHead;
 #[derive(Component)]
 struct ChangeBody;
 
+#[derive(Component)]
+struct ChangeLeg;
+
 //Placedholder on where to put our ui image and what ui image to put grab via file path()
 #[derive(Component)]
 struct RttPlaceholder(String);
@@ -69,7 +76,7 @@ struct ScrollingList {
     position: f32,
 }
 
-fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
+fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut commands: Commands) {
     let button_style = Style {
         width: Val::Px(350.0),
         height: Val::Px(125.0),
@@ -224,7 +231,13 @@ fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                                                     },
                                                     ..default()
                                                 },
-                                                UiImage::solid_color(Color::WHITE),
+                                                UiImage::new(
+                                                    images
+                                                        .map
+                                                        .get("images/default.png")
+                                                        .expect("Default image to exist")
+                                                        .clone(),
+                                                ),
                                             ));
                                         });
                                 });
@@ -266,7 +279,61 @@ fn lobby_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                                                     },
                                                     ..default()
                                                 },
-                                                UiImage::solid_color(Color::WHITE),
+                                                UiImage::new(
+                                                    images
+                                                        .map
+                                                        .get("images/default.png")
+                                                        .expect("Default image to exist")
+                                                        .clone(),
+                                                ),
+                                            ));
+                                        });
+                                });
+                            parent
+                                .spawn(NodeBundle {
+                                    style: Style {
+                                        flex_direction: FlexDirection::Column,
+                                        justify_content: JustifyContent::Center,
+                                        align_items: AlignItems::Center,
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn(TextBundle::from_section(
+                                        "Change leg",
+                                        TextStyle {
+                                            font: asset_server.load("grafitti.ttf"),
+                                            font_size: 40.,
+                                            ..default()
+                                        },
+                                    ));
+                                    parent
+                                        .spawn((
+                                            ButtonBundle {
+                                                style: image_button_style.clone(),
+                                                border_color: BorderColor(Color::BLACK),
+                                                ..default()
+                                            },
+                                            ChangeLeg,
+                                        ))
+                                        .with_children(|parent| {
+                                            parent.spawn((
+                                                NodeBundle {
+                                                    style: Style {
+                                                        width: Val::Percent(100.0), // Image width fills the button
+                                                        height: Val::Percent(100.0),
+                                                        ..default()
+                                                    },
+                                                    ..default()
+                                                },
+                                                UiImage::new(
+                                                    images
+                                                        .map
+                                                        .get("images/default.png")
+                                                        .expect("Default image to exist")
+                                                        .clone(),
+                                                ),
                                             ));
                                         });
                                 });
@@ -550,7 +617,7 @@ fn display_matches(
 }
 
 // Grabs marker component
-fn fill_ui_images(
+fn fill_rtt_ui_images(
     rtt_images: Res<RttImages>,
     mut rtt_placeholders: Query<(Entity, &RttPlaceholder), Added<RttPlaceholder>>,
     windows: Query<&Window, With<PrimaryWindow>>,

@@ -1,7 +1,7 @@
 //! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
 use crate::client::form_player::helpers::*;
 use crate::client::is_loaded;
-use crate::client::load_assets::ClientCharCollection;
+use crate::client::load_assets::CharCollection;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
@@ -42,7 +42,7 @@ struct Visual;
 
 fn spawn_char(
     player_info: &PlayerBundle,
-    client_collection: &Res<ClientCharCollection>,
+    client_collection: &Res<CharCollection>,
     gltfs: &Res<Assets<Gltf>>,
     commands: &mut Commands,
 ) {
@@ -77,7 +77,7 @@ fn spawn_char(
 
 // Forms main player, important to occur before the start game, as customizer and rtt requires it
 pub fn form_main_player_character(
-    client_collection: Res<ClientCharCollection>,
+    client_collection: Res<CharCollection>,
     gltfs: Res<Assets<Gltf>>,
     mut char_state: ResMut<NextState<MyCharState>>,
     mut events: EventReader<MessageEvent<SendBundle>>,

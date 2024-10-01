@@ -4,7 +4,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 
-use crate::client::load_assets::ClientCharCollection;
+use crate::client::load_assets::CharCollection;
 
 use crate::client::MyAppState;
 
@@ -81,7 +81,7 @@ pub fn add_animation_graph(
 
 // Grabbing animations from gltf and inserting into graph - TODO EXPAND THIS TO GRAB ALL SKELETONS
 fn insert_gltf_animations(
-    char_collection: Res<ClientCharCollection>,
+    char_collection: Res<CharCollection>,
     assets_gltf: Res<Assets<Gltf>>,
     mut animations: ResMut<Animations>,
     mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
