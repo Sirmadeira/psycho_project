@@ -2,7 +2,7 @@ use crate::client::load_assets::Images;
 use crate::client::rtt::{spawn_rtt_orbit_camera, RttImages};
 use crate::client::MyAppState;
 use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame, StopSearch};
-use crate::shared::protocol::player_structs::{Channel1, SavePlayer};
+use crate::shared::protocol::player_structs::Channel1;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy::{
@@ -21,14 +21,16 @@ pub struct LobbyPlugin;
 
 impl Plugin for LobbyPlugin {
     fn build(&self, app: &mut App) {
-        //Lobby
+        // Debug
+        app.register_type::<VisualToChange>();
+        // Lobby systems
         app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);
         app.add_systems(
             Update,
             fill_rtt_ui_images.run_if(in_state(MyAppState::Lobby)),
         );
         app.add_systems(Update, search_button.run_if(in_state(MyAppState::Lobby)));
-        // app.add_systems(Update, change_button.run_if(in_state(MyAppState::Lobby)));
+        app.add_systems(Update, change_button.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
     }
@@ -42,7 +44,7 @@ const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 #[derive(Component)]
 struct SearchButton;
 
-#[derive(Component)]
+#[derive(Component, Debug, Reflect)]
 pub enum VisualToChange {
     Head(Vec<String>),
     Torso(Vec<String>),
@@ -547,35 +549,32 @@ fn search_button(
 // Send a message to server telling me player loadout
 fn change_button(
     mut interaction_query: Query<
-        (
-            &Interaction,
-            &mut BackgroundColor,
-            &mut BorderColor,
-            &Children,
-        ),
+        (&Interaction, &mut BorderColor, &mut VisualToChange),
         (Changed<Interaction>, With<VisualToChange>),
     >,
-    mut text_query: Query<&mut Text>,
-    mut connection_manager: ResMut<ConnectionManager>,
+    mut next_state: ResMut<NextState<MyAppState>>,
+    base_screen: Query<Entity, With<ScreenLobby>>,
+    mut commands: Commands,
 ) {
-    for (interaction, mut color, mut border_color, children) in interaction_query.iter_mut() {
-        let mut text = text_query.get_mut(children[0]).unwrap();
-        handle_interaction(
-            interaction,
-            None,
-            &mut text,
-            &mut color,
-            &mut border_color,
-            "LETS DUEL!",                 // Pressed text
-            "COWARD",                     // Hovered text
-            "SEARCH YOUR RIVAL",          // None text
-            PRESSED_BUTTON,               // Pressed color
-            HOVERED_BUTTON,               // Hovered color
-            NORMAL_BUTTON,                // None color
-            Color::srgb(255.0, 0.0, 0.0), // Pressed border color
-            Color::WHITE,                 // Hovered border color
-            Color::BLACK,                 // None border color
-        );
+    for (interaction, mut border_color, visual_change) in interaction_query.iter_mut() {
+        match *interaction {
+            Interaction::Pressed => {
+                *border_color = BorderColor(Color::WHITE);
+                info!("Visual change {:?}", visual_change);
+                if let Ok(base_screen) = base_screen.get_single() {
+                    info!("Despawning lobby scrren");
+                    commands.entity(base_screen).despawn_recursive();
+                    info!("Setting new state");
+                    next_state.set(MyAppState::Inventory);
+                }
+            }
+            Interaction::Hovered => {
+                *border_color = BorderColor(Color::WHITE);
+            }
+            Interaction::None => {
+                *border_color = BorderColor(Color::BLACK);
+            }
+        }
     }
 }
 

@@ -60,6 +60,9 @@ pub enum MyAppState {
     LoadingAssets,
     // In main menu for setting player options and such
     MainMenu,
+    // Lobby screen
     Lobby,
+    // Inventory sub-screens
+    Inventory,
     Game,
 }
