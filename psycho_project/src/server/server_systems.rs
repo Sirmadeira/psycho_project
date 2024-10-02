@@ -104,7 +104,6 @@ pub(crate) fn handle_connections(
     mut connections: EventReader<ConnectEvent>,
     mut player_map: ResMut<PlayerBundleMap>,
     mut player_entity_map: ResMut<PlayerEntityMap>,
-    mut connection_manager: ResMut<ConnectionManager>,
     mut commands: Commands,
 ) {
     for connection in connections.read() {
@@ -113,15 +112,11 @@ pub(crate) fn handle_connections(
             info!(
                 "This player {:?} already connected once spawn it is entity according to it is settings",old_player_bundle.id
             );
-            let old_bundle = spawn_player_entity(
+            spawn_player_entity(
                 connection.client_id,
                 &mut commands,
                 Some(old_player_bundle.clone()),
                 &mut player_entity_map,
-            );
-            let _ = connection_manager.send_message::<Channel1, SendBundle>(
-                connection.client_id,
-                &mut SendBundle(old_bundle),
             );
         } else {
             info!("New player make him learn! And insert him into resource");
@@ -138,13 +133,6 @@ pub(crate) fn handle_connections(
 
             info!("Saving player info in file for first time doing this because he wont renember you if you acess twice");
             save_file(player_map.clone());
-
-            info!("Sending their current loadout to client for the RTT");
-
-            let _ = connection_manager.send_message::<Channel1, SendBundle>(
-                connection.client_id,
-                &mut SendBundle(new_bundle),
-            );
         }
 
         current_players.quantity += 1;
