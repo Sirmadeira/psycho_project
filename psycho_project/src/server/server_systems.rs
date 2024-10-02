@@ -136,7 +136,7 @@ pub(crate) fn handle_connections(
                 .0
                 .insert(connection.client_id, new_bundle.clone());
 
-            info!("Saving player info in file for first time");
+            info!("Saving player info in file for first time doing this because he wont renember you if you acess twice");
             save_file(player_map.clone());
 
             info!("Sending their current loadout to client for the RTT");

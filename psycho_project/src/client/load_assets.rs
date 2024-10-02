@@ -28,6 +28,7 @@ pub struct CharCollection {
         paths(
             // Weapons
             "weapons/katana.glb",
+            // Full characters
             "characters/character_mesh.glb",
             // Heads
             "characters/parts/suit_head.glb",

@@ -27,10 +27,6 @@ impl Plugin for LobbyPlugin {
             Update,
             fill_rtt_ui_images.run_if(in_state(MyAppState::Lobby)),
         );
-        app.add_systems(
-            Update,
-            save_character_button.run_if(in_state(MyAppState::Lobby)),
-        );
         app.add_systems(Update, search_button.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
@@ -44,22 +40,37 @@ const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 //When clicked set server status to looking for match
 #[derive(Component)]
 struct SearchButton;
-//Gonna delete later now sends event that saves character in server side
-#[derive(Component)]
-struct SaveCharacterButton;
 
 #[derive(Component)]
-pub struct VisualToChange{}
+pub enum VisualToChange {
+    Head(Vec<String>),
+    Torso(Vec<String>),
+    Legs(Vec<String>),
+}
 
+// This will ensure you only send
+impl VisualToChange {
+    pub fn default_head() -> Self {
+        VisualToChange::Head(vec![
+            "characters/parts/suit_head.glb".to_string(),
+            "characters/parts/soldier_head.glb".to_string(),
+        ])
+    }
 
-#[derive(Component)]
-struct ChangeHead;
+    pub fn default_torso() -> Self {
+        VisualToChange::Torso(vec![
+            "characters/parts/scifi_torso.glb".to_string(),
+            "characters/parts/soldier_torso.glb".to_string(),
+        ])
+    }
 
-#[derive(Component)]
-struct ChangeBody;
-
-#[derive(Component)]
-struct ChangeLeg;
+    pub fn default_legs() -> Self {
+        VisualToChange::Legs(vec![
+            "characters/parts/suit_head.glb".to_string(),
+            "characters/parts/soldier_head.glb".to_string(),
+        ])
+    }
+}
 
 //Placedholder on where to put our ui image and what ui image to put grab via file path()
 #[derive(Component)]
@@ -223,7 +234,7 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
                                                 border_color: BorderColor(Color::BLACK),
                                                 ..default()
                                             },
-                                            ChangeHead,
+                                            VisualToChange::default_head(),
                                         ))
                                         .with_children(|parent| {
                                             parent.spawn((
@@ -271,7 +282,7 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
                                                 border_color: BorderColor(Color::BLACK),
                                                 ..default()
                                             },
-                                            ChangeBody,
+                                            VisualToChange::default_torso(),
                                         ))
                                         .with_children(|parent| {
                                             parent.spawn((
@@ -319,7 +330,7 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
                                                 border_color: BorderColor(Color::BLACK),
                                                 ..default()
                                             },
-                                            ChangeLeg,
+                                            VisualToChange::default_legs(),
                                         ))
                                         .with_children(|parent| {
                                             parent.spawn((
@@ -416,24 +427,64 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
                         },
                         RttPlaceholder("Character".to_string()),
                     ));
-                    // Button utilized for saving character
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: button_style.clone(),
-                                border_color: BorderColor(Color::BLACK),
-                                ..default()
-                            },
-                            SaveCharacterButton,
-                        ))
-                        .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section(
-                                "SAVE CHARACTER",
-                                button_text_style.clone(),
-                            ));
-                        });
                 });
         });
+}
+
+fn handle_interaction(
+    interaction: &Interaction,
+    is_searching: Option<bool>,
+    text: &mut Text,
+    color: &mut BackgroundColor,
+    border_color: &mut BorderColor,
+    pressed_text: &str,
+    hovered_text: &str,
+    none_text: &str,
+    pressed_color: Color,
+    hovered_color: Color,
+    none_color: Color,
+    pressed_border: Color,
+    hovered_border: Color,
+    none_border: Color,
+) {
+    match *interaction {
+        Interaction::Pressed => {
+            text.sections[0].value = pressed_text.to_string();
+            *color = pressed_color.into();
+            border_color.0 = pressed_border;
+            if let Some(is_searching) = is_searching {
+                if is_searching {
+                    text.sections[0].value = "WHY DID YOU STOP NOO".to_string();
+                } else {
+                    text.sections[0].value = "LETS GO".to_string();
+                }
+            }
+        }
+        Interaction::Hovered => {
+            text.sections[0].value = hovered_text.to_string();
+            *color = hovered_color.into();
+            border_color.0 = hovered_border;
+            if let Some(is_searching) = is_searching {
+                if is_searching {
+                    text.sections[0].value = "CURRENTLY SEARCHING".to_string();
+                } else {
+                    text.sections[0].value = "OH YEAH".to_string();
+                }
+            }
+        }
+        Interaction::None => {
+            text.sections[0].value = none_text.to_string();
+            *color = none_color.into();
+            border_color.0 = none_border;
+            if let Some(is_searching) = is_searching {
+                if is_searching {
+                    text.sections[0].value = "CURRENTLY SEARCHING".to_string();
+                } else {
+                    text.sections[0].value = "SEARCH FOR MATCH".to_string();
+                }
+            }
+        }
+    }
 }
 
 fn search_button(
@@ -452,63 +503,42 @@ fn search_button(
     mut text_query: Query<&mut Text>,
     mut commands: Commands,
 ) {
-    // This button bundle only contains one child text
     if let Ok((interaction, mut color, mut border_color, children, button_entity)) =
         interaction_query.get_single_mut()
     {
         let mut text = text_query.get_mut(children[0]).unwrap();
-
-        // Check if the player is already searching
         let is_searching = is_searching_query
             .get_single()
             .expect("Has statement to work as it should");
 
-        match *interaction {
-            Interaction::Pressed => {
-                info_once!("Current search state {}", is_searching);
-                if is_searching {
-                    // Player is currently searching, so stop searching
-                    text.sections[0].value = "STOP SEARCHING".to_string();
-                    *color = PRESSED_BUTTON.into();
-                    border_color.0 = Color::srgb(0.0, 0.0, 0.0);
-                    info!("Sending message to server to stop searching");
-                    let _ =
-                        connection_manager.send_message::<Channel1, StopSearch>(&mut StopSearch);
-
-                    // Remove the IsSearching component
-                    commands.entity(button_entity).remove::<IsSearching>();
-                } else {
-                    // Player is not searching, so start searching
-                    text.sections[0].value = "LETS DUEL!".to_string();
-                    *color = PRESSED_BUTTON.into();
-                    border_color.0 = Color::srgb(255.0, 0.0, 0.0);
-                    info!("Sending message to server to set player state to searching");
-                    let _ =
-                        connection_manager.send_message::<Channel1, SearchMatch>(&mut SearchMatch);
-
-                    // Add the IsSearching component
-                    commands.entity(button_entity).insert(IsSearching);
-                }
-            }
-            Interaction::Hovered => {
-                text.sections[0].value = if is_searching {
-                    "COWARD".to_string()
-                } else {
-                    "DO IT ".to_string()
-                };
-                *color = HOVERED_BUTTON.into();
-                border_color.0 = Color::WHITE;
-            }
-            Interaction::None => {
-                text.sections[0].value = if is_searching {
-                    "STOP SEARCHING".to_string()
-                } else {
-                    "SEARCH YOUR RIVAL".to_string()
-                };
-                *color = NORMAL_BUTTON.into();
-                border_color.0 = Color::BLACK;
+        if let Interaction::Pressed = *interaction {
+            if is_searching {
+                info!("Sending message to server to stop searching");
+                let _ = connection_manager.send_message::<Channel1, StopSearch>(&mut StopSearch);
+                commands.entity(button_entity).remove::<IsSearching>();
+            } else {
+                info!("Sending message to server to start searching");
+                let _ = connection_manager.send_message::<Channel1, SearchMatch>(&mut SearchMatch);
+                commands.entity(button_entity).insert(IsSearching);
             }
         }
+
+        handle_interaction(
+            interaction,
+            Some(is_searching),
+            &mut text,
+            &mut color,
+            &mut border_color,
+            "LETS DUEL!",                 // Pressed text
+            "COWARD",                     // Hovered text
+            "SEARCH YOUR RIVAL",          // None text
+            PRESSED_BUTTON,               // Pressed color
+            HOVERED_BUTTON,               // Hovered color
+            NORMAL_BUTTON,                // None color
+            Color::srgb(255.0, 0.0, 0.0), // Pressed border color
+            Color::WHITE,                 // Hovered border color
+            Color::BLACK,                 // None border color
+        );
     }
 }
 
@@ -521,12 +551,14 @@ fn save_character_button(
             &mut BorderColor,
             &Children,
         ),
-        (Changed<Interaction>, With<SaveCharacterButton>),
+        (Changed<Interaction>, With<VisualToChange>),
     >,
     mut text_query: Query<&mut Text>,
     network_state: Res<State<NetworkingState>>,
     mut connection_manager: ResMut<ConnectionManager>,
 ) {
+    for (interaction, color, border_color, children) in interaction_query.iter() {}
+
     if let Ok((interaction, mut color, mut border_color, children)) =
         interaction_query.get_single_mut()
     {
