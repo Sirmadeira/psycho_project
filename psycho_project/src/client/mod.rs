@@ -1,15 +1,13 @@
 //! The client plugin.
 //! This plugin will act as the entire client meaning every single plugin that relies on the user computer is gonna run here
 
-use bevy::prelude::*;
-use lightyear::prelude::client::ClientCommands;
-use lightyear::shared::events::components::MessageEvent;
-
+use crate::client::ui::UiPlugin;
 use crate::shared::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::PlayerBundleMap;
-use crate::{client::ui::UiPlugin, shared::protocol::lobby_structs::StartGame};
+use bevy::prelude::*;
 
 mod change_res;
+pub mod essentials;
 mod form_player;
 mod load_assets;
 pub mod rtt;
@@ -17,6 +15,7 @@ mod ui;
 
 // SElLF MADE IMPORTS
 use self::change_res::ChangeResPlugin;
+use self::essentials::SystemsPlugin;
 use self::form_player::CreateCharPlugin;
 use self::load_assets::LoadingAssetsPlugin;
 use self::rtt::FormRttsPlugin;
@@ -43,6 +42,7 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(PanOrbitCameraPlugin);
 
         // Self made plugins
+        app.add_plugins(SystemsPlugin);
         app.add_plugins(ChangeResPlugin);
         app.add_plugins(LoadingAssetsPlugin);
         app.add_plugins(UiPlugin);
@@ -50,9 +50,6 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(FormRttsPlugin);
 
         // Connection systems - Systems that dialogues with server
-        app.add_systems(OnEnter(MyAppState::MainMenu), connect_client);
-
-        app.add_systems(Update, start_game);
     }
 }
 
@@ -65,31 +62,4 @@ pub enum MyAppState {
     MainMenu,
     Lobby,
     Game,
-}
-
-// Rc - Only run this system if it has all assets available
-pub fn is_loaded(state: Res<State<MyAppState>>) -> bool {
-    if *state != MyAppState::LoadingAssets {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-// First thing we will do is connect the client to server as our server is really important for grabing specific info
-pub fn connect_client(mut commands: Commands) {
-    info!("Gonna connect to server");
-    commands.connect_client();
-}
-
-// Starts the game the message filters out the specific clients
-pub fn start_game(
-    mut events: EventReader<MessageEvent<StartGame>>,
-    mut next_state: ResMut<NextState<MyAppState>>,
-) {
-    for event in events.read() {
-        let content = event.message();
-        info!("Start game for lobby {}", content.lobby_id);
-        next_state.set(MyAppState::Game);
-    }
 }

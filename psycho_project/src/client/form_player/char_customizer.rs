@@ -1,19 +1,20 @@
 //! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
 use crate::client::form_player::helpers::*;
-use crate::client::is_loaded;
 use crate::client::load_assets::CharCollection;
+use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use lightyear::client::events::MessageEvent;
+
+use crate::client::essentials::EasyClient;
 
 pub struct CustomizeChar;
 
 impl Plugin for CustomizeChar {
     fn build(&self, app: &mut App) {
         app.init_state::<MyCharState>();
-        app.add_systems(Update, form_main_player_character.run_if(is_loaded));
+        app.add_systems(OnEnter(MyAppState::MainMenu), form_main_player_character);
         app.add_systems(
             OnEnter(MyCharState::TransferComp),
             transfer_essential_components,
@@ -78,20 +79,21 @@ fn spawn_char(
 // Forms main player, important to occur before the start game, as customizer and rtt requires it
 pub fn form_main_player_character(
     client_collection: Res<CharCollection>,
+    bundle_map: Res<PlayerBundleMap>,
+    easy_client: Res<EasyClient>,
     gltfs: Res<Assets<Gltf>>,
     mut char_state: ResMut<NextState<MyCharState>>,
-    mut events: EventReader<MessageEvent<SendBundle>>,
     mut commands: Commands,
 ) {
-    for event in events.read() {
-        let server_bundle = &event.message().0;
-
+    if let Some(server_bundle) = bundle_map.0.get(&easy_client.0) {
         let client_id = server_bundle.id.0;
         info!("Spawning visuals for client_id {}", client_id);
 
         spawn_char(server_bundle, &client_collection, &gltfs, &mut commands);
         info!("Transfering animations");
         char_state.set(MyCharState::TransferComp);
+    } else {
+        warn!("You are not connected not gonna spawn your character");
     }
 }
 

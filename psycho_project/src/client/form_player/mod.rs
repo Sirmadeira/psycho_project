@@ -15,29 +15,13 @@ pub struct CreateCharPlugin;
 
 impl Plugin for CreateCharPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<EasyClient>();
         // Simple system
         app.add_systems(Startup, spawn_light_bundle);
         // Self made plubings
         app.add_plugins(CustomizeChar);
         app.add_plugins(AnimPlayer);
-        // Usefull client systems
-        app.add_systems(Update, form_client_id);
         // Debugging RTT
         app.add_systems(Update, disable_culling);
-    }
-}
-
-// Stores you current client id
-#[derive(Resource, Reflect)]
-#[reflect(Resource)]
-pub struct EasyClient(ClientId);
-
-// When we have a connect event grab the client id
-fn form_client_id(mut connection_event: EventReader<ConnectEvent>, mut commands: Commands) {
-    for event in connection_event.read() {
-        let client_id = event.client_id();
-        commands.insert_resource(EasyClient(client_id));
     }
 }
 

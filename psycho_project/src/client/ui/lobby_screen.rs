@@ -28,6 +28,7 @@ impl Plugin for LobbyPlugin {
             fill_rtt_ui_images.run_if(in_state(MyAppState::Lobby)),
         );
         app.add_systems(Update, search_button.run_if(in_state(MyAppState::Lobby)));
+        // app.add_systems(Update, change_button.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
     }
@@ -421,6 +422,7 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
                                 flex_direction: FlexDirection::Column,
                                 align_self: AlignSelf::Stretch,
                                 height: Val::Percent(90.),
+                                width: Val::Percent(80.),
                                 ..default()
                             },
                             ..default()
@@ -431,6 +433,7 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
         });
 }
 
+// Helper function simplifies code
 fn handle_interaction(
     interaction: &Interaction,
     is_searching: Option<bool>,
@@ -543,7 +546,7 @@ fn search_button(
 }
 
 // Send a message to server telling me player loadout
-fn save_character_button(
+fn change_button(
     mut interaction_query: Query<
         (
             &Interaction,
@@ -554,46 +557,26 @@ fn save_character_button(
         (Changed<Interaction>, With<VisualToChange>),
     >,
     mut text_query: Query<&mut Text>,
-    network_state: Res<State<NetworkingState>>,
     mut connection_manager: ResMut<ConnectionManager>,
 ) {
-    for (interaction, color, border_color, children) in interaction_query.iter() {}
-
-    if let Ok((interaction, mut color, mut border_color, children)) =
-        interaction_query.get_single_mut()
-    {
+    for (interaction, mut color, mut border_color, children) in interaction_query.iter_mut() {
         let mut text = text_query.get_mut(children[0]).unwrap();
-
-        match network_state.get() {
-            NetworkingState::Disconnected => {}
-            NetworkingState::Connecting => {
-                text.sections[0].value = "OH HE COMING".to_string();
-            }
-            NetworkingState::Connected => {
-                // Handle button interaction states
-                match *interaction {
-                    Interaction::Pressed => {
-                        text.sections[0].value = "SAVED!".to_string();
-                        *color = PRESSED_BUTTON.into();
-                        border_color.0 = Color::srgb(1.0, 0.0, 0.0); // Use rgb values between 0 and 1
-
-                        // Call the save mechanic when pressed
-                        let _ = connection_manager
-                            .send_message::<Channel1, SavePlayer>(&mut SavePlayer);
-                    }
-                    Interaction::Hovered => {
-                        text.sections[0].value = "OH MY GOD HE BEAUTY".to_string();
-                        *color = HOVERED_BUTTON.into();
-                        border_color.0 = Color::WHITE;
-                    }
-                    Interaction::None => {
-                        text.sections[0].value = "SAVE YOUR CHARACTER".to_string();
-                        *color = NORMAL_BUTTON.into();
-                        border_color.0 = Color::BLACK;
-                    }
-                }
-            }
-        }
+        handle_interaction(
+            interaction,
+            None,
+            &mut text,
+            &mut color,
+            &mut border_color,
+            "LETS DUEL!",                 // Pressed text
+            "COWARD",                     // Hovered text
+            "SEARCH YOUR RIVAL",          // None text
+            PRESSED_BUTTON,               // Pressed color
+            HOVERED_BUTTON,               // Hovered color
+            NORMAL_BUTTON,                // None color
+            Color::srgb(255.0, 0.0, 0.0), // Pressed border color
+            Color::WHITE,                 // Hovered border color
+            Color::BLACK,                 // None border color
+        );
     }
 }
 
