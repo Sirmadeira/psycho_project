@@ -1,7 +1,7 @@
 //! RESPONSIBILITIES - LOAD ALL ASSETS WHEN GAME STARTS
 //! Once loaded we will continue to state UI
 
-use bevy::{ecs::reflect, prelude::*, utils::HashMap};
+use bevy::{prelude::*, utils::HashMap};
 use bevy_asset_loader::prelude::*;
 
 pub struct LoadingAssetsPlugin;

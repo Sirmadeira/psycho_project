@@ -49,6 +49,10 @@ struct SearchButton;
 struct SaveCharacterButton;
 
 #[derive(Component)]
+pub struct VisualToChange{}
+
+
+#[derive(Component)]
 struct ChangeHead;
 
 #[derive(Component)]
