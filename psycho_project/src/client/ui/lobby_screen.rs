@@ -110,10 +110,10 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
     };
 
     let image_button_style = Style {
-        width: Val::Px(300.0),
+        width: Val::Px(250.0),
         height: Val::Px(200.0),
         border: UiRect::all(Val::Px(15.0)),
-        margin: UiRect::all(Val::Px(20.0)),
+        margin: UiRect::all(Val::Px(10.0)),
         ..default()
     };
 
@@ -422,7 +422,6 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
                                 flex_direction: FlexDirection::Column,
                                 align_self: AlignSelf::Stretch,
                                 height: Val::Percent(90.),
-                                width: Val::Percent(80.),
                                 ..default()
                             },
                             ..default()

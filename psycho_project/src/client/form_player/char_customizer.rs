@@ -80,20 +80,22 @@ fn spawn_char(
 pub fn form_main_player_character(
     client_collection: Res<CharCollection>,
     bundle_map: Res<PlayerBundleMap>,
-    easy_client: Res<EasyClient>,
+    easy_client: Option<Res<EasyClient>>,
     gltfs: Res<Assets<Gltf>>,
     mut char_state: ResMut<NextState<MyCharState>>,
     mut commands: Commands,
 ) {
-    if let Some(server_bundle) = bundle_map.0.get(&easy_client.0) {
-        let client_id = server_bundle.id.0;
-        info!("Spawning visuals for client_id {}", client_id);
+    if let Some(easy_client) = easy_client {
+        if let Some(server_bundle) = bundle_map.0.get(&easy_client.0) {
+            let client_id = server_bundle.id.0;
+            info!("Spawning visuals for client_id {}", client_id);
 
-        spawn_char(server_bundle, &client_collection, &gltfs, &mut commands);
-        info!("Transfering animations");
-        char_state.set(MyCharState::TransferComp);
+            spawn_char(server_bundle, &client_collection, &gltfs, &mut commands);
+            info!("Transfering animations");
+            char_state.set(MyCharState::TransferComp);
+        }
     } else {
-        warn!("You are not connected not gonna spawn your character");
+        warn!("You are not connected no character for you !")
     }
 }
 
