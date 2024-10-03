@@ -449,63 +449,6 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
         });
 }
 
-// Helper function simplifies code
-fn handle_interaction(
-    interaction: &Interaction,
-    is_searching: Option<bool>,
-    text: &mut Text,
-    color: &mut BackgroundColor,
-    border_color: &mut BorderColor,
-    pressed_text: &str,
-    hovered_text: &str,
-    none_text: &str,
-    pressed_color: Color,
-    hovered_color: Color,
-    none_color: Color,
-    pressed_border: Color,
-    hovered_border: Color,
-    none_border: Color,
-) {
-    match *interaction {
-        Interaction::Pressed => {
-            text.sections[0].value = pressed_text.to_string();
-            *color = pressed_color.into();
-            border_color.0 = pressed_border;
-            if let Some(is_searching) = is_searching {
-                if is_searching {
-                    text.sections[0].value = "WHY DID YOU STOP NOO".to_string();
-                } else {
-                    text.sections[0].value = "LETS GO".to_string();
-                }
-            }
-        }
-        Interaction::Hovered => {
-            text.sections[0].value = hovered_text.to_string();
-            *color = hovered_color.into();
-            border_color.0 = hovered_border;
-            if let Some(is_searching) = is_searching {
-                if is_searching {
-                    text.sections[0].value = "CURRENTLY SEARCHING".to_string();
-                } else {
-                    text.sections[0].value = "OH YEAH".to_string();
-                }
-            }
-        }
-        Interaction::None => {
-            text.sections[0].value = none_text.to_string();
-            *color = none_color.into();
-            border_color.0 = none_border;
-            if let Some(is_searching) = is_searching {
-                if is_searching {
-                    text.sections[0].value = "CURRENTLY SEARCHING".to_string();
-                } else {
-                    text.sections[0].value = "SEARCH FOR MATCH".to_string();
-                }
-            }
-        }
-    }
-}
-
 fn search_button(
     mut interaction_query: Query<
         (
@@ -530,6 +473,7 @@ fn search_button(
             .get_single()
             .expect("Has statement to work as it should");
 
+        // Interaction behavior logic
         if let Interaction::Pressed = *interaction {
             if is_searching {
                 info!("Sending message to server to stop searching");
@@ -542,22 +486,36 @@ fn search_button(
             }
         }
 
-        handle_interaction(
-            interaction,
-            Some(is_searching),
-            &mut text,
-            &mut color,
-            &mut border_color,
-            "LETS DUEL!",                 // Pressed text
-            "COWARD",                     // Hovered text
-            "SEARCH YOUR RIVAL",          // None text
-            PRESSED_BUTTON,               // Pressed color
-            HOVERED_BUTTON,               // Hovered color
-            NORMAL_BUTTON,                // None color
-            Color::srgb(255.0, 0.0, 0.0), // Pressed border color
-            Color::WHITE,                 // Hovered border color
-            Color::BLACK,                 // None border color
-        );
+        // Handle interaction directly
+        match *interaction {
+            Interaction::Pressed => {
+                text.sections[0].value = if is_searching {
+                    "WHY DID YOU STOP NOO".to_string()
+                } else {
+                    "LETS GO".to_string()
+                };
+                *color = PRESSED_BUTTON.into();
+                border_color.0 = Color::srgb(255.0, 0.0, 0.0);
+            }
+            Interaction::Hovered => {
+                text.sections[0].value = if is_searching {
+                    "CURRENTLY SEARCHING".to_string()
+                } else {
+                    "OH YEAH".to_string()
+                };
+                *color = HOVERED_BUTTON.into();
+                border_color.0 = Color::WHITE;
+            }
+            Interaction::None => {
+                text.sections[0].value = if is_searching {
+                    "CURRENTLY SEARCHING".to_string()
+                } else {
+                    "SEARCH FOR MATCH".to_string()
+                };
+                *color = NORMAL_BUTTON.into();
+                border_color.0 = Color::BLACK;
+            }
+        }
     }
 }
 
@@ -576,15 +534,16 @@ fn change_button(
         match *interaction {
             Interaction::Pressed => {
                 *border_color = BorderColor(Color::WHITE);
-                info!("Visual change {:?}", visual_change);
                 if let Ok(lobby_screen) = lobby_screen.get_single() {
                     info!("Despawning lobby scrren");
                     commands
                         .entity(lobby_screen)
                         .despawn_descendants()
                         .despawn();
+
                     info!("Writing in resource what items to send to inv scrren");
                     *send_visual = ToDisplayVisuals(visual_change.clone());
+                    
                     info!("Setting new state");
                     my_app_state.set(MyAppState::Inventory);
                 } else {

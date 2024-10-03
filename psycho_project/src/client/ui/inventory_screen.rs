@@ -10,11 +10,18 @@ pub struct InventoryPlugin;
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnExit(MyAppState::Lobby),
+            OnEnter(MyAppState::Inventory),
             (inventory_screen, display_selected_visuals).chain(),
+        );
+        app.add_systems(
+            Update,
+            return_button.run_if(in_state(MyAppState::Inventory)),
         );
     }
 }
+
+#[derive(Component)]
+struct ReturnButton;
 
 // Simple marker component that gives me all my images made for hover logic
 #[derive(Component)]
@@ -77,11 +84,14 @@ fn inventory_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                         })
                         .with_children(|parent| {
                             parent
-                                .spawn((ButtonBundle {
-                                    style: button_style.clone(),
-                                    border_color: BorderColor(Color::BLACK),
-                                    ..default()
-                                },))
+                                .spawn((
+                                    ButtonBundle {
+                                        style: button_style.clone(),
+                                        border_color: BorderColor(Color::BLACK),
+                                        ..default()
+                                    },
+                                    ReturnButton,
+                                ))
                                 .with_children(|parent| {
                                     parent.spawn(TextBundle::from_section(
                                         "RETURN NOW",
@@ -90,7 +100,7 @@ fn inventory_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
                                 });
                         });
                 })
-                //Node that spawns sub childrend
+                //Node that spawns sub visuals
                 .with_children(|parent| {
                     parent.spawn((
                         NodeBundle {
@@ -231,6 +241,26 @@ fn display_selected_visuals(
         info!("Making image buttons child of organizing node");
         for child in childs.iter() {
             commands.entity(child.clone()).set_parent(node);
+        }
+    }
+}
+
+fn return_button(
+    mut interaction_query: Query<
+        (&Interaction, &mut BorderColor),
+        (Changed<Interaction>, With<ReturnButton>),
+    >,
+    mut next_state: ResMut<NextState<MyAppState>>,
+) {
+    if let Ok((interaction, mut border_color)) = interaction_query.get_single_mut() {
+        match *interaction {
+            Interaction::Pressed => next_state.set(MyAppState::Lobby),
+            Interaction::Hovered => {
+                *border_color = BorderColor(Color::WHITE);
+            }
+            Interaction::None => {
+                *border_color = BorderColor(Color::BLACK);
+            }
         }
     }
 }
