@@ -24,7 +24,23 @@ struct ImageButton;
 #[derive(Component)]
 struct OrganizingNode;
 
-fn inventory_screen(mut commands: Commands) {
+fn inventory_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
+    let button_style = Style {
+        width: Val::Px(350.0),
+        height: Val::Px(125.0),
+        border: UiRect::all(Val::Px(15.0)),
+        margin: UiRect::all(Val::Px(20.0)),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+    };
+
+    let button_text_style = TextStyle {
+        font: asset_server.load("grafitti.ttf"),
+        font_size: 40.0,
+        color: Color::srgb(0.9, 0.9, 0.9),
+    };
+
     info!("Spawning inventory screen");
     commands
         .spawn((NodeBundle {
@@ -34,23 +50,62 @@ fn inventory_screen(mut commands: Commands) {
                 justify_content: JustifyContent::SpaceBetween,
                 ..default()
             },
-            background_color: Color::srgb(0.50, 0.10, 0.10).into(),
+            background_color: Color::srgb(0.10, 0.10, 0.10).into(),
             ..default()
         },))
+        // First column
         .with_children(|parent| {
-            parent.spawn((
-                NodeBundle {
+            parent
+                .spawn(NodeBundle {
                     style: Style {
-                        flex_direction: FlexDirection::Row,
-                        justify_content: JustifyContent::SpaceEvenly,
-                        align_items: AlignItems::Center,
-                        margin: UiRect::all(Val::Px(20.0)), // Optional spacing around the row
+                        flex_direction: FlexDirection::Column,
+                        width: Val::Percent(15.0),
+                        height: Val::Percent(40.0),
                         ..default()
                     },
                     ..default()
-                },
-                OrganizingNode,
-            ));
+                })
+                // RETURN BUTTON
+                .with_children(|parent| {
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                align_self: AlignSelf::FlexStart,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent
+                                .spawn((ButtonBundle {
+                                    style: button_style.clone(),
+                                    border_color: BorderColor(Color::BLACK),
+                                    ..default()
+                                },))
+                                .with_children(|parent| {
+                                    parent.spawn(TextBundle::from_section(
+                                        "RETURN NOW",
+                                        button_text_style.clone(),
+                                    ));
+                                });
+                        });
+                })
+                //Node that spawns sub childrend
+                .with_children(|parent| {
+                    parent.spawn((
+                        NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                justify_content: JustifyContent::SpaceEvenly,
+                                align_items: AlignItems::Center,
+                                margin: UiRect::all(Val::Px(20.0)), // Optional spacing around the row
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        OrganizingNode,
+                    ));
+                });
         });
 }
 
