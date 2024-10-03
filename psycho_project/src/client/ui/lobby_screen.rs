@@ -23,6 +23,8 @@ impl Plugin for LobbyPlugin {
     fn build(&self, app: &mut App) {
         // Debug
         app.register_type::<VisualToChange>();
+        //Registering resource
+        app.init_resource::<ToDisplayVisuals>();
         // Lobby systems
         app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);
         app.add_systems(
@@ -40,37 +42,54 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
+// Marker component for general lobby screen just despawn this guy and it is children when done
+#[derive(Component)]
+struct ScreenLobby;
+
 //When clicked set server status to looking for match
 #[derive(Component)]
 struct SearchButton;
 
-#[derive(Component, Debug, Reflect)]
+// A simple event that is sended when you click one of the visuasl to change buttons
+#[derive(Resource, Reflect, Clone, Default)]
+#[reflect(Resource)]
+pub struct ToDisplayVisuals(pub VisualToChange);
+
+// Tell me what exact visual the player wants to see
+#[derive(Component, Debug, Clone, Reflect)]
 pub enum VisualToChange {
     Head(Vec<String>),
     Torso(Vec<String>),
     Legs(Vec<String>),
 }
-
-// This will ensure you only send
+impl Default for VisualToChange {
+    fn default() -> Self {
+        VisualToChange::Head(vec![
+            "images/default.png".to_string(),
+            "images/shatur.png".to_string(),
+        ])
+    }
+}
+// This will ensure you only see a portion of the given images - TODO- MAKE IT IMAGES OF SCENES
 impl VisualToChange {
     pub fn default_head() -> Self {
         VisualToChange::Head(vec![
-            "characters/parts/suit_head.glb".to_string(),
-            "characters/parts/soldier_head.glb".to_string(),
+            "images/default.png".to_string(),
+            "images/shatur.png".to_string(),
         ])
     }
 
     pub fn default_torso() -> Self {
         VisualToChange::Torso(vec![
-            "characters/parts/scifi_torso.glb".to_string(),
-            "characters/parts/soldier_torso.glb".to_string(),
+            "images/shatur.png".to_string(),
+            "images/default.png".to_string(),
         ])
     }
 
     pub fn default_legs() -> Self {
         VisualToChange::Legs(vec![
-            "characters/parts/suit_head.glb".to_string(),
-            "characters/parts/soldier_head.glb".to_string(),
+            "images/default.png".to_string(),
+            "images/default.png".to_string(),
         ])
     }
 }
@@ -83,10 +102,6 @@ struct RttPlaceholder(String);
 // To still be capable of sending messages to server
 #[derive(Component)]
 struct IsSearching;
-
-// Marker component for general lobby screen just despawn this guy and it is children when done
-#[derive(Component)]
-struct ScreenLobby;
 
 // Scrolling list of available fights
 #[derive(Component, Default)]
@@ -552,8 +567,9 @@ fn change_button(
         (&Interaction, &mut BorderColor, &mut VisualToChange),
         (Changed<Interaction>, With<VisualToChange>),
     >,
-    mut next_state: ResMut<NextState<MyAppState>>,
-    base_screen: Query<Entity, With<ScreenLobby>>,
+    mut my_app_state: ResMut<NextState<MyAppState>>,
+    lobby_screen: Query<Entity, With<ScreenLobby>>,
+    mut send_visual: ResMut<ToDisplayVisuals>,
     mut commands: Commands,
 ) {
     for (interaction, mut border_color, visual_change) in interaction_query.iter_mut() {
@@ -561,11 +577,18 @@ fn change_button(
             Interaction::Pressed => {
                 *border_color = BorderColor(Color::WHITE);
                 info!("Visual change {:?}", visual_change);
-                if let Ok(base_screen) = base_screen.get_single() {
+                if let Ok(lobby_screen) = lobby_screen.get_single() {
                     info!("Despawning lobby scrren");
-                    commands.entity(base_screen).despawn_recursive();
+                    commands
+                        .entity(lobby_screen)
+                        .despawn_descendants()
+                        .despawn();
+                    info!("Writing in resource what items to send to inv scrren");
+                    *send_visual = ToDisplayVisuals(visual_change.clone());
                     info!("Setting new state");
-                    next_state.set(MyAppState::Inventory);
+                    my_app_state.set(MyAppState::Inventory);
+                } else {
+                    error!("COuldnt find lobby screen what in tarnation")
                 }
             }
             Interaction::Hovered => {
