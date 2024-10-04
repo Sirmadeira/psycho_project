@@ -20,6 +20,10 @@ impl Plugin for CustomizeChar {
             OnEnter(MyCharState::TransferComp),
             transfer_essential_components,
         );
+        app.add_systems(
+            Update,
+            customizes_character.run_if(in_state(MyCharState::Done)),
+        );
     }
 }
 
@@ -39,8 +43,8 @@ pub enum MyCharState {
 pub struct Skeleton;
 
 // Marker components tells me who is the visual
-#[derive(Component)]
-struct Visual;
+#[derive(Resource)]
+struct BodyPartMap(HashMap<String, Entity>);
 
 fn spawn_char(
     player_info: &PlayerBundle,
@@ -48,6 +52,7 @@ fn spawn_char(
     gltfs: &Res<Assets<Gltf>>,
     commands: &mut Commands,
 ) {
+    let mut hash_map = HashMap::new();
     for visual in player_info.visuals.iter_visuals() {
         if let Some(gltf) = client_collection.gltf_files.get(visual) {
             let loaded_gltf = gltfs
@@ -69,12 +74,14 @@ fn spawn_char(
                 commands.spawn((Skeleton, scene));
             } else {
                 info!("Spawning visual {} scene", visual);
-                commands.spawn((Visual, scene));
+                let id = commands.spawn(scene).id();
+                hash_map.insert(visual.clone(), id);
             }
         } else {
             error!("This gltf doesnt exist or isnt loaded {}", visual);
         }
     }
+    commands.insert_resource(BodyPartMap(hash_map));
 }
 
 // Forms main player, according to the bundle replicated from server, important to have for RTTs
@@ -102,23 +109,26 @@ pub fn form_main_player_character(
 
 // Customizes character after server gives the go ahead
 fn customizes_character(
-    change_char: EventReader<MessageEvent<ChangeChar>>,
-    bundle_map: Res<PlayerBundleMap>,
-    easy_client: Option<Res<EasyClient>>,
+    mut change_char: EventReader<MessageEvent<ChangeChar>>,
+    body_part: Res<BodyPartMap>,
+    mut commands: Commands,
 ) {
-    if let Some(easy_client) = easy_client {
-        if let Some(server_bundle) = bundle_map.0.get(&easy_client.0) {
-            
+    for part_to_adjust in change_char.read() {
+        let part = part_to_adjust.message().0.clone();
+        info!("Received parts from server {}", part.old_part);
+        info!("Received parts from server {}", part.new_part);
+        if let Some(old_part) = body_part.0.get(&part.old_part) {
+            info!("This dude needs to die {:?}", old_part);
+            commands.entity(*old_part).despawn_recursive();
+            info!("This dude need to exist")
         }
-    } else {
-        warn!("You are not connected to server no character customizer for you!")
     }
 }
 
 // Transfer the animations to all the visual bones
 fn transfer_essential_components(
     skeletons: Query<Entity, With<Skeleton>>,
-    visuals: Query<Entity, With<Visual>>,
+    visuals: Res<BodyPartMap>,
     animation_target: Query<&AnimationTarget>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
@@ -135,7 +145,7 @@ fn transfer_essential_components(
         collect_bones(&children_entities, &names, &old_entity, &mut old_bones);
 
         info!("Grabbing bones in visuals entity and making animation targets for them according to old bones ids");
-        for visual in visuals.iter() {
+        for (_, visual) in visuals.0.iter() {
             let new_entity =
                 find_child_with_name_containing(&children_entities, &names, &visual, "Armature")
                     .expect("Visual to have root armature");

@@ -85,16 +85,20 @@ fn listener_save_visuals(
     for event in events.read() {
         let client_id = event.context();
 
+        info!("Grabbing player visuals and body part to change from client");
+        let player_visuals = event.message().0.clone();
+
+        let body_part = event.message().1.clone();
+
         info!("Saving player info {}", client_id);
 
         if let Some(player_bundle) = player_map.0.get_mut(client_id) {
             info!("Found it is bundle and changing it for what client said");
-            player_bundle.visuals = event.message().0.clone();
+            player_bundle.visuals = player_visuals;
 
-            info!("Adjust in client");
-
+            info!("Telling client to adjust visual");
             let _ = connection_manager
-                .send_message::<Channel1, ChangeChar>(*client_id, &mut ChangeChar);
+                .send_message::<Channel1, ChangeChar>(*client_id, &mut ChangeChar(body_part));
 
             info!("Saving this bundle {:?}", player_bundle);
             save_file(player_map.clone());
