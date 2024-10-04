@@ -78,7 +78,7 @@ pub struct Channel1;
 // Messages
 // An event message sent by client to server that gives the player currently chosen loadout
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-pub struct SavePlayer;
+pub struct SaveVisual(pub PlayerVisuals);
 
 // An event message sent by server to give a recently loaded client it is bundle
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

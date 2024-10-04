@@ -1,5 +1,5 @@
 use crate::shared::protocol::lobby_structs::{Lobbies, SearchMatch, StopSearch};
-use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerVisuals, SavePlayer};
+use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerVisuals, SaveVisual};
 use bevy::prelude::*;
 use lightyear::server::events::*;
 mod server_systems;
@@ -38,14 +38,11 @@ impl Plugin for ExampleServerPlugin {
         app.add_systems(Update, create_lobby);
 
         // Listeners
-        app.add_systems(Update, listener_save_player);
+        app.add_systems(Update, listener_save_visuals);
         app.add_systems(Update, listener_search_match);
         app.add_systems(Update, listener_stop_search);
     }
 }
-
-
-
 
 // IF you adjust one of the player bundle sub-structures you will need to run this solely, if not memory alloc error
 #[allow(dead_code)]
@@ -79,8 +76,8 @@ fn read_save_files(mut commands: Commands) {
 }
 
 // Responsible for saving player info
-fn listener_save_player(
-    mut events: EventReader<MessageEvent<SavePlayer>>,
+fn listener_save_visuals(
+    mut events: EventReader<MessageEvent<SaveVisual>>,
     mut player_map: ResMut<PlayerBundleMap>,
 ) {
     for event in events.read() {
@@ -90,7 +87,7 @@ fn listener_save_player(
 
         if let Some(player_bundle) = player_map.0.get_mut(client_id) {
             info!("Found it is bundle and changing it for what client said");
-            //TODO
+            player_bundle.visuals = event.message().0.clone();
             info!("Saving this bundle {:?}", player_bundle);
             save_file(player_map.clone());
         } else {

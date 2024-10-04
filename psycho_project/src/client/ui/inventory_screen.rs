@@ -1,9 +1,11 @@
 //! Responsible for displaying in little squares the current items available to client
+use crate::shared::protocol::player_structs::Channel1;
 use bevy::prelude::*;
+use lightyear::client::connection::ConnectionManager;
 
 use crate::client::MyAppState;
 use crate::client::{essentials::EasyClient, load_assets::Images};
-use crate::shared::protocol::player_structs::PlayerBundleMap;
+use crate::shared::protocol::player_structs::{PlayerBundleMap, SaveVisual};
 
 use super::lobby_screen::{ToDisplayVisuals, VisualToChange};
 pub struct InventoryPlugin;
@@ -296,6 +298,7 @@ fn assets_buttons(
     client_id: Res<EasyClient>,
     player_bundle_map: Res<PlayerBundleMap>,
     to_display_visuals: Res<ToDisplayVisuals>,
+    mut connection_manager: ResMut<ConnectionManager>,
 ) {
     let visuals_displayed = to_display_visuals.0.clone();
 
@@ -325,6 +328,9 @@ fn assets_buttons(
                         }
                     }
                     info!("Final visual {:?}", player_visuals);
+                    info!("Sending info to server");
+                    let _ = connection_manager
+                        .send_message::<Channel1, SaveVisual>(&mut SaveVisual(player_visuals));
                 } else {
                     error!("Couldnt find you in server my man cant adjust your visuals")
                 }
