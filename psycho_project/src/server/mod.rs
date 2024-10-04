@@ -2,12 +2,12 @@ use crate::shared::protocol::lobby_structs::{Lobbies, SearchMatch, StopSearch};
 use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerVisuals, SaveVisual};
 use bevy::prelude::*;
 use lightyear::server::events::*;
-mod server_systems;
+mod essentials;
 use bincode::{deserialize_from, serialize_into};
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
-use self::server_systems::*;
+use self::essentials::*;
 
 pub struct ExampleServerPlugin;
 
@@ -24,23 +24,20 @@ impl Plugin for ExampleServerPlugin {
         app.register_type::<PlayerStateConnection>();
         app.register_type::<PlayerVisuals>();
 
+        // Do this if adjustment were made in main struct
         // app.add_systems(Startup, create_save_files);
+
         // Init server in head mode
-        app.add_systems(Startup, (start_server, init, read_save_files));
-
-        // What happens when you connects to server
-        app.add_systems(Update, handle_connections);
-
-        // What happens when you disconnect from server
-        app.add_systems(Update, handle_disconnections);
-
-        // Creates a lobby
-        app.add_systems(Update, create_lobby);
+        app.add_systems(Startup, read_save_files);
 
         // Listeners
         app.add_systems(Update, listener_save_visuals);
         app.add_systems(Update, listener_search_match);
         app.add_systems(Update, listener_stop_search);
+
+        //Self made plugins
+
+        app.add_plugins(EssentialsPlugin);
     }
 }
 

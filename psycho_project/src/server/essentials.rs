@@ -7,6 +7,36 @@ use bevy::utils::HashMap;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
+pub struct EssentialsPlugin;
+
+impl Plugin for EssentialsPlugin {
+    fn build(&self, app: &mut App) {
+        // Initializing resources
+        app.init_resource::<Lobbies>();
+        app.init_resource::<PlayerAmount>();
+        app.init_resource::<PlayerEntityMap>();
+
+        // Debug registering
+        app.register_type::<Lobbies>();
+        app.register_type::<PlayerBundleMap>();
+        app.register_type::<PlayerStateConnection>();
+        app.register_type::<PlayerVisuals>();
+
+        // app.add_systems(Startup, create_save_files);
+        // Init server in head mode
+        app.add_systems(Startup, (start_server, init));
+
+        // What happens when you connects to server
+        app.add_systems(Update, handle_connections);
+
+        // What happens when you disconnect from server
+        app.add_systems(Update, handle_disconnections);
+
+        // Creates a lobby
+        app.add_systems(Update, create_lobby);
+    }
+}
+
 // Start the server
 pub(crate) fn start_server(mut commands: Commands) {
     commands.start_server();
