@@ -17,13 +17,15 @@ impl Plugin for ProtocolPlugin {
         //Resources
         app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);
         app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
-        // Messages
+        // Messages when starting game and just connection
         app.register_message::<StartGame>(ChannelDirection::ServerToClient);
         app.register_message::<SendBundle>(ChannelDirection::ServerToClient);
-
+        // Message start match related
         app.register_message::<SearchMatch>(ChannelDirection::ClientToServer);
         app.register_message::<StopSearch>(ChannelDirection::ClientToServer);
+        // Messages related to visuals
         app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
+        app.register_message::<ChangeChar>(ChannelDirection::ServerToClient);
         // Components
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)

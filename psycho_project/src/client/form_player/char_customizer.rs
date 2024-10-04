@@ -6,6 +6,7 @@ use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use lightyear::client::events::MessageEvent;
 
 use crate::client::essentials::EasyClient;
 
@@ -76,7 +77,7 @@ fn spawn_char(
     }
 }
 
-// Forms main player, important to occur before the start game, as customizer and rtt requires it
+// Forms main player, according to the bundle replicated from server, important to have for RTTs
 pub fn form_main_player_character(
     client_collection: Res<CharCollection>,
     bundle_map: Res<PlayerBundleMap>,
@@ -96,6 +97,21 @@ pub fn form_main_player_character(
         }
     } else {
         warn!("You are not connected no character for you !")
+    }
+}
+
+// Customizes character after server gives the go ahead
+fn customizes_character(
+    change_char: EventReader<MessageEvent<ChangeChar>>,
+    bundle_map: Res<PlayerBundleMap>,
+    easy_client: Option<Res<EasyClient>>,
+) {
+    if let Some(easy_client) = easy_client {
+        if let Some(server_bundle) = bundle_map.0.get(&easy_client.0) {
+            
+        }
+    } else {
+        warn!("You are not connected to server no character customizer for you!")
     }
 }
 

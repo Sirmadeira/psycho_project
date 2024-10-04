@@ -76,10 +76,13 @@ impl PlayerVisuals {
 pub struct Channel1;
 
 // Messages
-// An event message sent by client to server that gives the player currently chosen loadout
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-pub struct SaveVisual(pub PlayerVisuals);
-
 // An event message sent by server to give a recently loaded client it is bundle
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct SendBundle(pub PlayerBundle);
+
+// An event message sent by client to server that gives the player currently chosen loadout
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct SaveVisual(pub PlayerVisuals);
+// AN event message sent by server to client that tells me that player can customize his character
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct ChangeChar;

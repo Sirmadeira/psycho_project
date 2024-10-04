@@ -41,6 +41,8 @@ struct AssetButton(String);
 #[derive(Component)]
 struct OrganizingNode;
 
+
+
 fn inventory_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
     let button_style = Style {
         width: Val::Px(350.0),
