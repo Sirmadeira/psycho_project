@@ -2,8 +2,6 @@
 
 use bevy::prelude::*;
 use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
-use lightyear::client::events::ConnectEvent;
-use lightyear::connection::id::ClientId;
 
 mod animations;
 mod char_customizer;

@@ -153,7 +153,7 @@ fn start_button(
                 border_color.0 = Color::srgb(255.0, 0.0, 0.0);
                 info!("Despawming previous menu screen");
                 let menu = on_main_menu.get_single_mut().unwrap();
-                commands.entity(menu).despawn_descendants().despawn();
+                commands.entity(menu).despawn_recursive();
                 my_app_state.set(MyAppState::Lobby);
             }
             Interaction::Hovered => {

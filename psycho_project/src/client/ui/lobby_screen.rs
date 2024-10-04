@@ -13,7 +13,7 @@ use bevy::{
     color::palettes::basic::WHITE,
     input::mouse::{MouseScrollUnit, MouseWheel},
 };
-use bevy_panorbit_camera::ActiveCameraData;
+use bevy_panorbit_camera::{ActiveCameraData, PanOrbitCamera};
 use lightyear::prelude::client::*;
 
 // Plugin utilized to do all lobby related actions
@@ -58,15 +58,21 @@ pub struct ToDisplayVisuals(pub VisualToChange);
 // Tell me what exact visual the player wants to see
 #[derive(Component, Debug, Clone, Reflect)]
 pub enum VisualToChange {
-    Head(Vec<String>),
-    Torso(Vec<String>),
-    Legs(Vec<String>),
+    Head(Vec<ImageVisualInfo>),
+    Torso(Vec<ImageVisualInfo>),
+    Legs(Vec<ImageVisualInfo>),
 }
 impl Default for VisualToChange {
     fn default() -> Self {
         VisualToChange::Head(vec![
-            "images/default.png".to_string(),
-            "images/shatur.png".to_string(),
+            ImageVisualInfo::new(
+                "images/default.png".to_string(),
+                "characters/parts/suit_head.glb".to_string(),
+            ),
+            ImageVisualInfo::new(
+                "images/default.png".to_string(),
+                "characters/parts/soldier_head.glb".to_string(),
+            ),
         ])
     }
 }
@@ -74,23 +80,57 @@ impl Default for VisualToChange {
 impl VisualToChange {
     pub fn default_head() -> Self {
         VisualToChange::Head(vec![
-            "images/default.png".to_string(),
-            "images/shatur.png".to_string(),
+            ImageVisualInfo::new(
+                "images/default.png".to_string(),
+                "characters/parts/suit_head.glb".to_string(),
+            ),
+            ImageVisualInfo::new(
+                "images/shatur.png".to_string(),
+                "characters/parts/soldier_head.glb".to_string(),
+            ),
         ])
     }
-
     pub fn default_torso() -> Self {
         VisualToChange::Torso(vec![
-            "images/shatur.png".to_string(),
-            "images/default.png".to_string(),
+            ImageVisualInfo::new(
+                "images/default.png".to_string(),
+                "characters/parts/scifi_torso.glb".to_string(),
+            ),
+            ImageVisualInfo::new(
+                "images/default.png".to_string(),
+                "characters/parts/soldier_torso.glb".to_string(),
+            ),
         ])
     }
-
     pub fn default_legs() -> Self {
         VisualToChange::Legs(vec![
-            "images/default.png".to_string(),
-            "images/default.png".to_string(),
+            ImageVisualInfo::new(
+                "images/shatur.png".to_string(),
+                "characters/parts/witch_legs.glb".to_string(),
+            ),
+            ImageVisualInfo::new(
+                "images/default.png".to_string(),
+                "characters/parts/soldier_legs.glb".to_string(),
+            ),
         ])
+    }
+}
+
+#[derive(Reflect, Debug, Clone)]
+// Simple acessor utilized for having an easy way to acess string
+pub struct ImageVisualInfo {
+    //File path to image asset
+    pub image: String,
+    // File path to visual asset
+    pub asset: String,
+}
+
+impl ImageVisualInfo {
+    fn new(image: String, asset: String) -> Self {
+        return Self {
+            image: image,
+            asset: asset,
+        };
     }
 }
 
@@ -536,14 +576,11 @@ fn change_button(
                 *border_color = BorderColor(Color::WHITE);
                 if let Ok(lobby_screen) = lobby_screen.get_single() {
                     info!("Despawning lobby scrren");
-                    commands
-                        .entity(lobby_screen)
-                        .despawn_descendants()
-                        .despawn();
+                    commands.entity(lobby_screen).despawn_recursive();
 
                     info!("Writing in resource what items to send to inv scrren");
                     *send_visual = ToDisplayVisuals(visual_change.clone());
-                    
+
                     info!("Setting new state");
                     my_app_state.set(MyAppState::Inventory);
                 } else {
@@ -621,16 +658,25 @@ fn fill_rtt_ui_images(
     mut rtt_placeholders: Query<(Entity, &RttPlaceholder), Added<RttPlaceholder>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     mut active_cam: ResMut<ActiveCameraData>,
+    camera: Query<Entity, With<PanOrbitCamera>>,
     mut commands: Commands,
 ) {
     for (ui_image, placeholder) in rtt_placeholders.iter_mut() {
         if let Some(corresponding_image) = rtt_images.0.get(&placeholder.0) {
-            spawn_rtt_orbit_camera(
-                corresponding_image,
-                &windows,
-                &mut active_cam,
-                &mut commands,
-            );
+            if let Ok(cam) = camera.get_single() {
+                warn!(
+                    "You already spawned a camera entity {:?}so i am just gonna reuse it",
+                    cam
+                )
+            } else {
+                spawn_rtt_orbit_camera(
+                    corresponding_image,
+                    &windows,
+                    &mut active_cam,
+                    &mut commands,
+                );
+            }
+
             commands
                 .entity(ui_image)
                 .insert(UiImage::new(corresponding_image.handle.clone()));

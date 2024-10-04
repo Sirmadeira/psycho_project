@@ -1,8 +1,9 @@
 //! Responsible for displaying in little squares the current items available to client
 use bevy::prelude::*;
 
-use crate::client::load_assets::Images;
 use crate::client::MyAppState;
+use crate::client::{essentials::EasyClient, load_assets::Images};
+use crate::shared::protocol::player_structs::PlayerBundleMap;
 
 use super::lobby_screen::{ToDisplayVisuals, VisualToChange};
 pub struct InventoryPlugin;
@@ -17,15 +18,22 @@ impl Plugin for InventoryPlugin {
             Update,
             return_button.run_if(in_state(MyAppState::Inventory)),
         );
+        app.add_systems(
+            Update,
+            assets_buttons.run_if(in_state(MyAppState::Inventory)),
+        );
     }
 }
+// Marker componet utilized to easily despawn entire inventory screen
+#[derive(Component)]
+struct ScreenInventory;
 
 #[derive(Component)]
 struct ReturnButton;
 
-// Simple marker component that gives me all my images made for hover logic
+// Component utilized to store the given asset that is correlated to that image
 #[derive(Component)]
-struct ImageButton;
+struct AssetButton(String);
 
 // Simple marker tell me what node to insert children in
 #[derive(Component)]
@@ -50,16 +58,19 @@ fn inventory_screen(asset_server: Res<AssetServer>, mut commands: Commands) {
 
     info!("Spawning inventory screen");
     commands
-        .spawn((NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                justify_content: JustifyContent::SpaceBetween,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    justify_content: JustifyContent::SpaceBetween,
+                    ..default()
+                },
+                background_color: Color::srgb(0.10, 0.10, 0.10).into(),
                 ..default()
             },
-            background_color: Color::srgb(0.10, 0.10, 0.10).into(),
-            ..default()
-        },))
+            ScreenInventory,
+        ))
         // First column
         .with_children(|parent| {
             parent
@@ -126,6 +137,7 @@ fn spawn_image_button(
     image_button_style: &Style,
     asset_server: &AssetServer,
     images: &Res<Images>,
+    assets: String,
 ) -> Entity {
     let button_entity = commands
         .spawn(NodeBundle {
@@ -139,7 +151,7 @@ fn spawn_image_button(
         })
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
-                "Change Visual", // Title can be dynamic if needed
+                format!("{}", assets),
                 TextStyle {
                     font: asset_server.load("grafitti.ttf"),
                     font_size: 40.,
@@ -155,7 +167,7 @@ fn spawn_image_button(
                         border_color: BorderColor(Color::BLACK),
                         ..default()
                     },
-                    ImageButton,
+                    AssetButton(assets),
                 ))
                 .with_children(|parent| {
                     parent.spawn((
@@ -181,7 +193,7 @@ fn spawn_image_button(
     return button_entity;
 }
 
-// System responsible for listening to change head event and such events
+// System that spawns the ui buttons responsible for displaying an image, with an acessor to an asset path
 fn display_selected_visuals(
     organizing_node: Query<Entity, With<OrganizingNode>>,
     asset_server: Res<AssetServer>,
@@ -206,10 +218,11 @@ fn display_selected_visuals(
                 for visual in visuals.iter() {
                     childs.push(spawn_image_button(
                         &mut commands,
-                        visual,
+                        &visual.image,
                         &image_button_style,
                         &asset_server,
                         &images,
+                        visual.asset.clone(),
                     ));
                 }
             }
@@ -218,10 +231,11 @@ fn display_selected_visuals(
                 for visual in visuals.iter() {
                     childs.push(spawn_image_button(
                         &mut commands,
-                        visual,
+                        &visual.image,
                         &image_button_style,
                         &asset_server,
                         &images,
+                        visual.asset.clone(),
                     ));
                 }
             }
@@ -230,10 +244,11 @@ fn display_selected_visuals(
                 for visual in visuals.iter() {
                     childs.push(spawn_image_button(
                         &mut commands,
-                        visual,
+                        &visual.image,
                         &image_button_style,
                         &asset_server,
                         &images,
+                        visual.asset.clone(),
                     ));
                 }
             }
@@ -250,11 +265,70 @@ fn return_button(
         (&Interaction, &mut BorderColor),
         (Changed<Interaction>, With<ReturnButton>),
     >,
+    inv_screen: Query<Entity, With<ScreenInventory>>,
     mut next_state: ResMut<NextState<MyAppState>>,
+    mut commands: Commands,
 ) {
     if let Ok((interaction, mut border_color)) = interaction_query.get_single_mut() {
         match *interaction {
-            Interaction::Pressed => next_state.set(MyAppState::Lobby),
+            Interaction::Pressed => {
+                if let Ok(inv_screen) = inv_screen.get_single() {
+                    info!("Despawning inventory returning to lobby");
+                    next_state.set(MyAppState::Lobby);
+                    commands.entity(inv_screen).despawn_recursive();
+                }
+            }
+            Interaction::Hovered => {
+                *border_color = BorderColor(Color::WHITE);
+            }
+            Interaction::None => {
+                *border_color = BorderColor(Color::BLACK);
+            }
+        }
+    }
+}
+
+fn assets_buttons(
+    mut interaction_query: Query<
+        (&Interaction, &mut BorderColor, &AssetButton),
+        (Changed<Interaction>, With<AssetButton>),
+    >,
+    client_id: Res<EasyClient>,
+    player_bundle_map: Res<PlayerBundleMap>,
+    to_display_visuals: Res<ToDisplayVisuals>,
+) {
+    let visuals_displayed = to_display_visuals.0.clone();
+
+    for (interaction, mut border_color, asset_button) in interaction_query.iter_mut() {
+        let asset_path = asset_button.0.clone();
+        match *interaction {
+            Interaction::Pressed => {
+                let client_id = client_id.0;
+                info!("Grabbing client {}", client_id);
+
+                if let Some(player_bundle_map) = player_bundle_map.0.get(&client_id) {
+                    info!("Grabbing player current visuals");
+                    let mut player_visuals = player_bundle_map.visuals.clone();
+                    info!("Starting visuals {:?}", player_visuals);
+                    match visuals_displayed {
+                        VisualToChange::Head(_) => {
+                            info!("Visual to adjust was in head");
+                            player_visuals.head = asset_path;
+                        }
+                        VisualToChange::Torso(_) => {
+                            info!("Visual to adjust was a torso");
+                            player_visuals.torso = asset_path;
+                        }
+                        VisualToChange::Legs(_) => {
+                            info!("Visual to adjust was a leg");
+                            player_visuals.legs = asset_path;
+                        }
+                    }
+                    info!("Final visual {:?}", player_visuals);
+                } else {
+                    error!("Couldnt find you in server my man cant adjust your visuals")
+                }
+            }
             Interaction::Hovered => {
                 *border_color = BorderColor(Color::WHITE);
             }
