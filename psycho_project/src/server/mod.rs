@@ -1,10 +1,6 @@
 use crate::shared::protocol::lobby_structs::{Lobbies, SearchMatch, StopSearch};
-use crate::shared::protocol::player_structs::Channel1;
-use crate::shared::protocol::player_structs::{
-    ChangeChar, PlayerBundleMap, PlayerVisuals, SaveVisual,
-};
+use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerVisuals, SaveVisual};
 use bevy::prelude::*;
-use lightyear::server::connection::ConnectionManager;
 use lightyear::server::events::*;
 mod essentials;
 use bincode::{deserialize_from, serialize_into};
@@ -80,7 +76,6 @@ fn read_save_files(mut commands: Commands) {
 fn listener_save_visuals(
     mut events: EventReader<MessageEvent<SaveVisual>>,
     mut player_map: ResMut<PlayerBundleMap>,
-    mut connection_manager: ResMut<ConnectionManager>,
 ) {
     for event in events.read() {
         let client_id = event.context();
@@ -88,17 +83,11 @@ fn listener_save_visuals(
         info!("Grabbing player visuals and body part to change from client");
         let player_visuals = event.message().0.clone();
 
-        let body_part = event.message().1.clone();
-
         info!("Saving player info {}", client_id);
 
         if let Some(player_bundle) = player_map.0.get_mut(client_id) {
-            info!("Found it is bundle and changing it for what client said");
+            info!("Found it is bundle and changing visual  for what client said");
             player_bundle.visuals = player_visuals;
-
-            info!("Telling client to adjust visual");
-            let _ = connection_manager
-                .send_message::<Channel1, ChangeChar>(*client_id, &mut ChangeChar(body_part));
 
             info!("Saving this bundle {:?}", player_bundle);
             save_file(player_map.clone());

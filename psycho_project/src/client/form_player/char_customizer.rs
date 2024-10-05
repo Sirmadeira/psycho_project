@@ -1,12 +1,12 @@
 //! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
 use crate::client::form_player::helpers::*;
 use crate::client::load_assets::CharCollection;
+use crate::client::ui::inventory_screen::ChangeChar;
 use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use lightyear::client::events::MessageEvent;
 
 use crate::client::essentials::EasyClient;
 
@@ -14,7 +14,11 @@ pub struct CustomizeChar;
 
 impl Plugin for CustomizeChar {
     fn build(&self, app: &mut App) {
+        // States
         app.init_state::<MyCharState>();
+        //Debugging
+        app.register_type::<BodyPartMap>();
+
         app.add_systems(OnEnter(MyAppState::MainMenu), form_main_player_character);
         app.add_systems(
             OnEnter(MyCharState::TransferComp),
@@ -42,46 +46,46 @@ pub enum MyCharState {
 #[derive(Component)]
 pub struct Skeleton;
 
-// Marker components tells me who is the visual
-#[derive(Resource)]
-struct BodyPartMap(HashMap<String, Entity>);
+// Marker components tells me who is the visual and if it is animation was transferred
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
+struct BodyPartMap(HashMap<String, (Entity, bool)>);
 
 fn spawn_char(
-    player_info: &PlayerBundle,
+    visual: &str,
     client_collection: &Res<CharCollection>,
     gltfs: &Res<Assets<Gltf>>,
     commands: &mut Commands,
-) {
-    let mut hash_map = HashMap::new();
-    for visual in player_info.visuals.iter_visuals() {
-        if let Some(gltf) = client_collection.gltf_files.get(visual) {
-            let loaded_gltf = gltfs
-                .get(gltf)
-                .expect("To find gltf handle in loaded gltfs");
+) -> (Entity, bool) {
+    // Retrieve the GLTF handle from the collection, error if not found
+    let gltf = client_collection
+        .gltf_files
+        .get(visual)
+        .expect(&format!("Couldn't find GLTF file path for: {}", visual));
 
-            let visual_scene = loaded_gltf.scenes[0].clone();
-            let char_position = Vec3::new(0.0, 0.0, 0.0);
-            let scene = SceneBundle {
-                scene: visual_scene,
-                transform: Transform::from_translation(char_position),
-                // If you want him to stare face front to camera as from blender he usually stares at negative -z
-                // .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
-                ..default()
-            };
-            info!("Spawning scene entities to be utilized in creating our character");
-            if visual.contains("skeleton") {
-                info!("Spawning and marking main skeleton entity");
-                commands.spawn((Skeleton, scene));
-            } else {
-                info!("Spawning visual {} scene", visual);
-                let id = commands.spawn(scene).id();
-                hash_map.insert(visual.clone(), id);
-            }
-        } else {
-            error!("This gltf doesnt exist or isnt loaded {}", visual);
-        }
+    // Retrieve the loaded GLTF and its first scene, expect it to exist
+    let loaded_gltf = gltfs
+        .get(gltf)
+        .expect("To find gltf handle in loaded gltfs");
+    let visual_scene = loaded_gltf.scenes[0].clone();
+
+    let scene = SceneBundle {
+        scene: visual_scene,
+        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+        ..default()
+    };
+
+    info!("Spawning visual {} scene", visual);
+
+    // Spawn and return the appropriate entity
+    if visual.contains("skeleton") {
+        info!("Spawning and marking main skeleton entity");
+        let id = commands.spawn((Skeleton, scene)).id();
+        (id, false)
+    } else {
+        let id = commands.spawn(scene).id();
+        (id, false)
     }
-    commands.insert_resource(BodyPartMap(hash_map));
 }
 
 // Forms main player, according to the bundle replicated from server, important to have for RTTs
@@ -98,7 +102,13 @@ pub fn form_main_player_character(
             let client_id = server_bundle.id.0;
             info!("Spawning visuals for client_id {}", client_id);
 
-            spawn_char(server_bundle, &client_collection, &gltfs, &mut commands);
+            let mut hash_map = HashMap::new();
+            for visual in server_bundle.visuals.iter_visuals() {
+                let (id, is_mapped) = spawn_char(visual, &client_collection, &gltfs, &mut commands);
+                hash_map.insert(visual.to_string(), (id, is_mapped));
+            }
+            commands.insert_resource(BodyPartMap(hash_map));
+
             info!("Transfering animations");
             char_state.set(MyCharState::TransferComp);
         }
@@ -107,28 +117,52 @@ pub fn form_main_player_character(
     }
 }
 
-// Customizes character after server gives the go ahead
+// Customizes character after a button is clicked in inventory screen also sets transfer comp
 fn customizes_character(
-    mut change_char: EventReader<MessageEvent<ChangeChar>>,
-    body_part: Res<BodyPartMap>,
+    mut change_char: EventReader<ChangeChar>,
+    mut body_part: ResMut<BodyPartMap>,
+    client_collection: Res<CharCollection>,
+    gltfs: Res<Assets<Gltf>>,
+    mut char_state: ResMut<NextState<MyCharState>>,
     mut commands: Commands,
 ) {
     for part_to_adjust in change_char.read() {
-        let part = part_to_adjust.message().0.clone();
-        info!("Received parts from server {}", part.old_part);
-        info!("Received parts from server {}", part.new_part);
-        if let Some(old_part) = body_part.0.get(&part.old_part) {
+        info!(
+            "Received parts from inv screen {}",
+            part_to_adjust.0.old_part
+        );
+        info!(
+            "Received parts from inv screen {}",
+            part_to_adjust.0.new_part
+        );
+        if let Some((old_part, _)) = body_part.0.remove(&part_to_adjust.0.old_part) {
             info!("This dude needs to die {:?}", old_part);
-            commands.entity(*old_part).despawn_recursive();
-            info!("This dude need to exist")
+            commands.entity(old_part).despawn_recursive();
         }
+
+        info!(
+            "This dude need to exist {}",
+            part_to_adjust.0.new_part.clone()
+        );
+        let (scene_id, is_mapped) = spawn_char(
+            &part_to_adjust.0.new_part,
+            &client_collection,
+            &gltfs,
+            &mut commands,
+        );
+
+        body_part
+            .0
+            .insert(part_to_adjust.0.new_part.clone(), (scene_id, is_mapped));
+
+        char_state.set(MyCharState::TransferComp);
     }
 }
 
 // Transfer the animations to all the visual bones
 fn transfer_essential_components(
     skeletons: Query<Entity, With<Skeleton>>,
-    visuals: Res<BodyPartMap>,
+    mut visuals: ResMut<BodyPartMap>,
     animation_target: Query<&AnimationTarget>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
@@ -145,31 +179,47 @@ fn transfer_essential_components(
         collect_bones(&children_entities, &names, &old_entity, &mut old_bones);
 
         info!("Grabbing bones in visuals entity and making animation targets for them according to old bones ids");
-        for (_, visual) in visuals.0.iter() {
-            let new_entity =
-                find_child_with_name_containing(&children_entities, &names, &visual, "Armature")
-                    .expect("Visual to have root armature");
+        for (file_path, (visual, is_mapped)) in visuals.0.iter_mut() {
+            if !*is_mapped {
+                info!(
+                    "Transfering components to apply animation to file path {}",
+                    file_path
+                );
+                *is_mapped = true;
+                let new_entity = find_child_with_name_containing(
+                    &children_entities,
+                    &names,
+                    &visual,
+                    "Armature",
+                )
+                .expect("Visual to have root armature");
 
-            commands
-                .entity(new_entity)
-                .insert(AnimationPlayer::default());
+                let mut new_bones = HashMap::new();
+                collect_bones(&children_entities, &names, &new_entity, &mut new_bones);
 
-            let mut new_bones = HashMap::new();
-            collect_bones(&children_entities, &names, &new_entity, &mut new_bones);
+                commands
+                    .entity(new_entity)
+                    .insert(AnimationPlayer::default());
 
-            for (name, old_bone) in old_bones.iter() {
-                let old_animation_target = animation_target
-                    .get(*old_bone)
-                    .expect("To have target if it doesnt well shit");
+                for (name, old_bone) in old_bones.iter() {
+                    let old_animation_target = animation_target
+                        .get(*old_bone)
+                        .expect("To have target if it doesnt well shit");
 
-                if let Some(corresponding_bone) = new_bones.get(name) {
-                    commands
-                        .entity(*corresponding_bone)
-                        .insert(AnimationTarget {
-                            id: old_animation_target.id,
-                            player: new_entity,
-                        });
+                    if let Some(corresponding_bone) = new_bones.get(name) {
+                        commands
+                            .entity(*corresponding_bone)
+                            .insert(AnimationTarget {
+                                id: old_animation_target.id,
+                                player: new_entity,
+                            });
+                    }
                 }
+            } else {
+                info!(
+                    "This part was already transfered not gonna do it again {}",
+                    file_path
+                );
             }
         }
     }

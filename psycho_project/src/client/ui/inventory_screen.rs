@@ -1,5 +1,5 @@
 //! Responsible for displaying in little squares the current items available to client
-use crate::shared::protocol::player_structs::{Channel1, PartToChange};
+use crate::shared::protocol::player_structs::Channel1;
 use bevy::prelude::*;
 use lightyear::client::connection::ConnectionManager;
 
@@ -12,6 +12,12 @@ pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
+        // Events
+        app.add_event::<ChangeChar>();
+        //Debuging
+        app.register_type::<ChangeChar>();
+        app.register_type::<PartToChange>();
+
         app.add_systems(
             OnEnter(MyAppState::Inventory),
             (inventory_screen, display_selected_visuals).chain(),
@@ -26,6 +32,22 @@ impl Plugin for InventoryPlugin {
         );
     }
 }
+
+// An event message sent by client to server that gives the player currently chosen loadout
+
+// AN event message sent by server to client that tells me that player can customize his character
+#[derive(Event, Reflect)]
+pub struct ChangeChar(pub PartToChange);
+
+// Tell me the parts to change when grabing char customizer resource
+#[derive(Reflect)]
+pub struct PartToChange {
+    // File path to old part
+    pub old_part: String,
+    // File Path to new part
+    pub new_part: String,
+}
+
 // Marker componet utilized to easily despawn entire inventory screen
 #[derive(Component)]
 struct ScreenInventory;
@@ -295,6 +317,7 @@ fn assets_buttons(
         (&Interaction, &mut BorderColor, &AssetButton),
         (Changed<Interaction>, With<AssetButton>),
     >,
+    mut change_char: EventWriter<ChangeChar>,
     client_id: Res<EasyClient>,
     player_bundle_map: Res<PlayerBundleMap>,
     to_display_visuals: Res<ToDisplayVisuals>,
@@ -311,56 +334,50 @@ fn assets_buttons(
 
                 if let Some(player_bundle_map) = player_bundle_map.0.get(&client_id) {
                     info!("Grabbing player current visuals");
+
                     let mut player_visuals = player_bundle_map.visuals.clone();
 
-                    info!("Starting visuals {:?}", player_visuals);
                     match visuals_displayed {
                         VisualToChange::Head(_) => {
                             info!("Visual to adjust was in head");
 
-                            info!("Grabbing old part");
-                            let old_part = player_visuals.head.clone();
+                            info!("Grabbing old part {}", player_visuals.head.clone());
+                            info!("Grabbing new part {}", asset_path.clone());
+                            change_char.send(ChangeChar(PartToChange {
+                                old_part: player_visuals.head.clone(),
+                                new_part: asset_path.clone(),
+                            }));
 
+                            info!("Adjusting cloned visual to send to resource later");
                             player_visuals.head = asset_path.clone();
-
-                            let new_part = asset_path;
-
-                            let _ = connection_manager.send_message::<Channel1, SaveVisual>(
-                                &mut SaveVisual(
-                                    player_visuals.clone(),
-                                    PartToChange { old_part, new_part },
-                                ),
-                            );
                         }
                         VisualToChange::Torso(_) => {
-                            info!("Visual to adjust was a torso");
-                            let old_part = player_visuals.torso.clone();
-                            player_visuals.torso = asset_path.clone();
-                            let new_part = asset_path;
+                            info!("Grabbing old part {}", player_visuals.torso.clone());
+                            info!("Grabbing new part {}", asset_path.clone());
+                            change_char.send(ChangeChar(PartToChange {
+                                old_part: player_visuals.torso.clone(),
+                                new_part: asset_path.clone(),
+                            }));
 
-                            let _ = connection_manager.send_message::<Channel1, SaveVisual>(
-                                &mut SaveVisual(
-                                    player_visuals.clone(),
-                                    PartToChange { old_part, new_part },
-                                ),
-                            );
+                            info!("Adjusting cloned visual to send to resource later");
+                            player_visuals.torso = asset_path.clone();
                         }
                         VisualToChange::Legs(_) => {
-                            info!("Visual to adjust was a leg");
-                            let old_part = player_visuals.legs.clone();
+                            info!("Grabbing old part {}", player_visuals.legs.clone());
+                            info!("Grabbing new part {}", asset_path.clone());
+                            change_char.send(ChangeChar(PartToChange {
+                                old_part: player_visuals.legs.clone(),
+                                new_part: asset_path.clone(),
+                            }));
 
+                            info!("Adjusting cloned visual to send to resource later");
                             player_visuals.legs = asset_path.clone();
-                            
-                            let new_part = asset_path;
-                            let _ = connection_manager.send_message::<Channel1, SaveVisual>(
-                                &mut SaveVisual(
-                                    player_visuals.clone(),
-                                    PartToChange { old_part, new_part },
-                                ),
-                            );
                         }
                     }
-                    info!("Final visuals {:?}", player_visuals);
+                    info!("Sending message to server to adjust visual resource");
+                    let _ = connection_manager.send_message::<Channel1, SaveVisual>(
+                        &mut SaveVisual(player_visuals.clone()),
+                    );
                 } else {
                     error!("Couldnt find you in server my man cant adjust your visuals")
                 }

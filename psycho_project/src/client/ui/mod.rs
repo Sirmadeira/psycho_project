@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-mod inventory_screen;
+pub mod inventory_screen;
 mod lobby_screen;
 mod main_screen;
 

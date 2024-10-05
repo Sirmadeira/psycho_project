@@ -25,7 +25,6 @@ impl Plugin for ProtocolPlugin {
         app.register_message::<StopSearch>(ChannelDirection::ClientToServer);
         // Messages related to visuals
         app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
-        app.register_message::<ChangeChar>(ChannelDirection::ServerToClient);
         // Components
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
