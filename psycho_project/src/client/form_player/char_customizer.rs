@@ -1,12 +1,13 @@
 //! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
 use crate::client::form_player::helpers::*;
+use crate::client::form_player::Animations;
 use crate::client::load_assets::CharCollection;
 use crate::client::ui::inventory_screen::ChangeChar;
 use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
-use bevy::utils::HashMap;
+use bevy::utils::{Duration, HashMap};
 
 use crate::client::essentials::EasyClient;
 
@@ -24,6 +25,7 @@ impl Plugin for CustomizeChar {
             OnEnter(MyCharState::TransferComp),
             transfer_essential_components,
         );
+        app.add_systems(OnEnter(MyCharState::Done), reset_animation);
         app.add_systems(
             Update,
             customizes_character.run_if(in_state(MyCharState::Done)),
@@ -224,4 +226,21 @@ fn transfer_essential_components(
         }
     }
     char_state.set(MyCharState::Done);
+}
+
+// Reset animations after transfering animation targets as to avoid desync
+fn reset_animation(
+    mut animation_entities: Query<
+        (&mut AnimationTransitions, &mut AnimationPlayer),
+        With<AnimationPlayer>,
+    >,
+    animations: Res<Animations>,
+) {
+    let named_animations = animations.named_nodes.clone();
+    for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
+        let node = named_animations.get("Walk").unwrap();
+        animation_transitions
+            .play(&mut animation_player, *node, Duration::ZERO)
+            .repeat();
+    }
 }

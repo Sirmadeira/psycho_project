@@ -128,3 +128,4 @@ fn play_animation(
             .repeat();
     }
 }
+
