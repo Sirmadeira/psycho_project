@@ -50,7 +50,7 @@ pub struct PartToChange {
 
 // Marker componet utilized to easily despawn entire inventory screen
 #[derive(Component)]
-struct ScreenInventory;
+pub struct ScreenInventory;
 
 #[derive(Component)]
 struct ReturnButton;

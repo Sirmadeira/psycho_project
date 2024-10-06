@@ -6,8 +6,8 @@ use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
 mod animations;
 mod char_customizer;
 mod helpers;
-
-use self::{animations::*, char_customizer::*};
+mod start_game;
+use self::{animations::*, char_customizer::*, start_game::*};
 
 pub struct CreateCharPlugin;
 
@@ -18,6 +18,7 @@ impl Plugin for CreateCharPlugin {
         // Self made plubings
         app.add_plugins(CustomizeChar);
         app.add_plugins(AnimPlayer);
+        app.add_plugins(InGamePlugin);
         // Debugging RTT
         app.add_systems(Update, disable_culling);
     }

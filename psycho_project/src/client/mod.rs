@@ -64,5 +64,6 @@ pub enum MyAppState {
     Lobby,
     // Inventory sub-screens
     Inventory,
+    // Ingame
     Game,
 }

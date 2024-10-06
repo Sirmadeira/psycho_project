@@ -14,7 +14,6 @@ impl Plugin for SystemsPlugin {
         app.register_type::<EasyClient>();
         app.add_systems(Startup, connect_client);
         app.add_systems(Update, form_client_id);
-        app.add_systems(Update, listener_start_game);
     }
 }
 
@@ -38,14 +37,3 @@ fn form_client_id(mut connection_event: EventReader<ConnectEvent>, mut commands:
     }
 }
 
-// Starts the game the message filters out the specific clients
-pub fn listener_start_game(
-    mut events: EventReader<MessageEvent<StartGame>>,
-    mut next_state: ResMut<NextState<MyAppState>>,
-) {
-    for event in events.read() {
-        let content = event.message();
-        info!("Start game for lobby {}", content.lobby_id);
-        next_state.set(MyAppState::Game);
-    }
-}

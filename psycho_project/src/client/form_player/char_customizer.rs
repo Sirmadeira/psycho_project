@@ -1,13 +1,12 @@
 //! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
 use crate::client::form_player::helpers::*;
-use crate::client::form_player::Animations;
 use crate::client::load_assets::CharCollection;
 use crate::client::ui::inventory_screen::ChangeChar;
 use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
-use bevy::utils::{Duration, HashMap};
+use bevy::utils::HashMap;
 
 use crate::client::essentials::EasyClient;
 
@@ -26,6 +25,7 @@ impl Plugin for CustomizeChar {
             transfer_essential_components,
         );
         app.add_systems(OnEnter(MyCharState::Done), reset_animation);
+
         app.add_systems(
             Update,
             customizes_character.run_if(in_state(MyCharState::Done)),
@@ -41,6 +41,7 @@ pub enum MyCharState {
     FormingPlayers,
     // Transfer animation targets
     TransferComp,
+    // Reset animations
     Done,
 }
 
@@ -51,7 +52,7 @@ pub struct Skeleton;
 // Marker components tells me who is the visual and if it is animation was transferred
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
-struct BodyPartMap(HashMap<String, (Entity, bool)>);
+pub struct BodyPartMap(pub HashMap<String, (Entity, bool)>);
 
 fn spawn_char(
     visual: &str,

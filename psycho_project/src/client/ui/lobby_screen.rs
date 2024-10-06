@@ -44,7 +44,7 @@ const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 // Marker component for general lobby screen just despawn this guy and it is children when done
 #[derive(Component)]
-struct ScreenLobby;
+pub struct ScreenLobby;
 
 //When clicked set server status to looking for match
 #[derive(Component)]
