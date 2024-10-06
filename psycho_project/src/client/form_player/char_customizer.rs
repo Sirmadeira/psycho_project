@@ -229,18 +229,8 @@ fn transfer_essential_components(
 }
 
 // Reset animations after transfering animation targets as to avoid desync
-fn reset_animation(
-    mut animation_entities: Query<
-        (&mut AnimationTransitions, &mut AnimationPlayer),
-        With<AnimationPlayer>,
-    >,
-    animations: Res<Animations>,
-) {
-    let named_animations = animations.named_nodes.clone();
-    for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
-        let node = named_animations.get("Walk").unwrap();
-        animation_transitions
-            .play(&mut animation_player, *node, Duration::ZERO)
-            .repeat();
+fn reset_animation(mut animation_players: Query<&mut AnimationPlayer, With<AnimationPlayer>>) {
+    for mut animation_player in animation_players.iter_mut() {
+        animation_player.rewind_all();
     }
 }
