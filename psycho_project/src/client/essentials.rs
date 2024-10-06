@@ -1,12 +1,8 @@
 //! Essential systems utilized to connect client and so on
-
-use crate::client::MyAppState;
-use crate::shared::protocol::lobby_structs::StartGame;
 use bevy::prelude::*;
 use lightyear::client::events::ConnectEvent;
 use lightyear::prelude::client::ClientCommands;
 use lightyear::prelude::*;
-use lightyear::shared::events::components::MessageEvent;
 pub struct SystemsPlugin;
 
 impl Plugin for SystemsPlugin {

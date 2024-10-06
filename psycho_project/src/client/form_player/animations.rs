@@ -9,9 +9,9 @@ use crate::client::load_assets::CharCollection;
 use crate::client::MyAppState;
 
 use super::MyCharState;
-pub struct AnimPlayer;
+pub struct AnimPlayerPlugin;
 
-impl Plugin for AnimPlayer {
+impl Plugin for AnimPlayerPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<Animations>();
         app.register_type::<PlayerAnimationMap>();
@@ -128,4 +128,3 @@ fn play_animation(
             .repeat();
     }
 }
-

@@ -10,9 +10,9 @@ use bevy::utils::HashMap;
 
 use crate::client::essentials::EasyClient;
 
-pub struct CustomizeChar;
+pub struct CustomizeCharPlugin;
 
-impl Plugin for CustomizeChar {
+impl Plugin for CustomizeCharPlugin {
     fn build(&self, app: &mut App) {
         // States
         app.init_state::<MyCharState>();
