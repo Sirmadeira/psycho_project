@@ -174,7 +174,6 @@ pub(crate) fn handle_disconnections(
     mut disconnections: EventReader<DisconnectEvent>,
     mut current_players: ResMut<PlayerAmount>,
     mut player_entity_map: ResMut<PlayerEntityMap>,
-    mut commands: Commands,
 ) {
     for disconnection in disconnections.read() {
         let client_id = disconnection.client_id;
@@ -186,7 +185,7 @@ pub(crate) fn handle_disconnections(
 
         // Find and despawn the player's entity
         if let Some(disconnecting_player) = player_entity_map.0.remove(&client_id) {
-            commands.entity(disconnecting_player).despawn();
+            info!("This player disconnected {}", disconnecting_player);
         } else {
             error!("Player entity not found for client ID: {}", client_id);
         }
