@@ -238,6 +238,9 @@ pub(crate) fn create_lobby(
                     target: NetworkTarget::Single(client),
                     ..default()
                 },
+                target: ReplicationTarget {
+                    target: NetworkTarget::AllExceptSingle(client),
+                },
                 ..default()
             };
             if let Some(player) = players.0.get(&client) {

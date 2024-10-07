@@ -5,8 +5,10 @@ use crate::client::ui::inventory_screen::ChangeChar;
 use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
+use bevy::math::bounding::BoundingVolume;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use lightyear::client::interpolation::Interpolated;
 
 use crate::client::essentials::EasyClient;
 
@@ -24,12 +26,16 @@ impl Plugin for CustomizeCharPlugin {
             OnEnter(MyCharState::TransferComp),
             transfer_essential_components,
         );
-        app.add_systems(OnEnter(MyCharState::Done), reset_animation);
 
         app.add_systems(
             Update,
             customizes_character.run_if(in_state(MyCharState::Done)),
         );
+
+        // Observer systems
+        // app.observe(form_side_player);
+
+        app.add_systems(OnEnter(MyCharState::Done), reset_animation);
     }
 }
 
@@ -49,17 +55,21 @@ pub enum MyCharState {
 #[derive(Component)]
 pub struct Skeleton;
 
-// Marker components tells me who is the visual and if it is animation was transferred
+// MResource that tell me which assets had their animation targets transfered
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
-pub struct BodyPartMap(pub HashMap<String, (Entity, bool)>);
+pub struct BodyPartMap(pub HashMap<String, Entity>);
 
-fn spawn_char(
+#[derive(Component)]
+struct HasTarget;
+
+// Helper function spawns a series of scenes acording to the given batch of visuals being passed
+fn spawn_scene(
     visual: &str,
     client_collection: &Res<CharCollection>,
     gltfs: &Res<Assets<Gltf>>,
     commands: &mut Commands,
-) -> (Entity, bool) {
+) -> Entity {
     // Retrieve the GLTF handle from the collection, error if not found
     let gltf = client_collection
         .gltf_files
@@ -84,14 +94,14 @@ fn spawn_char(
     if visual.contains("skeleton") {
         info!("Spawning and marking main skeleton entity");
         let id = commands.spawn((Skeleton, scene)).id();
-        (id, false)
+        id
     } else {
         let id = commands.spawn(scene).id();
-        (id, false)
+        id
     }
 }
 
-// Forms main player, according to the bundle replicated from server, important to have for RTTs
+// Forms main player, according to the bundle replicated from server, important to have for RTTs.And because server should be the one controlling it no replication for you
 pub fn form_main_player_character(
     client_collection: Res<CharCollection>,
     bundle_map: Res<PlayerBundleMap>,
@@ -107,8 +117,8 @@ pub fn form_main_player_character(
 
             let mut hash_map = HashMap::new();
             for visual in server_bundle.visuals.iter_visuals() {
-                let (id, is_mapped) = spawn_char(visual, &client_collection, &gltfs, &mut commands);
-                hash_map.insert(visual.to_string(), (id, is_mapped));
+                let id = spawn_scene(visual, &client_collection, &gltfs, &mut commands);
+                hash_map.insert(visual.to_string(), id);
             }
             commands.insert_resource(BodyPartMap(hash_map));
 
@@ -118,6 +128,28 @@ pub fn form_main_player_character(
     } else {
         warn!("You are not connected no character for you !")
     }
+}
+
+// Only occurs when there is interpolated entities and replication occurs
+fn form_side_player(
+    trigger: Trigger<OnAdd, Interpolated>,
+    scenes_to_load: Query<&PlayerVisuals, With<Interpolated>>,
+    gltfs: Res<Assets<Gltf>>,
+    client_collection: Res<CharCollection>,
+    mut body_part_map: ResMut<BodyPartMap>,
+    mut char_state: ResMut<NextState<MyCharState>>,
+    mut commands: Commands,
+) {
+    let side_player = trigger.entity();
+    if let Ok(player_visuals) = scenes_to_load.get(side_player) {
+        info_once!("Spawning side player character and mapping him for transfering animations");
+        for visual in player_visuals.iter_visuals() {
+            let id = spawn_scene(visual, &client_collection, &gltfs, &mut commands);
+            body_part_map.0.insert(visual.to_string(), id);
+        }
+    }
+    info!("Transfering animations for side player");
+    char_state.set(MyCharState::TransferComp);
 }
 
 // Customizes character after a button is clicked in inventory screen also sets transfer comp
@@ -138,7 +170,7 @@ fn customizes_character(
             "Received parts from inv screen {}",
             part_to_adjust.0.new_part
         );
-        if let Some((old_part, _)) = body_part.0.remove(&part_to_adjust.0.old_part) {
+        if let Some(old_part) = body_part.0.remove(&part_to_adjust.0.old_part) {
             info!("This dude needs to die {:?}", old_part);
             commands.entity(old_part).despawn_recursive();
         }
@@ -147,7 +179,7 @@ fn customizes_character(
             "This dude need to exist {}",
             part_to_adjust.0.new_part.clone()
         );
-        let (scene_id, is_mapped) = spawn_char(
+        let scene_id = spawn_scene(
             &part_to_adjust.0.new_part,
             &client_collection,
             &gltfs,
@@ -156,7 +188,7 @@ fn customizes_character(
 
         body_part
             .0
-            .insert(part_to_adjust.0.new_part.clone(), (scene_id, is_mapped));
+            .insert(part_to_adjust.0.new_part.clone(), scene_id);
 
         char_state.set(MyCharState::TransferComp);
     }
@@ -169,6 +201,7 @@ fn transfer_essential_components(
     animation_target: Query<&AnimationTarget>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
+    has_transfered: Query<&HasTarget>,
     mut char_state: ResMut<NextState<MyCharState>>,
     mut commands: Commands,
 ) {
@@ -182,13 +215,17 @@ fn transfer_essential_components(
         collect_bones(&children_entities, &names, &old_entity, &mut old_bones);
 
         info!("Grabbing bones in visuals entity and making animation targets for them according to old bones ids");
-        for (file_path, (visual, is_mapped)) in visuals.0.iter_mut() {
-            if !*is_mapped {
+        for (file_path, visual) in visuals.0.iter_mut() {
+            if let Ok(_) = has_transfered.get(*visual) {
+                info!(
+                    "This part was already transfered not gonna do it again {}",
+                    file_path
+                );
+            } else {
                 info!(
                     "Transfering components to apply animation to file path {}",
                     file_path
                 );
-                *is_mapped = true;
                 let new_entity = find_child_with_name_containing(
                     &children_entities,
                     &names,
@@ -218,11 +255,7 @@ fn transfer_essential_components(
                             });
                     }
                 }
-            } else {
-                info!(
-                    "This part was already transfered not gonna do it again {}",
-                    file_path
-                );
+                commands.entity(*visual).insert(HasTarget);
             }
         }
     }

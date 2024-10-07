@@ -29,7 +29,9 @@ impl Plugin for ProtocolPlugin {
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
-        app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient);
+        app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once)
+            .add_prediction(ComponentSyncMode::Once);
         // Channels
         app.add_channel::<Channel1>(ChannelSettings {
             mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
