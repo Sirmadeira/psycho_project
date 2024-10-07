@@ -22,7 +22,7 @@ impl Plugin for AnimPlayerPlugin {
     }
 }
 
-//Resource utilized to tell me what animation to play in my animation graph
+/// Resource utilized to tell me what animation to play in my animation graph
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
 pub struct Animations {
@@ -32,12 +32,13 @@ pub struct Animations {
     pub animation_graph: Handle<AnimationGraph>,
 }
 
-// Resource utilized to easily find the animation players that should be played
-// Pass player entity, get vec of entities that have animation players
+/// Resource utilized to easily find the animation players that should be played
+/// Pass player entity, get vec of entities that have animation players
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
 struct PlayerAnimationMap(HashMap<Entity, Vec<Entity>>);
 
+/// Creates animations a resource that basically stores in a node every single named animation our gltf files may have
 fn create_animations_resource(
     mut assets_animation_graph: ResMut<Assets<AnimationGraph>>,
     mut commands: Commands,
@@ -53,7 +54,7 @@ fn create_animations_resource(
     });
 }
 
-// Inserts in every enttiy with an animation player an animation transition
+/// Inserts in every enttiy with an animation player an animation transition
 fn create_anim_transitions(
     animated_entities: Query<Entity, Added<AnimationPlayer>>,
     mut commands: Commands,
@@ -65,7 +66,7 @@ fn create_anim_transitions(
     }
 }
 
-// Loads from assets and put into our animations players must have for animation playing
+/// Loads from assets and put into our animations players must have for animation playing
 pub fn add_animation_graph(
     animations: Res<Animations>,
     mut commands: Commands,
@@ -79,7 +80,7 @@ pub fn add_animation_graph(
     }
 }
 
-// Grabbing animations from gltf and inserting into graph - TODO EXPAND THIS TO GRAB ALL SKELETONS
+/// Grabbing animations from gltf and inserting into graph - TODO EXPAND THIS TO GRAB ALL SKELETONS
 fn insert_gltf_animations(
     char_collection: Res<CharCollection>,
     assets_gltf: Res<Assets<Gltf>>,
@@ -112,7 +113,7 @@ fn insert_gltf_animations(
     }
 }
 
-//
+///
 fn play_animation(
     mut animation_entities: Query<
         (&mut AnimationTransitions, &mut AnimationPlayer),

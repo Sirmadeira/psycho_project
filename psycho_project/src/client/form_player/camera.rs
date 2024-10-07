@@ -10,7 +10,7 @@ impl Plugin for PlayerCameraPlugin {
     }
 }
 
-// Marker component tells me who is my main camera - A lot of mechanic in the future gonna be based on it
+/// Marker component tells me who is my main camera - A lot of mechanic in the future gonna be based on it
 #[derive(Component)]
 pub struct MainCamera;
 

@@ -34,7 +34,7 @@ impl PlayerBundle {
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 pub struct PlayerId(pub ClientId);
 
-// Visuals of our character
+/// Visuals of our character
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 pub struct PlayerVisuals {
     // Character related visuals - Vec of file paths

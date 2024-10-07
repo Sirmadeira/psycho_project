@@ -33,12 +33,13 @@ impl Plugin for CustomizeCharPlugin {
         );
 
         // Observer systems
-        // app.observe(form_side_player);
+        app.observe(form_side_player);
 
         app.add_systems(OnEnter(MyCharState::Done), reset_animation);
     }
 }
 
+/// State that resets everytime a new scene that need to be animated is inserted
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Reflect)]
 #[reflect(Debug, PartialEq, Hash, Default)]
 pub enum MyCharState {
@@ -51,15 +52,16 @@ pub enum MyCharState {
     Done,
 }
 
-// Marker component tells me who is the skeletons
+/// Marker component tells me who is the skeletons
 #[derive(Component)]
 pub struct Skeleton;
 
-// MResource that tell me which assets had their animation targets transfered
+/// Resource that tell me which assets had their animation targets transfered
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
 pub struct BodyPartMap(pub HashMap<String, Entity>);
 
+/// A simple component that tells me if it already transfered the animation targets
 #[derive(Component)]
 struct HasTarget;
 
@@ -101,7 +103,7 @@ fn spawn_scene(
     }
 }
 
-// Forms main player, according to the bundle replicated from server, important to have for RTTs.And because server should be the one controlling it no replication for you
+/// Forms main player, according to the bundle replicated from server, important to have for RTTs.And because server should be the one controlling it no replication for you
 pub fn form_main_player_character(
     client_collection: Res<CharCollection>,
     bundle_map: Res<PlayerBundleMap>,
@@ -130,9 +132,9 @@ pub fn form_main_player_character(
     }
 }
 
-// Only occurs when there is interpolated entities and replication occurs
+/// Only occurs when there is interpolated entities and replication occurs
 fn form_side_player(
-    trigger: Trigger<OnAdd, Interpolated>,
+    trigger: Trigger<OnInsert, PlayerVisuals>,
     scenes_to_load: Query<&PlayerVisuals, With<Interpolated>>,
     gltfs: Res<Assets<Gltf>>,
     client_collection: Res<CharCollection>,
@@ -142,17 +144,21 @@ fn form_side_player(
 ) {
     let side_player = trigger.entity();
     if let Ok(player_visuals) = scenes_to_load.get(side_player) {
-        info_once!("Spawning side player character and mapping him for transfering animations");
+        info_once!("Spawning side player character and mapping him for transfering animations and marking his body parts");
         for visual in player_visuals.iter_visuals() {
             let id = spawn_scene(visual, &client_collection, &gltfs, &mut commands);
-            body_part_map.0.insert(visual.to_string(), id);
+            body_part_map
+                .0
+                .insert(format!("side_{}", visual.to_string()), id);
         }
+    } else {
+        error!("Couldnt grab player visuals {:?}", side_player);
     }
     info!("Transfering animations for side player");
     char_state.set(MyCharState::TransferComp);
 }
 
-// Customizes character after a button is clicked in inventory screen also sets transfer comp
+/// Customizes character after a button is clicked in inventory screen also sets transfer comp
 fn customizes_character(
     mut change_char: EventReader<ChangeChar>,
     mut body_part: ResMut<BodyPartMap>,
@@ -194,7 +200,7 @@ fn customizes_character(
     }
 }
 
-// Transfer the animations to all the visual bones
+/// Transfer the animations to all the visual bones
 fn transfer_essential_components(
     skeletons: Query<Entity, With<Skeleton>>,
     mut visuals: ResMut<BodyPartMap>,
@@ -218,7 +224,7 @@ fn transfer_essential_components(
         for (file_path, visual) in visuals.0.iter_mut() {
             if let Ok(_) = has_transfered.get(*visual) {
                 info!(
-                    "This part was already transfered not gonna do it again {}",
+                    "This part is already ready for animation not gonna do it again {}",
                     file_path
                 );
             } else {
@@ -262,7 +268,7 @@ fn transfer_essential_components(
     char_state.set(MyCharState::Done);
 }
 
-// Reset animations after transfering animation targets as to avoid desync
+/// Reset animations after transfering animation targets as to avoid desync
 fn reset_animation(mut animation_players: Query<&mut AnimationPlayer, With<AnimationPlayer>>) {
     for mut animation_player in animation_players.iter_mut() {
         animation_player.rewind_all();
