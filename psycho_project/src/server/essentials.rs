@@ -87,8 +87,8 @@ pub(crate) fn init(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-/// Helper function spawns repicable players
-pub(crate) fn spawn_player_entity(
+/// Helper function spawns the player that is gonna be replciated
+pub(crate) fn spawn_server_player(
     client_id: ClientId,
     commands: &mut Commands,
     player_bundle: Option<PlayerBundle>,
@@ -142,7 +142,7 @@ pub(crate) fn handle_connections(
             info!(
                 "This player {:?} already connected once spawn it is entity according to it is settings",old_player_bundle.id
             );
-            spawn_player_entity(
+            spawn_server_player(
                 connection.client_id,
                 &mut commands,
                 Some(old_player_bundle.clone()),
@@ -150,7 +150,7 @@ pub(crate) fn handle_connections(
             );
         } else {
             info!("New player make him learn! And insert him into resource");
-            let new_bundle = spawn_player_entity(
+            let new_bundle = spawn_server_player(
                 connection.client_id,
                 &mut commands,
                 None,
@@ -237,9 +237,6 @@ pub(crate) fn create_lobby(
                 controlled_by: ControlledBy {
                     target: NetworkTarget::Single(client),
                     ..default()
-                },
-                target: ReplicationTarget {
-                    target: NetworkTarget::AllExceptSingle(client),
                 },
                 ..default()
             };

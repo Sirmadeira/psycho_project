@@ -1,6 +1,7 @@
 use crate::shared::protocol::lobby_structs::{Lobbies, SearchMatch, StopSearch};
 use crate::shared::protocol::player_structs::{PlayerBundleMap, PlayerVisuals, SaveVisual};
 use bevy::prelude::*;
+use bevy::transform::commands;
 use lightyear::server::events::*;
 mod essentials;
 use bincode::{deserialize_from, serialize_into};
@@ -76,18 +77,29 @@ fn read_save_files(mut commands: Commands) {
 fn listener_save_visuals(
     mut events: EventReader<MessageEvent<SaveVisual>>,
     mut player_map: ResMut<PlayerBundleMap>,
+    player_entity_map: Res<PlayerEntityMap>,
+    mut server_player_visuals: Query<&mut PlayerVisuals>,
 ) {
     for event in events.read() {
         let client_id = event.context();
 
         info!("Grabbing player visuals and body part to change from client");
-        let player_visuals = event.message().0.clone();
+        let client_player_visuals = event.message().0.clone();
 
         info!("Saving player info {}", client_id);
 
         if let Some(player_bundle) = player_map.0.get_mut(client_id) {
-            info!("Found it is bundle and changing visual  for what client said");
-            player_bundle.visuals = player_visuals;
+            info!("Found it is bundle and changing visual  for what client said in resource player bundle map");
+            player_bundle.visuals = client_player_visuals.clone();
+            if let Some(server_player) = player_entity_map.0.get(client_id) {
+                info!("Grabbing server player and also adjusting his component");
+                let mut server_visuals = server_player_visuals
+                    .get_mut(*server_player)
+                    .expect("Server player to have visuals");
+                *server_visuals = client_player_visuals.clone();
+            } else {
+                error!("Couldnt find server player something went wrong")
+            }
 
             info!("Saving this bundle {:?}", player_bundle);
             save_file(player_map.clone());

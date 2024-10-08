@@ -5,7 +5,6 @@ use crate::client::ui::inventory_screen::ChangeChar;
 use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
-use bevy::math::bounding::BoundingVolume;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use lightyear::client::interpolation::Interpolated;
@@ -22,6 +21,7 @@ impl Plugin for CustomizeCharPlugin {
         app.register_type::<BodyPartMap>();
 
         app.add_systems(OnEnter(MyAppState::MainMenu), form_main_player_character);
+
         app.add_systems(
             OnEnter(MyCharState::TransferComp),
             transfer_essential_components,
@@ -90,7 +90,7 @@ fn spawn_scene(
         ..default()
     };
 
-    info!("Spawning visual {} scene", visual);
+    // info!("Spawning visual {} scene", visual);
 
     // Spawn and return the appropriate entity
     if visual.contains("skeleton") {
@@ -143,19 +143,23 @@ fn form_side_player(
     mut commands: Commands,
 ) {
     let side_player = trigger.entity();
+    // Check if it is the interpolated player - WORTH noting interpolated is inserted first them player visuals
     if let Ok(player_visuals) = scenes_to_load.get(side_player) {
-        info_once!("Spawning side player character and mapping him for transfering animations and marking his body parts");
+        info!("Spawning side player character and mapping him for transfering animations and adding his body parts to resource");
         for visual in player_visuals.iter_visuals() {
             let id = spawn_scene(visual, &client_collection, &gltfs, &mut commands);
             body_part_map
                 .0
                 .insert(format!("side_{}", visual.to_string()), id);
+            commands
+                .entity(side_player)
+                .insert(SpatialBundle::default())
+                .insert(Name::new("SidePlayer"));
+            commands.entity(id).set_parent(side_player);
+            info!("Transfering animations for side player");
+            char_state.set(MyCharState::TransferComp);
         }
-    } else {
-        error!("Couldnt grab player visuals {:?}", side_player);
     }
-    info!("Transfering animations for side player");
-    char_state.set(MyCharState::TransferComp);
 }
 
 /// Customizes character after a button is clicked in inventory screen also sets transfer comp
@@ -221,17 +225,17 @@ fn transfer_essential_components(
         collect_bones(&children_entities, &names, &old_entity, &mut old_bones);
 
         info!("Grabbing bones in visuals entity and making animation targets for them according to old bones ids");
-        for (file_path, visual) in visuals.0.iter_mut() {
+        for (_, visual) in visuals.0.iter_mut() {
             if let Ok(_) = has_transfered.get(*visual) {
-                info!(
-                    "This part is already ready for animation not gonna do it again {}",
-                    file_path
-                );
+                // info!(
+                //     "This part is already ready for animation not gonna do it again {}",
+                //     file_path
+                // );
             } else {
-                info!(
-                    "Transfering components to apply animation to file path {}",
-                    file_path
-                );
+                // info!(
+                //     "Transfering components to apply animation to file path {}",
+                //     file_path
+                // );
                 let new_entity = find_child_with_name_containing(
                     &children_entities,
                     &names,

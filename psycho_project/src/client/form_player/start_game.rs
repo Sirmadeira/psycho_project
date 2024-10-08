@@ -1,27 +1,24 @@
 //! Systems correlated to starting game will occur here
 // TODO - DESPAWN EVERYTHING START A NEW
 
+use crate::client::essentials::EasyClient;
 use crate::client::form_player::BodyPartMap;
 use crate::client::ui::inventory_screen::ScreenInventory;
 use crate::client::ui::lobby_screen::ScreenLobby;
 use crate::client::MyAppState;
 use crate::shared::protocol::lobby_structs::StartGame;
+use crate::shared::protocol::player_structs::PlayerBundleMap;
 use bevy::prelude::*;
 use bevy_panorbit_camera::PanOrbitCamera;
 use lightyear::client::events::MessageEvent;
-use lightyear::client::prediction::Predicted;
-use lightyear::shared::replication::components::Controlled;
+use lightyear::prelude::client::Predicted;
 pub struct InGamePlugin;
 
 impl Plugin for InGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, listener_start_game);
         app.add_systems(OnEnter(MyAppState::Game), despawn_useless_entities);
-        // app.add_systems(
-        //     Update,
-        //     create_main_player.run_if(in_state(MyAppState::Game)),
-        // );
-        // app.add_systems(Update, set_camera_focus.run_if(in_state(MyAppState::Game)));
+        app.observe(create_main_player);
     }
 }
 
@@ -55,24 +52,43 @@ fn despawn_useless_entities(
     commands.entity(ui_screen).despawn_recursive();
 }
 
-// Main player is already pre created because of char customizer, because
-// fn create_main_player(
-//     scenes: Res<BodyPartMap>,
-//     controlled_player: Query<Entity, (Added<Predicted>, Added<Controlled>)>,
-//     mut commands: Commands,
-// ) {
-//     // A player should be only control him self
+/// Main player is already pre created because of char customizer, so we just grab his scenes and boom boom
+fn create_main_player(
+    trigger: Trigger<OnInsert, Predicted>,
+    easy_client: Res<EasyClient>,
+    player_bundle_map: Res<PlayerBundleMap>,
+    body_part_map: Res<BodyPartMap>,
+    mut commands: Commands,
+) {
+    // A player should be only control him self
 
-//     if let Ok(main_player) = controlled_player.get_single() {
-//         info!("Found player");
-//         for (scene, _) in scenes.0.values() {
-//             commands
-//                 .entity(main_player)
-//                 .insert(SpatialBundle::default());
-//             commands.entity(*scene).set_parent(main_player);
-//         }
-//     }
-// }
+    let main_player = trigger.entity();
+    let client_id = easy_client.0;
+
+    if let Some(player_bundle) = player_bundle_map.0.get(&client_id) {
+        let main_player_scenes = player_bundle.visuals.clone();
+
+        info!("Inserting name into main player");
+        commands
+            .entity(main_player)
+            .insert(SpatialBundle {
+                transform: Transform::from_xyz(0.5, 0.0, 0.0),
+                ..default()
+            })
+            .insert(Name::new("MainPlayer"));
+
+        for visual in main_player_scenes.iter_visuals() {
+            if let Some(body_part) = body_part_map.0.get(visual) {
+                commands.entity(*body_part).set_parent(main_player);
+            } else {
+                error!(
+                    "Couldnt grab the following asset from main player {}",
+                    visual
+                )
+            }
+        }
+    }
+}
 
 // // When player enter in game, the camera should orbit around him later we make it so it follows him
 // fn set_camera_focus(
