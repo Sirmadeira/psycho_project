@@ -11,12 +11,17 @@ use bevy::prelude::*;
 // use bevy_panorbit_camera::PanOrbitCamera;
 use lightyear::client::events::MessageEvent;
 use lightyear::prelude::client::Predicted;
+
 pub struct InGamePlugin;
 
 impl Plugin for InGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, listener_start_game);
         app.add_systems(OnEnter(MyAppState::Game), despawn_useless_entities);
+
+        app.add_systems(Update, goto_lobby);
+
+        // Observe when to create player
         app.observe(create_main_player);
     }
 }
@@ -49,6 +54,12 @@ fn despawn_useless_entities(
     // }
 
     commands.entity(ui_screen).despawn_recursive();
+}
+
+fn goto_lobby(keys: Res<ButtonInput<KeyCode>>, mut my_app_state: ResMut<NextState<MyAppState>>) {
+    if keys.just_pressed(KeyCode::Escape) {
+        my_app_state.set(MyAppState::Lobby);
+    }
 }
 
 /// Main player is already pre created because of char customizer, so we just grab his scenes and boom boom
