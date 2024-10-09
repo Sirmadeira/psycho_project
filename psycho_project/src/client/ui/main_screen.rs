@@ -1,5 +1,8 @@
 use crate::client::MyAppState;
+use crate::shared::protocol::lobby_structs::{SearchMatch, StopSearch};
+use crate::shared::protocol::player_structs::Channel1;
 use bevy::prelude::*;
+use lightyear::client::connection::ConnectionManager;
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -17,11 +20,16 @@ impl Plugin for MainMenuPlugin {
 
 #[derive(Component)]
 
-struct ScreenMainMenu;
+pub struct ScreenMainMenu;
 
 // Marker component for the start button
 #[derive(Component)]
 struct StartButton;
+
+/// Made to tell me if player is searching for match in server, I avoided state here because I want the user
+/// To still be capable of sending messages to server
+#[derive(Component)]
+struct IsSearching;
 
 // Marker component for the exit button
 #[derive(Component)]
@@ -135,41 +143,68 @@ fn start_button(
             &mut BackgroundColor,
             &mut BorderColor,
             &Children,
+            Entity,
         ),
         (Changed<Interaction>, With<StartButton>),
     >,
+    is_searching_query: Query<Has<IsSearching>, With<StartButton>>,
+    mut connection_manager: ResMut<ConnectionManager>,
     mut text_query: Query<&mut Text>,
-    mut on_main_menu: Query<Entity, With<ScreenMainMenu>>,
-    mut my_app_state: ResMut<NextState<MyAppState>>,
     mut commands: Commands,
 ) {
-    for (interaction, mut color, mut border_color, children) in &mut interaction_query {
-        // Grabs first child of start button in this case the text bundle.
+    if let Ok((interaction, mut color, mut border_color, children, button_entity)) =
+        interaction_query.get_single_mut()
+    {
         let mut text = text_query.get_mut(children[0]).unwrap();
+        let is_searching = is_searching_query
+            .get_single()
+            .expect("Has statement to work as it should");
+
+        // Interaction behavior logic
+        if let Interaction::Pressed = *interaction {
+            if is_searching {
+                info!("Sending message to server to stop searching");
+                let _ = connection_manager.send_message::<Channel1, StopSearch>(&mut StopSearch);
+                commands.entity(button_entity).remove::<IsSearching>();
+            } else {
+                info!("Sending message to server to start searching");
+                let _ = connection_manager.send_message::<Channel1, SearchMatch>(&mut SearchMatch);
+                commands.entity(button_entity).insert(IsSearching);
+            }
+        }
+
+        // Handle interaction directly
         match *interaction {
             Interaction::Pressed => {
-                text.sections[0].value = "LETS DUEL!".to_string();
+                text.sections[0].value = if is_searching {
+                    "WHY DID YOU STOP NOO".to_string()
+                } else {
+                    "LETS GO".to_string()
+                };
                 *color = PRESSED_BUTTON.into();
                 border_color.0 = Color::srgb(255.0, 0.0, 0.0);
-                info!("Despawming previous menu screen");
-                let menu = on_main_menu.get_single_mut().unwrap();
-                commands.entity(menu).despawn_recursive();
-                my_app_state.set(MyAppState::Lobby);
             }
             Interaction::Hovered => {
-                text.sections[0].value = "IDIOT!".to_string();
+                text.sections[0].value = if is_searching {
+                    "CURRENTLY SEARCHING".to_string()
+                } else {
+                    "OH YEAH".to_string()
+                };
                 *color = HOVERED_BUTTON.into();
                 border_color.0 = Color::WHITE;
             }
             Interaction::None => {
-                text.sections[0].value = "GET STARTED".to_string();
+                text.sections[0].value = if is_searching {
+                    "CURRENTLY SEARCHING".to_string()
+                } else {
+                    "FIGHT".to_string()
+                };
                 *color = NORMAL_BUTTON.into();
                 border_color.0 = Color::BLACK;
             }
         }
     }
 }
-
 fn exit_button(
     mut interaction_query: Query<
         (

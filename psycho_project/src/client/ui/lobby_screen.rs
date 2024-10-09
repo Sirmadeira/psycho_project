@@ -1,8 +1,7 @@
 use crate::client::load_assets::Images;
 use crate::client::rtt::{spawn_rtt_orbit_camera, RttImages};
 use crate::client::MyAppState;
-use crate::shared::protocol::lobby_structs::{SearchMatch, StartGame, StopSearch};
-use crate::shared::protocol::player_structs::Channel1;
+use crate::shared::protocol::lobby_structs::StartGame;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy::{
@@ -31,24 +30,15 @@ impl Plugin for LobbyPlugin {
             Update,
             fill_rtt_ui_images.run_if(in_state(MyAppState::Lobby)),
         );
-        app.add_systems(Update, search_button.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, change_button.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
         app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
     }
 }
 
-const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
-const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
-const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
-
 // Marker component for general lobby screen just despawn this guy and it is children when done
 #[derive(Component)]
 pub struct ScreenLobby;
-
-//When clicked set server status to looking for match
-#[derive(Component)]
-struct SearchButton;
 
 // A simple event that is sended when you click one of the visuasl to change buttons
 #[derive(Resource, Reflect, Clone, Default)]
@@ -134,38 +124,17 @@ impl ImageVisualInfo {
     }
 }
 
-//Placedholder on where to put our ui image and what ui image to put grab via file path()
+/// Placedholder on where to put our ui image and what ui image to put grab via file path()
 #[derive(Component)]
 struct RttPlaceholder(String);
 
-// Made to tell me if player is searching for match in server, I avoided state here because I want the user
-// To still be capable of sending messages to server
-#[derive(Component)]
-struct IsSearching;
-
-// Scrolling list of available fights
+/// Scrolling list of available fights
 #[derive(Component, Default)]
 struct ScrollingList {
     position: f32,
 }
 
 fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut commands: Commands) {
-    let button_style = Style {
-        width: Val::Px(350.0),
-        height: Val::Px(125.0),
-        border: UiRect::all(Val::Px(15.0)),
-        margin: UiRect::all(Val::Px(20.0)),
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        ..default()
-    };
-
-    let button_text_style = TextStyle {
-        font: asset_server.load("grafitti.ttf"),
-        font_size: 40.0,
-        color: Color::srgb(0.9, 0.9, 0.9),
-    };
-
     let image_button_style = Style {
         width: Val::Px(250.0),
         height: Val::Px(200.0),
@@ -190,58 +159,7 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
             ScreenLobby,
         ))
         .with_children(|parent| {
-            // First column
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        width: Val::Percent(33.0),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .with_children(|parent| {
-                    parent
-                        .spawn(NodeBundle {
-                            style: Style {
-                                flex_direction: FlexDirection::Column,
-                                align_items: AlignItems::Center,
-                                justify_content: JustifyContent::Center,
-                                ..default()
-                            },
-                            ..default()
-                        })
-                        // SIMPLE TITLE TEXT
-                        .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section(
-                                "SEARCH FOR MATCH",
-                                TextStyle {
-                                    font: asset_server.load("grafitti.ttf"),
-                                    font_size: 45.0,
-                                    ..default()
-                                },
-                            ));
-                            // SEARCH FOR MATCH BUTTON
-                            parent
-                                .spawn((
-                                    ButtonBundle {
-                                        style: button_style.clone(),
-                                        border_color: BorderColor(Color::BLACK),
-                                        ..default()
-                                    },
-                                    SearchButton, // Insert DuelButton here
-                                ))
-                                .with_children(|parent| {
-                                    parent.spawn(TextBundle::from_section(
-                                        "",
-                                        button_text_style.clone(),
-                                    ));
-                                });
-                        });
-                });
-            // SECOND COLUMN
+            // FIRST COLUMN
             parent
                 .spawn(NodeBundle {
                     style: Style {
@@ -451,7 +369,7 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
                             ));
                         });
                 });
-            // Third column
+            // SECOND COLUMN
             parent
                 .spawn(NodeBundle {
                     style: Style {
@@ -487,76 +405,6 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
                     ));
                 });
         });
-}
-
-fn search_button(
-    mut interaction_query: Query<
-        (
-            &Interaction,
-            &mut BackgroundColor,
-            &mut BorderColor,
-            &Children,
-            Entity,
-        ),
-        (Changed<Interaction>, With<SearchButton>),
-    >,
-    is_searching_query: Query<Has<IsSearching>, With<SearchButton>>,
-    mut connection_manager: ResMut<ConnectionManager>,
-    mut text_query: Query<&mut Text>,
-    mut commands: Commands,
-) {
-    if let Ok((interaction, mut color, mut border_color, children, button_entity)) =
-        interaction_query.get_single_mut()
-    {
-        let mut text = text_query.get_mut(children[0]).unwrap();
-        let is_searching = is_searching_query
-            .get_single()
-            .expect("Has statement to work as it should");
-
-        // Interaction behavior logic
-        if let Interaction::Pressed = *interaction {
-            if is_searching {
-                info!("Sending message to server to stop searching");
-                let _ = connection_manager.send_message::<Channel1, StopSearch>(&mut StopSearch);
-                commands.entity(button_entity).remove::<IsSearching>();
-            } else {
-                info!("Sending message to server to start searching");
-                let _ = connection_manager.send_message::<Channel1, SearchMatch>(&mut SearchMatch);
-                commands.entity(button_entity).insert(IsSearching);
-            }
-        }
-
-        // Handle interaction directly
-        match *interaction {
-            Interaction::Pressed => {
-                text.sections[0].value = if is_searching {
-                    "WHY DID YOU STOP NOO".to_string()
-                } else {
-                    "LETS GO".to_string()
-                };
-                *color = PRESSED_BUTTON.into();
-                border_color.0 = Color::srgb(255.0, 0.0, 0.0);
-            }
-            Interaction::Hovered => {
-                text.sections[0].value = if is_searching {
-                    "CURRENTLY SEARCHING".to_string()
-                } else {
-                    "OH YEAH".to_string()
-                };
-                *color = HOVERED_BUTTON.into();
-                border_color.0 = Color::WHITE;
-            }
-            Interaction::None => {
-                text.sections[0].value = if is_searching {
-                    "CURRENTLY SEARCHING".to_string()
-                } else {
-                    "SEARCH FOR MATCH".to_string()
-                };
-                *color = NORMAL_BUTTON.into();
-                border_color.0 = Color::BLACK;
-            }
-        }
-    }
 }
 
 // Send a message to server telling me player loadout

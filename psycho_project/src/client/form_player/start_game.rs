@@ -3,13 +3,12 @@
 
 use crate::client::essentials::EasyClient;
 use crate::client::form_player::BodyPartMap;
-use crate::client::ui::inventory_screen::ScreenInventory;
-use crate::client::ui::lobby_screen::ScreenLobby;
+use crate::client::ui::main_screen::ScreenMainMenu;
 use crate::client::MyAppState;
 use crate::shared::protocol::lobby_structs::StartGame;
 use crate::shared::protocol::player_structs::PlayerBundleMap;
 use bevy::prelude::*;
-use bevy_panorbit_camera::PanOrbitCamera;
+// use bevy_panorbit_camera::PanOrbitCamera;
 use lightyear::client::events::MessageEvent;
 use lightyear::prelude::client::Predicted;
 pub struct InGamePlugin;
@@ -36,8 +35,8 @@ fn listener_start_game(
 
 // Despawns ui screens, despawn rtt cameras and if anything else needs despawnign he your boy
 fn despawn_useless_entities(
-    current_ui_screen: Query<Entity, Or<(With<ScreenLobby>, With<ScreenInventory>)>>,
-    rtt_cameras: Query<Entity, With<PanOrbitCamera>>,
+    current_ui_screen: Query<Entity, With<ScreenMainMenu>>,
+    // rtt_cameras: Query<Entity, With<PanOrbitCamera>>,
     mut commands: Commands,
 ) {
     info!("Despawning UI screen");
@@ -45,9 +44,9 @@ fn despawn_useless_entities(
         .get_single()
         .expect("You should only have one active screen");
 
-    for rtt_camera in rtt_cameras.iter() {
-        commands.entity(rtt_camera).despawn();
-    }
+    // for rtt_camera in rtt_cameras.iter() {
+    //     commands.entity(rtt_camera).despawn();
+    // }
 
     commands.entity(ui_screen).despawn_recursive();
 }
@@ -89,6 +88,8 @@ fn create_main_player(
         }
     }
 }
+
+//TODO - MAKE REGRESSION MECHANIC PAUSE MENU AND SUCH
 
 // // When player enter in game, the camera should orbit around him later we make it so it follows him
 // fn set_camera_focus(
