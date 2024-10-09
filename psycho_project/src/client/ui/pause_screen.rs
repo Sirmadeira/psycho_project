@@ -16,29 +16,29 @@ use bevy_panorbit_camera::{ActiveCameraData, PanOrbitCamera};
 use lightyear::prelude::client::*;
 
 // Plugin utilized to do all lobby related actions
-pub struct LobbyPlugin;
+pub struct PausePlugin;
 
-impl Plugin for LobbyPlugin {
+impl Plugin for PausePlugin {
     fn build(&self, app: &mut App) {
         // Debug
         app.register_type::<VisualToChange>();
         //Registering resource
         app.init_resource::<ToDisplayVisuals>();
         // Lobby systems
-        app.add_systems(OnEnter(MyAppState::Lobby), lobby_screen);
+        app.add_systems(OnEnter(MyAppState::Pause), pause_screen);
         app.add_systems(
             Update,
-            fill_rtt_ui_images.run_if(in_state(MyAppState::Lobby)),
+            fill_rtt_ui_images.run_if(in_state(MyAppState::Pause)),
         );
-        app.add_systems(Update, change_button.run_if(in_state(MyAppState::Lobby)));
-        app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Lobby)));
-        app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Lobby)));
+        app.add_systems(Update, change_button.run_if(in_state(MyAppState::Pause)));
+        app.add_systems(Update, scrolling_list.run_if(in_state(MyAppState::Pause)));
+        app.add_systems(Update, display_matches.run_if(in_state(MyAppState::Pause)));
     }
 }
 
 // Marker component for general lobby screen just despawn this guy and it is children when done
 #[derive(Component)]
-pub struct ScreenLobby;
+pub struct ScreenPause;
 
 // A simple event that is sended when you click one of the visuasl to change buttons
 #[derive(Resource, Reflect, Clone, Default)]
@@ -134,7 +134,7 @@ struct ScrollingList {
     position: f32,
 }
 
-fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut commands: Commands) {
+fn pause_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut commands: Commands) {
     let image_button_style = Style {
         width: Val::Px(250.0),
         height: Val::Px(200.0),
@@ -156,7 +156,7 @@ fn lobby_screen(asset_server: Res<AssetServer>, images: Res<Images>, mut command
                 background_color: Color::srgb(0.10, 0.10, 0.10).into(),
                 ..default()
             },
-            ScreenLobby,
+            ScreenPause,
         ))
         .with_children(|parent| {
             // FIRST COLUMN
@@ -414,7 +414,7 @@ fn change_button(
         (Changed<Interaction>, With<VisualToChange>),
     >,
     mut my_app_state: ResMut<NextState<MyAppState>>,
-    lobby_screen: Query<Entity, With<ScreenLobby>>,
+    lobby_screen: Query<Entity, With<ScreenPause>>,
     mut send_visual: ResMut<ToDisplayVisuals>,
     mut commands: Commands,
 ) {

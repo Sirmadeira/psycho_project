@@ -7,7 +7,7 @@ use crate::client::MyAppState;
 use crate::client::{essentials::EasyClient, load_assets::Images};
 use crate::shared::protocol::player_structs::{PlayerBundleMap, SaveVisual};
 
-use super::lobby_screen::{ToDisplayVisuals, VisualToChange};
+use super::pause_screen::{ToDisplayVisuals, VisualToChange};
 pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
@@ -298,7 +298,7 @@ fn return_button(
             Interaction::Pressed => {
                 if let Ok(inv_screen) = inv_screen.get_single() {
                     info!("Despawning inventory returning to lobby");
-                    next_state.set(MyAppState::Lobby);
+                    next_state.set(MyAppState::Pause);
                     commands.entity(inv_screen).despawn_recursive();
                 }
             }

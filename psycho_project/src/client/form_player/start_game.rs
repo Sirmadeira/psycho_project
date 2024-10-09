@@ -58,7 +58,7 @@ fn despawn_useless_entities(
 
 fn goto_lobby(keys: Res<ButtonInput<KeyCode>>, mut my_app_state: ResMut<NextState<MyAppState>>) {
     if keys.just_pressed(KeyCode::Escape) {
-        my_app_state.set(MyAppState::Lobby);
+        my_app_state.set(MyAppState::Pause);
     }
 }
 

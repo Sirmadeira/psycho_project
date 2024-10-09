@@ -61,7 +61,7 @@ pub enum MyAppState {
     // In main menu for setting player options and such
     MainMenu,
     // Lobby screen
-    Lobby,
+    Pause,
     // Inventory sub-screens
     Inventory,
     // Ingame
