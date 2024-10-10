@@ -21,8 +21,8 @@ impl Plugin for ProtocolPlugin {
         app.register_message::<StartGame>(ChannelDirection::ServerToClient);
         app.register_message::<SendBundle>(ChannelDirection::ServerToClient);
         // Message start match related
-        app.register_message::<SearchMatch>(ChannelDirection::ClientToServer);
-        app.register_message::<StopSearch>(ChannelDirection::ClientToServer);
+        app.register_message::<EnterLobby>(ChannelDirection::ClientToServer);
+        app.register_message::<ExitLobby>(ChannelDirection::ClientToServer);
         // Messages related to visuals
         app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
         // Components

@@ -33,7 +33,9 @@ impl Plugin for InventoryPlugin {
     }
 }
 
-// An event message sent by client to server that gives the player currently chosen loadout
+// Marker componet utilized to easily despawn entire inventory screen
+#[derive(Component)]
+pub struct ScreenInventory;
 
 // AN event message sent by server to client that tells me that player can customize his character
 #[derive(Event, Reflect)]
@@ -47,10 +49,6 @@ pub struct PartToChange {
     // File Path to new part
     pub new_part: String,
 }
-
-// Marker componet utilized to easily despawn entire inventory screen
-#[derive(Component)]
-pub struct ScreenInventory;
 
 #[derive(Component)]
 struct ReturnButton;
@@ -343,12 +341,13 @@ fn assets_buttons(
 
                             info!("Grabbing old part {}", player_visuals.head.clone());
                             info!("Grabbing new part {}", asset_path.clone());
+                            
                             change_char.send(ChangeChar(PartToChange {
                                 old_part: player_visuals.head.clone(),
                                 new_part: asset_path.clone(),
                             }));
 
-                            info!("Adjusting cloned visual to send to resource later");
+                            info!("Adjusting cloned visual to send to replicated resource later");
                             player_visuals.head = asset_path.clone();
                         }
                         VisualToChange::Torso(_) => {

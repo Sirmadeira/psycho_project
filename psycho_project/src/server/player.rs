@@ -55,8 +55,6 @@ pub struct PlayerEntityMap(pub HashMap<ClientId, Entity>);
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 pub struct PlayerStateConnection {
     pub online: bool,
-    // If is searching or not
-    pub searching: bool,
     // If in game or not
     pub in_game: bool,
 }
@@ -124,7 +122,6 @@ pub(crate) fn spawn_server_player(
     info!("Setting their status to online");
     let online_state = PlayerStateConnection {
         online: true,
-        searching: false,
         in_game: false,
     };
 

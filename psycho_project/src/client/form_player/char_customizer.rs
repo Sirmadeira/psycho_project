@@ -164,6 +164,7 @@ fn form_side_player(
 
 /// Customizes character after a button is clicked in inventory screen also sets transfer comp
 fn customizes_character(
+    parent: Query<&Parent>,
     mut change_char: EventReader<ChangeChar>,
     mut body_part: ResMut<BodyPartMap>,
     client_collection: Res<CharCollection>,
@@ -183,24 +184,30 @@ fn customizes_character(
         if let Some(old_part) = body_part.0.remove(&part_to_adjust.0.old_part) {
             info!("This dude needs to die {:?}", old_part);
             commands.entity(old_part).despawn_recursive();
+            if let Ok(parent) = parent.get(old_part) {
+                let player = parent.get();
+                info!(
+                    "This dude need to exist {}",
+                    part_to_adjust.0.new_part.clone()
+                );
+                let scene_id = spawn_scene(
+                    &part_to_adjust.0.new_part,
+                    &client_collection,
+                    &gltfs,
+                    &mut commands,
+                );
+
+                info!("Inserting new body part into general map");
+                body_part
+                    .0
+                    .insert(part_to_adjust.0.new_part.clone(), scene_id);
+                info!("Set player as parent of visual");
+                commands.entity(scene_id).set_parent(player);
+                
+                info!("Changin state to transfer anim target");
+                char_state.set(MyCharState::TransferComp);
+            }
         }
-
-        info!(
-            "This dude need to exist {}",
-            part_to_adjust.0.new_part.clone()
-        );
-        let scene_id = spawn_scene(
-            &part_to_adjust.0.new_part,
-            &client_collection,
-            &gltfs,
-            &mut commands,
-        );
-
-        body_part
-            .0
-            .insert(part_to_adjust.0.new_part.clone(), scene_id);
-
-        char_state.set(MyCharState::TransferComp);
     }
 }
 
