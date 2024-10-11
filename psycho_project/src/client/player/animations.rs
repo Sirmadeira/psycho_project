@@ -1,7 +1,7 @@
 //! Player related animations are here
 
 use bevy::prelude::*;
-use bevy::utils::HashMap;
+use bevy::utils::{Duration, HashMap};
 
 use crate::client::load_assets::CharCollection;
 
@@ -14,8 +14,13 @@ impl Plugin for AnimPlayerPlugin {
         app.register_type::<Animations>();
         app.register_type::<PlayerAnimationMap>();
         app.add_systems(Startup, create_animations_resource);
-        app.add_systems(Update, (create_anim_transitions, add_animation_graph));
         app.add_systems(OnEnter(MyAppState::MainMenu), insert_gltf_animations);
+        app.add_systems(
+            Update,
+            (create_anim_transitions, add_animation_graph).chain(),
+        );
+        //IMPORTANT ONLY PLAY ANIMATION AFTER ADDING ANIMATION GRAPH
+        app.add_systems(Update, play_animation.after(add_animation_graph));
     }
 }
 
@@ -110,18 +115,20 @@ fn insert_gltf_animations(
     }
 }
 
-// fn play_animation(
-//     mut animation_entities: Query<
-//         (&mut AnimationTransitions, &mut AnimationPlayer),
-//         Added<AnimationPlayer>,
-//     >,
-//     animations: Res<Animations>,
-// ) {
-//     let named_animations = animations.named_nodes.clone();
-//     for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
-//         let node = named_animations.get("Walk").unwrap();
-//         animation_transitions
-//             .play(&mut animation_player, *node, Duration::ZERO)
-//             .repeat();
-//     }
-// }
+/// Reset animations after transfering animation targets as to avoid desync
+fn play_animation(
+    mut animation_entities: Query<
+        (&mut AnimationTransitions, &mut AnimationPlayer),
+        Added<AnimationPlayer>,
+    >,
+    animations: Res<Animations>,
+) {
+    let named_animations = animations.named_nodes.clone();
+    for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
+        let node = named_animations.get("Walk").unwrap();
+        info!("Adding animation");
+        animation_transitions
+            .play(&mut animation_player, *node, Duration::ZERO)
+            .repeat();
+    }
+}

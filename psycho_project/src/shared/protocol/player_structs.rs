@@ -83,3 +83,16 @@ pub struct SendBundle(pub PlayerBundle);
 // An event message sent by client to server that gives the player currently chosen loadout
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct SaveVisual(pub PlayerVisuals);
+
+// An event message sent by client to server to all clients
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
+pub struct ChangeChar(pub (ClientId, PartToChange));
+
+// Tell me the parts to change when grabing char customizer resource
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
+pub struct PartToChange {
+    // File path to old part
+    pub old_part: String,
+    // File Path to new part
+    pub new_part: String,
+}

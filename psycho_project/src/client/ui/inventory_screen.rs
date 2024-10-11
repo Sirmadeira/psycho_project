@@ -3,18 +3,17 @@ use crate::shared::protocol::player_structs::Channel1;
 use bevy::prelude::*;
 use lightyear::client::connection::ConnectionManager;
 
+use super::pause_screen::{ToDisplayVisuals, VisualToChange};
 use crate::client::MyAppState;
 use crate::client::{essentials::EasyClient, load_assets::Images};
-use crate::shared::protocol::player_structs::{PlayerBundleMap, SaveVisual};
+use crate::shared::protocol::player_structs::*;
+use lightyear::shared::replication::network_target::NetworkTarget;
 
-use super::pause_screen::{ToDisplayVisuals, VisualToChange};
 pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
-        // Events
-        app.add_event::<ChangeChar>();
-        //Debuging
+        // Debugging
         app.register_type::<ChangeChar>();
         app.register_type::<PartToChange>();
 
@@ -36,19 +35,6 @@ impl Plugin for InventoryPlugin {
 // Marker componet utilized to easily despawn entire inventory screen
 #[derive(Component)]
 pub struct ScreenInventory;
-
-// AN event message sent by server to client that tells me that player can customize his character
-#[derive(Event, Reflect)]
-pub struct ChangeChar(pub PartToChange);
-
-// Tell me the parts to change when grabing char customizer resource
-#[derive(Reflect)]
-pub struct PartToChange {
-    // File path to old part
-    pub old_part: String,
-    // File Path to new part
-    pub new_part: String,
-}
 
 #[derive(Component)]
 struct ReturnButton;
@@ -315,7 +301,6 @@ fn assets_buttons(
         (&Interaction, &mut BorderColor, &AssetButton),
         (Changed<Interaction>, With<AssetButton>),
     >,
-    mut change_char: EventWriter<ChangeChar>,
     client_id: Res<EasyClient>,
     player_bundle_map: Res<PlayerBundleMap>,
     to_display_visuals: Res<ToDisplayVisuals>,
@@ -341,11 +326,19 @@ fn assets_buttons(
 
                             info!("Grabbing old part {}", player_visuals.head.clone());
                             info!("Grabbing new part {}", asset_path.clone());
-                            
-                            change_char.send(ChangeChar(PartToChange {
-                                old_part: player_visuals.head.clone(),
-                                new_part: asset_path.clone(),
-                            }));
+
+                            info!("Sending super message to all clients");
+                            let _ = connection_manager
+                                .send_message_to_target::<Channel1, ChangeChar>(
+                                    &mut ChangeChar((
+                                        client_id,
+                                        PartToChange {
+                                            old_part: player_visuals.head.clone(),
+                                            new_part: asset_path.clone(),
+                                        },
+                                    )),
+                                    NetworkTarget::All,
+                                );
 
                             info!("Adjusting cloned visual to send to replicated resource later");
                             player_visuals.head = asset_path.clone();
@@ -353,10 +346,17 @@ fn assets_buttons(
                         VisualToChange::Torso(_) => {
                             info!("Grabbing old part {}", player_visuals.torso.clone());
                             info!("Grabbing new part {}", asset_path.clone());
-                            change_char.send(ChangeChar(PartToChange {
-                                old_part: player_visuals.torso.clone(),
-                                new_part: asset_path.clone(),
-                            }));
+                            let _ = connection_manager
+                                .send_message_to_target::<Channel1, ChangeChar>(
+                                    &mut ChangeChar((
+                                        client_id,
+                                        PartToChange {
+                                            old_part: player_visuals.torso.clone(),
+                                            new_part: asset_path.clone(),
+                                        },
+                                    )),
+                                    NetworkTarget::All,
+                                );
 
                             info!("Adjusting cloned visual to send to resource later");
                             player_visuals.torso = asset_path.clone();
@@ -364,11 +364,17 @@ fn assets_buttons(
                         VisualToChange::Legs(_) => {
                             info!("Grabbing old part {}", player_visuals.legs.clone());
                             info!("Grabbing new part {}", asset_path.clone());
-                            change_char.send(ChangeChar(PartToChange {
-                                old_part: player_visuals.legs.clone(),
-                                new_part: asset_path.clone(),
-                            }));
-
+                            let _ = connection_manager
+                                .send_message_to_target::<Channel1, ChangeChar>(
+                                    &mut ChangeChar((
+                                        client_id,
+                                        PartToChange {
+                                            old_part: player_visuals.legs.clone(),
+                                            new_part: asset_path.clone(),
+                                        },
+                                    )),
+                                    NetworkTarget::All,
+                                );
                             info!("Adjusting cloned visual to send to resource later");
                             player_visuals.legs = asset_path.clone();
                         }

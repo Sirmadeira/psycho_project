@@ -1,13 +1,12 @@
 //! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
 use crate::client::essentials::EasyClient;
 use crate::client::load_assets::CharCollection;
-use crate::client::player;
-use crate::client::player::Animations;
-use crate::client::ui::inventory_screen::ChangeChar;
+use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
-use bevy::utils::{Duration, HashMap};
+use bevy::utils::HashMap;
+use lightyear::client::events::MessageEvent;
 use lightyear::client::interpolation::Interpolated;
 use lightyear::connection::id::ClientId;
 use lightyear::prelude::client::Predicted;
@@ -19,9 +18,7 @@ impl Plugin for CustomizeCharPlugin {
     fn build(&self, app: &mut App) {
         //Events
         app.add_event::<TranferAnim>();
-
-        // States
-        app.init_state::<MyCharState>();
+        app.add_event::<ResetAnimation>();
 
         // Starting up base resource
         app.init_resource::<BodyPartMap>();
@@ -30,7 +27,6 @@ impl Plugin for CustomizeCharPlugin {
         //Debugging
         app.register_type::<BodyPartMap>();
         app.register_type::<SkeletonMap>();
-        app.register_type::<MyCharState>();
 
         // Observes when to create players
         app.observe(spawn_main_player);
@@ -39,25 +35,10 @@ impl Plugin for CustomizeCharPlugin {
         // Does the anim transfer
         app.add_systems(PreUpdate, transfer_essential_components);
 
-        // app.add_systems(
-        //     Update,
-        //     customizes_character.run_if(in_state(MyCharState::Done)),
-        // );
+        app.add_systems(Update, customizes_character);
 
-        // // // Observer systems
-        app.add_systems(PostUpdate, play_animation);
+        app.add_systems(Update, reset_animation);
     }
-}
-
-/// State that resets everytime a new scene that need to be animated is inserted
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Reflect)]
-#[reflect(Debug, PartialEq, Hash, Default)]
-pub enum MyCharState {
-    #[default]
-    // Spawns necessary scenes
-    FormingPlayers,
-    // Reset animations
-    Done,
 }
 
 /// Resource that tell me which assets had their animation targets transfered
@@ -73,6 +54,10 @@ struct SkeletonMap(HashMap<ClientId, Entity>);
 /// Tell me when to transfer the anim of a certain player
 #[derive(Event, Reflect)]
 struct TranferAnim(ClientId);
+
+/// Resets animations when i finish the transition
+#[derive(Event, Reflect)]
+struct ResetAnimation;
 
 /// A simple component that tells me if it already transfered the animation targets
 #[derive(Component)]
@@ -130,7 +115,7 @@ pub fn collect_bones(
 }
 
 /// Helper Finds a bone with a certain name
-pub fn find_child_with_name_containing(
+fn find_child_with_name_containing(
     children_entities: &Query<&Children>,
     names: &Query<&Name>,
     entity: &Entity,
@@ -214,7 +199,7 @@ fn spawn_side_player(
     trigger: Trigger<OnInsert, PlayerVisuals>,
     scenes_to_load: Query<(&PlayerId, &PlayerVisuals), With<Interpolated>>,
     gltfs: Res<Assets<Gltf>>,
-    client_collection: Res<CharCollection>,
+    client_collection: Option<Res<CharCollection>>,
     mut body_part_map: ResMut<BodyPartMap>,
     mut skeleton_map: ResMut<SkeletonMap>,
     mut transfer_anim: EventWriter<TranferAnim>,
@@ -230,23 +215,27 @@ fn spawn_side_player(
             .insert(SpatialBundle::default())
             .insert(Name::new("SidePlayer"));
         for file_path in player_visuals.iter_visuals() {
-            if file_path.contains("skeleton") {
-                info!("Found side player skeleton");
-                let visual_scene =
-                    spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
-                commands.entity(visual_scene).set_parent(side_player);
+            if let Some(ref client_collection) = client_collection {
+                if file_path.contains("skeleton") {
+                    info!("Found side player skeleton");
+                    let visual_scene =
+                        spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
+                    commands.entity(visual_scene).set_parent(side_player);
 
-                info!("Inserting skeleton into map");
-                skeleton_map.0.insert(client_id, visual_scene);
+                    info!("Inserting skeleton into map");
+                    skeleton_map.0.insert(client_id, visual_scene);
+                } else {
+                    let visual_scene =
+                        spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
+
+                    commands.entity(visual_scene).set_parent(side_player);
+
+                    body_part_map
+                        .0
+                        .insert((client_id, file_path.to_string()), visual_scene);
+                }
             } else {
-                let visual_scene =
-                    spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
-
-                commands.entity(visual_scene).set_parent(side_player);
-
-                body_part_map
-                    .0
-                    .insert((client_id, file_path.to_string()), visual_scene);
+                error!("I hope to god we can have rc with observe systems")
             }
         }
         info!("Telling him to transfer animation targets according to his skeleton");
@@ -255,63 +244,72 @@ fn spawn_side_player(
 }
 
 /// Customizes character after a button is clicked in inventory screen also sets transfer comp
-// fn customizes_character(
-//     parent: Query<&Parent>,
-//     mut change_char: EventReader<ChangeChar>,
-//     mut body_part: ResMut<BodyPartMap>,
-//     client_collection: Res<CharCollection>,
-//     gltfs: Res<Assets<Gltf>>,
-//     mut char_state: ResMut<NextState<MyCharState>>,
-//     mut commands: Commands,
-// ) {
-//     for part_to_adjust in change_char.read() {
-//         info!(
-//             "Received parts from inv screen {}",
-//             part_to_adjust.0.old_part
-//         );
-//         info!(
-//             "Received parts from inv screen {}",
-//             part_to_adjust.0.new_part
-//         );
-//         if let Some(old_part) = body_part.0.remove(&part_to_adjust.0.old_part) {
-//             info!("This dude needs to die {:?}", old_part);
-//             commands.entity(old_part).despawn_recursive();
-//             if let Ok(parent) = parent.get(old_part) {
-//                 let player = parent.get();
-//                 info!(
-//                     "This dude need to exist {}",
-//                     part_to_adjust.0.new_part.clone()
-//                 );
-//                 let scene_id = spawn_scene(
-//                     &part_to_adjust.0.new_part,
-//                     &client_collection,
-//                     &gltfs,
-//                     &mut commands,
-//                 );
+fn customizes_character(
+    parent: Query<&Parent>,
+    mut change_char: EventReader<MessageEvent<ChangeChar>>,
+    mut body_part: ResMut<BodyPartMap>,
+    client_collection: Option<Res<CharCollection>>,
+    gltfs: Res<Assets<Gltf>>,
+    mut transfer_anim: EventWriter<TranferAnim>,
+    mut commands: Commands,
+) {
+    for part_to_adjust in change_char.read() {
+        let message = part_to_adjust.message();
+        let (client_id, part_to_change) = message.0.clone();
+        info!("We should adjust client_id {}", client_id);
+        info!(
+            "Received new parts from inv screen {}",
+            part_to_change.old_part
+        );
+        info!(
+            "Received old parts from inv screen {}",
+            part_to_change.new_part
+        );
+        if let Some(old_body_part) = body_part.0.remove(&(client_id, part_to_change.old_part)) {
+            let player = parent
+                .get(old_body_part)
+                .expect("To always have a father")
+                .get();
 
-//                 info!("Inserting new body part into general map");
-//                 body_part
-//                     .0
-//                     .insert(part_to_adjust.0.new_part.clone(), scene_id);
-//                 info!("Set player as parent of visual");
-//                 commands.entity(scene_id).set_parent(player);
+            info!("Found new body part in map");
+            commands.entity(old_body_part).despawn_recursive();
 
-//                 info!("Changin state to transfer anim target");
-//                 char_state.set(MyCharState::TransferComp);
-//             }
-//         }
-//     }
-// }
+            if let Some(ref char_collection) = client_collection {
+                let scene = spawn_scene(
+                    &part_to_change.new_part,
+                    &char_collection,
+                    &gltfs,
+                    &mut commands,
+                );
+                info!("Setting father of new scene to");
+                commands.entity(scene).set_parent(player);
+                info!("Inserting in resource");
+                body_part
+                    .0
+                    .insert((client_id, part_to_change.new_part.clone()), scene);
+                info!("Sending transfer anim event to one sole animation");
+                transfer_anim.send(TranferAnim(client_id));
+            } else {
+                error!(
+                    "COngratulation you manage to access the resource before it is even possible"
+                );
+            }
+        } else {
+            error!("Couldnt despawn old part therefore no new part for you")
+        }
+    }
+}
 
 /// Transfer the animations targets to all the visual bones
 fn transfer_essential_components(
-    mut visuals: ResMut<BodyPartMap>,
+    mut body_part_map: ResMut<BodyPartMap>,
     animation_target: Query<&AnimationTarget>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
     has_transfered: Query<&HasTarget>,
     skeleton_map: Res<SkeletonMap>,
     mut read_transfer_anim: EventReader<TranferAnim>,
+    mut reset_anim: EventWriter<ResetAnimation>,
     mut commands: Commands,
 ) {
     for event in read_transfer_anim.read() {
@@ -327,18 +325,23 @@ fn transfer_essential_components(
             collect_bones(&children_entities, &names, &old_entity, &mut old_bones);
 
             info!("Grabbing bones in visuals entity and making animation targets for them according to old bones ids");
-            for (_, visual) in visuals.0.iter_mut() {
-                if let Ok(_) = has_transfered.get(*visual) {
+
+            // Meh i am lazy not gonna filter out entities
+            for ((_, file_path), body_part) in body_part_map.0.iter_mut() {
+                if let Ok(_) = has_transfered.get(*body_part) {
                     // info!(
                     //     "This part is already ready for animation not gonna do it again {}",
                     //     file_path
                     // );
                 } else {
-                    info!("Transfering components to apply animation to file path",);
+                    info!(
+                        "Transfering components to apply animation to file path {}",
+                        file_path
+                    );
                     let new_entity = find_child_with_name_containing(
                         &children_entities,
                         &names,
-                        &visual,
+                        &body_part,
                         "Armature",
                     )
                     .expect("Visual to have root armature");
@@ -364,29 +367,24 @@ fn transfer_essential_components(
                                 });
                         }
                     }
-                    commands.entity(*visual).insert(HasTarget);
+                    commands.entity(*body_part).insert(HasTarget);
                 }
             }
+            reset_anim.send(ResetAnimation);
         } else {
             error!("The base skeleton of this {} doesnt exit", client_id);
         }
     }
 }
 
-// /// Reset animations after transfering animation targets as to avoid desync
-fn play_animation(
-    mut animation_entities: Query<
-        (&mut AnimationTransitions, &mut AnimationPlayer),
-        Added<AnimationPlayer>,
-    >,
-    animations: Res<Animations>,
+/// Reset animations after transfering animation targets as to avoid desync
+fn reset_animation(
+    mut animation_players: Query<&mut AnimationPlayer, With<AnimationPlayer>>,
+    mut reset_anim: EventReader<ResetAnimation>,
 ) {
-    let named_animations = animations.named_nodes.clone();
-    for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
-        let node = named_animations.get("Walk").unwrap();
-        info!("Adding animation");
-        animation_transitions
-            .play(&mut animation_player, *node, Duration::ZERO)
-            .repeat();
+    for _ in reset_anim.read() {
+        for mut animation_player in animation_players.iter_mut() {
+            animation_player.rewind_all();
+        }
     }
 }
