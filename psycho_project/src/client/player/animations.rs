@@ -1,5 +1,4 @@
 //! Player related animations are here
-use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -8,7 +7,6 @@ use crate::client::load_assets::CharCollection;
 
 use crate::client::MyAppState;
 
-use super::MyCharState;
 pub struct AnimPlayerPlugin;
 
 impl Plugin for AnimPlayerPlugin {
@@ -18,7 +16,6 @@ impl Plugin for AnimPlayerPlugin {
         app.add_systems(Startup, create_animations_resource);
         app.add_systems(Update, (create_anim_transitions, add_animation_graph));
         app.add_systems(OnEnter(MyAppState::MainMenu), insert_gltf_animations);
-        app.add_systems(OnEnter(MyCharState::Done), play_animation);
     }
 }
 
@@ -113,19 +110,18 @@ fn insert_gltf_animations(
     }
 }
 
-///
-fn play_animation(
-    mut animation_entities: Query<
-        (&mut AnimationTransitions, &mut AnimationPlayer),
-        Added<AnimationPlayer>,
-    >,
-    animations: Res<Animations>,
-) {
-    let named_animations = animations.named_nodes.clone();
-    for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
-        let node = named_animations.get("Walk").unwrap();
-        animation_transitions
-            .play(&mut animation_player, *node, Duration::ZERO)
-            .repeat();
-    }
-}
+// fn play_animation(
+//     mut animation_entities: Query<
+//         (&mut AnimationTransitions, &mut AnimationPlayer),
+//         Added<AnimationPlayer>,
+//     >,
+//     animations: Res<Animations>,
+// ) {
+//     let named_animations = animations.named_nodes.clone();
+//     for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
+//         let node = named_animations.get("Walk").unwrap();
+//         animation_transitions
+//             .play(&mut animation_player, *node, Duration::ZERO)
+//             .repeat();
+//     }
+// }

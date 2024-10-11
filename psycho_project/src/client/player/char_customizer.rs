@@ -2,11 +2,12 @@
 use crate::client::essentials::EasyClient;
 use crate::client::load_assets::CharCollection;
 use crate::client::player;
+use crate::client::player::Animations;
 use crate::client::ui::inventory_screen::ChangeChar;
 use crate::shared::protocol::player_structs::*;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
-use bevy::utils::HashMap;
+use bevy::utils::{Duration, HashMap};
 use lightyear::client::interpolation::Interpolated;
 use lightyear::connection::id::ClientId;
 use lightyear::prelude::client::Predicted;
@@ -35,18 +36,16 @@ impl Plugin for CustomizeCharPlugin {
         app.observe(spawn_main_player);
         app.observe(spawn_side_player);
 
-        app.add_systems(
-            OnEnter(MyCharState::TransferComp),
-            transfer_essential_components,
-        );
+        // Does the anim transfer
+        app.add_systems(PreUpdate, transfer_essential_components);
 
         // app.add_systems(
         //     Update,
         //     customizes_character.run_if(in_state(MyCharState::Done)),
         // );
 
-        // Observer systems
-        app.add_systems(OnEnter(MyCharState::Done), reset_animation);
+        // // // Observer systems
+        app.add_systems(PostUpdate, play_animation);
     }
 }
 
@@ -57,12 +56,9 @@ pub enum MyCharState {
     #[default]
     // Spawns necessary scenes
     FormingPlayers,
-    // Transfer animation targets
-    TransferComp,
     // Reset animations
     Done,
 }
-
 
 /// Resource that tell me which assets had their animation targets transfered
 #[derive(Resource, Default, Reflect)]
@@ -307,19 +303,19 @@ fn spawn_side_player(
 //     }
 // }
 
-/// Transfer the animations to all the visual bones
+/// Transfer the animations targets to all the visual bones
 fn transfer_essential_components(
     mut visuals: ResMut<BodyPartMap>,
     animation_target: Query<&AnimationTarget>,
     children_entities: Query<&Children>,
     names: Query<&Name>,
     has_transfered: Query<&HasTarget>,
-    mut char_state: ResMut<NextState<MyCharState>>,
     skeleton_map: Res<SkeletonMap>,
     mut read_transfer_anim: EventReader<TranferAnim>,
     mut commands: Commands,
 ) {
     for event in read_transfer_anim.read() {
+        info!("Lets transfer animations");
         let client_id = event.0;
         if let Some(skeleton) = skeleton_map.0.get(&client_id) {
             info!("Grabbing old skeleton bones");
@@ -338,10 +334,7 @@ fn transfer_essential_components(
                     //     file_path
                     // );
                 } else {
-                    // info!(
-                    //     "Transfering components to apply animation to file path {}",
-                    //     file_path
-                    // );
+                    info!("Transfering components to apply animation to file path",);
                     let new_entity = find_child_with_name_containing(
                         &children_entities,
                         &names,
@@ -378,12 +371,22 @@ fn transfer_essential_components(
             error!("The base skeleton of this {} doesnt exit", client_id);
         }
     }
-    char_state.set(MyCharState::Done);
 }
 
-/// Reset animations after transfering animation targets as to avoid desync
-fn reset_animation(mut animation_players: Query<&mut AnimationPlayer, With<AnimationPlayer>>) {
-    for mut animation_player in animation_players.iter_mut() {
-        animation_player.rewind_all();
+// /// Reset animations after transfering animation targets as to avoid desync
+fn play_animation(
+    mut animation_entities: Query<
+        (&mut AnimationTransitions, &mut AnimationPlayer),
+        Added<AnimationPlayer>,
+    >,
+    animations: Res<Animations>,
+) {
+    let named_animations = animations.named_nodes.clone();
+    for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
+        let node = named_animations.get("Walk").unwrap();
+        info!("Adding animation");
+        animation_transitions
+            .play(&mut animation_player, *node, Duration::ZERO)
+            .repeat();
     }
 }

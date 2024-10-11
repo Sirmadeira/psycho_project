@@ -18,7 +18,7 @@ impl Plugin for CreateCharPlugin {
 
         // Self made plugins
         app.add_plugins(PlayerCameraPlugin);
-        // app.add_plugins(CustomizeCharPlugin);
+        app.add_plugins(CustomizeCharPlugin);
         app.add_plugins(AnimPlayerPlugin);
 
         // Debugging RTT
