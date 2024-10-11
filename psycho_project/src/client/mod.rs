@@ -8,17 +8,19 @@ use bevy::prelude::*;
 
 mod change_res;
 pub mod essentials;
-mod form_player;
+mod player;
 mod load_assets;
 pub mod rtt;
+mod start_game;
 mod ui;
 
 // SElLF MADE IMPORTS
 use self::change_res::ChangeResPlugin;
 use self::essentials::SystemsPlugin;
-use self::form_player::CreateCharPlugin;
+use self::player::CreateCharPlugin;
 use self::load_assets::LoadingAssetsPlugin;
 use self::rtt::FormRttsPlugin;
+use self::start_game::InGamePlugin;
 
 // OTHER PLUGINS
 use bevy_panorbit_camera::PanOrbitCameraPlugin;
@@ -48,6 +50,7 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(UiPlugin);
         app.add_plugins(CreateCharPlugin);
         app.add_plugins(FormRttsPlugin);
+        app.add_plugins(InGamePlugin);
 
         // Connection systems - Systems that dialogues with server
     }

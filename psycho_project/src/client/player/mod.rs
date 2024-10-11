@@ -6,22 +6,21 @@ use bevy::render::{mesh::skinning::SkinnedMesh, view::NoFrustumCulling};
 mod animations;
 mod camera;
 mod char_customizer;
-mod helpers;
-mod start_game;
 
-use self::{animations::*, camera::*, char_customizer::*, start_game::*};
+use self::{animations::*, camera::*, char_customizer::*};
 
 pub struct CreateCharPlugin;
 
 impl Plugin for CreateCharPlugin {
     fn build(&self, app: &mut App) {
-        // Simple system
+        // Simple light system
         app.add_systems(Startup, spawn_light_bundle);
+
         // Self made plugins
         app.add_plugins(PlayerCameraPlugin);
-        app.add_plugins(CustomizeCharPlugin);
+        // app.add_plugins(CustomizeCharPlugin);
         app.add_plugins(AnimPlayerPlugin);
-        app.add_plugins(InGamePlugin);
+
         // Debugging RTT
         app.add_systems(Update, disable_culling);
     }

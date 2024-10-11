@@ -28,7 +28,7 @@ pub struct FormRttsPlugin;
 
 impl Plugin for FormRttsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(MyAppState::MainMenu), spawn_empty_images);
+        app.add_systems(Startup, spawn_empty_images);
     }
 }
 
