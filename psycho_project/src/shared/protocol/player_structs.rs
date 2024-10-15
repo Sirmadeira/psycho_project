@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 use std::ops::{Add, Mul};
 use std::vec;
 
-
 //Resources
 // A map utilized to easily grab player info via it is client id. Avoids iterating through playerid when unecessary
 #[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect, Default)]
@@ -75,7 +74,7 @@ impl PlayerVisuals {
 #[derive(
     Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Reflect, Default,
 )]
-pub struct PlayerPosition(Vec3);
+pub struct PlayerPosition(pub Vec3);
 
 impl Add for PlayerPosition {
     type Output = PlayerPosition;

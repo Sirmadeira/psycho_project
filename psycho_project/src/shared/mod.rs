@@ -11,6 +11,7 @@ pub mod shared_behavior;
 
 use self::protocol::ProtocolPlugin;
 use crate::shared::protocol::player_structs::Inputs;
+use crate::shared::shared_behavior::update_transform;
 
 #[derive(Clone)]
 pub struct SharedPlugin;
@@ -19,6 +20,8 @@ impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
         // IMPORTED SHARED PLUGINS - TODO MAKE THIS LEAFWING
         app.add_plugins(InputPlugin::<Inputs>::default());
+
+        app.add_systems(Update, update_transform);
 
         // the protocol needs to be shared between the client and server
         app.add_plugins(ProtocolPlugin);
