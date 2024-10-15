@@ -350,7 +350,7 @@ fn client_app(settings: Settings, net_config: client::NetConfig) -> (App, Client
                 ..default()
             })
             .set(LogPlugin {
-                level: Level::TRACE,
+                level: Level::INFO,
                 filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
                 ..default()
             }),
@@ -383,7 +383,7 @@ fn server_app(
         app.add_plugins((MinimalPlugins, StatesPlugin));
     }
     app.add_plugins(LogPlugin {
-        level: Level::TRACE,
+        level: Level::INFO,
         filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
         ..default()
     });
@@ -419,7 +419,7 @@ fn combined_app(
 ) -> (App, ClientConfig, ServerConfig) {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins.build().set(LogPlugin {
-        level: Level::TRACE,
+        level: Level::INFO,
         filter: "wgpu=error,bevy_render=info,bevy_ecs=warn".to_string(),
         ..default()
     }));
