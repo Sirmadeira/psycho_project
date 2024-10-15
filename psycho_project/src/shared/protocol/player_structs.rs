@@ -1,9 +1,10 @@
-use std::vec;
-
 use bevy::prelude::*;
 use bevy::{reflect::Reflect, utils::HashMap};
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::ops::{Add, Mul};
+use std::vec;
+
 
 //Resources
 // A map utilized to easily grab player info via it is client id. Avoids iterating through playerid when unecessary
@@ -11,24 +12,25 @@ use serde::{Deserialize, Serialize};
 #[reflect(Resource, PartialEq, Debug, Serialize, Deserialize)]
 pub struct PlayerBundleMap(pub HashMap<ClientId, PlayerBundle>);
 
+// Components
 // Player bundle - Shared player related info important to server and client
 #[derive(Bundle, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 #[reflect(PartialEq, Debug, Serialize, Deserialize)]
 pub struct PlayerBundle {
     pub id: PlayerId,
     pub visuals: PlayerVisuals,
+    pub position: PlayerPosition,
 }
 
 impl PlayerBundle {
-    pub fn new(id: ClientId, visuals: PlayerVisuals) -> Self {
+    pub fn new(id: ClientId, visuals: PlayerVisuals, position: PlayerPosition) -> Self {
         Self {
             id: PlayerId(id),
             visuals: visuals,
+            position: position,
         }
     }
 }
-
-// Components
 
 // Easy component that give me an easy way to acess the clientid of that specific player
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
@@ -50,7 +52,6 @@ pub struct PlayerVisuals {
     // Also know as the "glue" of modular characters
     pub skeleton: String,
 }
-
 impl Default for PlayerVisuals {
     fn default() -> Self {
         Self {
@@ -63,11 +64,55 @@ impl Default for PlayerVisuals {
         }
     }
 }
-
 impl PlayerVisuals {
     // Returns an iterator over the visual components. Inclu
     pub fn iter_visuals(&self) -> impl Iterator<Item = &String> {
         vec![&self.head, &self.torso, &self.legs, &self.skeleton].into_iter()
+    }
+}
+
+/// Give mes my player position important to be shared since server also needs to know it
+#[derive(
+    Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Reflect, Default,
+)]
+pub struct PlayerPosition(Vec3);
+
+impl Add for PlayerPosition {
+    type Output = PlayerPosition;
+    // A optimization type when exportin such functions
+    #[inline]
+    fn add(self, rhs: PlayerPosition) -> PlayerPosition {
+        PlayerPosition(self.0.add(rhs.0))
+    }
+}
+
+impl Mul<f32> for &PlayerPosition {
+    type Output = PlayerPosition;
+    #[inline]
+    fn mul(self, rhs: f32) -> Self::Output {
+        PlayerPosition(self.0 * rhs)
+    }
+}
+
+/// Gives me my player action
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+pub enum Inputs {
+    Direction(Direction),
+    None,
+}
+
+/// It is very common to transform inputs into an player action per say.
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub struct Direction {
+    pub(crate) forward: bool,
+    pub(crate) down: bool,
+    pub(crate) left: bool,
+    pub(crate) right: bool,
+}
+
+impl Direction {
+    pub(crate) fn is_none(&self) -> bool {
+        !self.forward && !self.down && !self.left && !self.right
     }
 }
 

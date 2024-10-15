@@ -1,6 +1,7 @@
 //! All logic associated to player
 use crate::server::save_file;
 use crate::shared::protocol::player_structs::*;
+use crate::shared::shared_behavior::shared_movement_behaviour;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bincode::deserialize_from;
@@ -28,6 +29,9 @@ impl Plugin for PlayerPlugin {
 
         // Reads player bundle map and make it readily available when server boots up
         app.add_systems(Startup, read_save_files);
+
+        //Movement related
+        app.add_systems(FixedUpdate, movement);
 
         // Listens to client sent events
         app.add_systems(Update, listener_save_visuals);
@@ -138,7 +142,8 @@ pub(crate) fn spawn_server_player(
         info!("Inserting new player into server map");
         // Setting default visuals
         let player_visual = PlayerVisuals::default();
-        let new_player_bundle = PlayerBundle::new(client_id, player_visual);
+        let player_position = PlayerPosition::default();
+        let new_player_bundle = PlayerBundle::new(client_id, player_visual, player_position);
         let id = commands
             .spawn(new_player_bundle.clone())
             .insert(online_state)
@@ -211,6 +216,33 @@ pub(crate) fn handle_disconnections(
             info!("This player disconnected {}", disconnecting_player);
         } else {
             error!("Player entity not found for client ID: {}", client_id);
+        }
+    }
+}
+
+fn movement(
+    mut position_query: Query<&mut PlayerPosition>,
+    entity_map: Res<PlayerEntityMap>,
+    mut input_reader: EventReader<InputEvent<Inputs>>,
+    tick_manager: Res<TickManager>,
+) {
+    for input in input_reader.read() {
+        let client_id = input.context();
+        if let Some(input) = input.input() {
+            trace!(
+                "Receiving input: {:?} from client: {:?} on tick: {:?}",
+                input,
+                client_id,
+                tick_manager.tick()
+            );
+
+            if let Some(player) = entity_map.0.get(client_id) {
+                if let Ok(position) = position_query.get_mut(*player) {
+                    shared_movement_behaviour(position, input);
+                }
+            } else {
+                error!("Couldnt find this player in map which means I cant move him")
+            }
         }
     }
 }

@@ -19,7 +19,6 @@ impl Plugin for ExampleServerPlugin {
     fn build(&self, app: &mut App) {
         // Do this if adjustment were made in main struct
         // app.add_systems(Startup, create_save_files);
-
         //Self made plugins
         app.add_plugins(EssentialsPlugin);
         app.add_plugins(LobbyPlugin);

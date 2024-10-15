@@ -10,10 +10,13 @@ mod shared;
 
 fn main() {
     let cli = Cli::default();
-    // Commong config settings being disdposed
+
+    // Commong config settings for our server and client basically a shit ton of constants
     let settings_str = include_str!("../assets/settings.ron");
+
     let settings = read_settings::<Settings>(settings_str);
     let mut apps = Apps::new(settings, cli);
+
     // Adding multipler lightyear plugins
     apps.add_lightyear_plugins()
         // add our plugins

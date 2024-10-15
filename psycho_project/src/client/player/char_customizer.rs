@@ -170,10 +170,7 @@ fn spawn_main_player(
         info!("Formulating main player entitty");
         let main_player = commands
             .entity(main_player)
-            .insert(SpatialBundle {
-                transform: Transform::from_xyz(0.5, 0.0, 0.0),
-                ..default()
-            })
+            .insert(SpatialBundle::default())
             .insert(Name::new("MainPlayer"))
             .id();
 

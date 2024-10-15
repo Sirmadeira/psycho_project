@@ -4,15 +4,22 @@
 //! The simulation logic (movement, etc.) should be shared between client and server to guarantee that there won't be
 //! mispredictions/rollbacks.
 use bevy::prelude::*;
+use lightyear::prelude::*;
 
 pub mod protocol;
+pub mod shared_behavior;
+
 use self::protocol::ProtocolPlugin;
+use crate::shared::protocol::player_structs::Inputs;
 
 #[derive(Clone)]
 pub struct SharedPlugin;
 
 impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
+        // IMPORTED SHARED PLUGINS - TODO MAKE THIS LEAFWING
+        app.add_plugins(InputPlugin::<Inputs>::default());
+
         // the protocol needs to be shared between the client and server
         app.add_plugins(ProtocolPlugin);
     }
