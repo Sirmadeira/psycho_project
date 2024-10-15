@@ -251,6 +251,7 @@ fn spawn_side_player(
 }
 
 /// Customizes character after a button is clicked in inventory screen also sets transfer comp
+/// ADVISE - RUN THIS STATELESS  that is why option char collection
 fn customizes_character(
     parent: Query<&Parent>,
     mut change_char: EventReader<MessageEvent<ChangeChar>>,
