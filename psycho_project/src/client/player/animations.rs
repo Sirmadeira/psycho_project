@@ -126,7 +126,6 @@ fn play_animation(
     let named_animations = animations.named_nodes.clone();
     for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
         let node = named_animations.get("Walk").unwrap();
-        info!("Adding animation");
         animation_transitions
             .play(&mut animation_player, *node, Duration::ZERO)
             .repeat();

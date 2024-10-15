@@ -30,13 +30,15 @@ impl Plugin for CustomizeCharPlugin {
 
         // Observes when to create players
         app.observe(spawn_main_player);
-        app.observe(spawn_side_player);
+
+        // Technicaly and observer that check if there is a side player
+        app.add_systems(Update, spawn_side_player.run_if(in_state(MyAppState::Game)));
 
         // Does the anim transfer
         app.add_systems(PreUpdate, transfer_essential_components);
 
+        // System to customize character correctly
         app.add_systems(Update, customizes_character);
-
         app.add_systems(Update, reset_animation);
     }
 }
@@ -62,6 +64,10 @@ struct ResetAnimation;
 /// A simple component that tells me if it already transfered the animation targets
 #[derive(Component)]
 struct HasTarget;
+
+/// A simple component that tell me if side player has it is visuals spawned
+#[derive(Component)]
+struct HasVisuals;
 
 /// Helper function spawns a series of scenes acording to the given batch of visuals being passed
 fn spawn_scene(
@@ -196,31 +202,32 @@ fn spawn_main_player(
 
 /// Spawns visual scenes and parents them to interpolated players
 fn spawn_side_player(
-    trigger: Trigger<OnInsert, PlayerVisuals>,
-    scenes_to_load: Query<(&PlayerId, &PlayerVisuals), With<Interpolated>>,
+    side_player: Query<(Entity, &PlayerId, &PlayerVisuals, Has<HasVisuals>), With<Interpolated>>,
     gltfs: Res<Assets<Gltf>>,
-    client_collection: Option<Res<CharCollection>>,
+    client_collection: Res<CharCollection>,
     mut body_part_map: ResMut<BodyPartMap>,
     mut skeleton_map: ResMut<SkeletonMap>,
     mut transfer_anim: EventWriter<TranferAnim>,
     mut commands: Commands,
 ) {
-    let side_player = trigger.entity();
-    // Check if it is the interpolated player - WORTH noting interpolated is inserted first them player visuals
-    if let Ok((player_id, player_visuals)) = scenes_to_load.get(side_player) {
-        let client_id = player_id.0;
-        info!("Inserting additonal info  component in interpolated player");
-        commands
-            .entity(side_player)
-            .insert(SpatialBundle::default())
-            .insert(Name::new("SidePlayer"));
-        for file_path in player_visuals.iter_visuals() {
-            if let Some(ref client_collection) = client_collection {
+    for (entity, player_id, player_visuals, has_visual) in side_player.iter() {
+        info_once!("Found interpolated side player {}", entity);
+        if !has_visual {
+            let client_id = player_id.0;
+
+            info!("Inserting additonal info  component in interpolated player");
+            commands
+                .entity(entity)
+                .insert(SpatialBundle::default())
+                .insert(Name::new("SidePlayer"))
+                .insert(HasVisuals);
+
+            for file_path in player_visuals.iter_visuals() {
                 if file_path.contains("skeleton") {
                     info!("Found side player skeleton");
                     let visual_scene =
                         spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
-                    commands.entity(visual_scene).set_parent(side_player);
+                    commands.entity(visual_scene).set_parent(entity);
 
                     info!("Inserting skeleton into map");
                     skeleton_map.0.insert(client_id, visual_scene);
@@ -228,18 +235,18 @@ fn spawn_side_player(
                     let visual_scene =
                         spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
 
-                    commands.entity(visual_scene).set_parent(side_player);
+                    commands.entity(visual_scene).set_parent(entity);
 
                     body_part_map
                         .0
                         .insert((client_id, file_path.to_string()), visual_scene);
                 }
-            } else {
-                error!("I hope to god we can have rc with observe systems")
             }
+            info!("Telling him to transfer animation targets according to his skeleton");
+            transfer_anim.send(TranferAnim(client_id));
+        } else {
+            info_once!("This player already has visuals {}", entity)
         }
-        info!("Telling him to transfer animation targets according to his skeleton");
-        transfer_anim.send(TranferAnim(client_id));
     }
 }
 
@@ -316,7 +323,7 @@ fn transfer_essential_components(
         info!("Lets transfer animations");
         let client_id = event.0;
         if let Some(skeleton) = skeleton_map.0.get(&client_id) {
-            info!("Grabbing old skeleton bones");
+            info!("Grabbing skeleton corresponding to that client_id");
             let old_entity =
                 find_child_with_name_containing(&children_entities, &names, &skeleton, "Armature")
                     .expect("Skeleton to have root armature");
