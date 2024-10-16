@@ -40,7 +40,7 @@ impl Plugin for PlayerCameraPlugin {
 // only run the orbit system if the cursor lock is disabled
 fn orbit_condition(cam_q: Query<&CamInfo>) -> bool {
     let Ok(cam) = cam_q.get_single() else {
-        return true;
+        return false;
     };
     return cam.cursor_lock_active;
 }
@@ -197,7 +197,5 @@ pub fn sync_player_camera(
         let desired_translation = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius));
         // Update the camera translation
         cam_transform.translation = desired_translation + player_transform.translation;
-    } else {
-        info!("Not findign player");
     }
 }
