@@ -6,6 +6,7 @@ use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
 use core::f32::consts::PI;
+use lightyear::client::prediction::Predicted;
 
 pub struct PlayerCameraPlugin;
 
@@ -16,6 +17,7 @@ impl Plugin for PlayerCameraPlugin {
         app.register_type::<CamInfo>();
 
         app.add_systems(Startup, spawn_begin_camera);
+
         app.add_systems(
             Update,
             (
@@ -26,6 +28,11 @@ impl Plugin for PlayerCameraPlugin {
                 .run_if(in_state(MyAppState::Game))
                 .chain(),
         );
+
+        app.add_systems(
+            PostUpdate,
+            sync_player_camera.before(TransformSystem::TransformPropagate),
+        );
     }
 }
 
@@ -33,7 +40,7 @@ impl Plugin for PlayerCameraPlugin {
 // only run the orbit system if the cursor lock is disabled
 fn orbit_condition(cam_q: Query<&CamInfo>) -> bool {
     let Ok(cam) = cam_q.get_single() else {
-        return false;
+        return true;
     };
     return cam.cursor_lock_active;
 }
@@ -178,16 +185,19 @@ fn zoom_mouse(mut scroll_evr: EventReader<MouseWheel>, mut cam_q: Query<&mut Cam
     }
 }
 
-// pub fn sync_player_camera(
-//     player_q: Query<&Transform, With<Player>>,
-//     mut cam_q: Query<(&mut CamInfo, &mut Transform), Without<Player>>,
-// ) {
-//     let player = player_q.get_single().expect("Player to exist");
-//     let (cam, mut cam_transform) = cam_q.get_single_mut().expect("Camera to exist");
+pub fn sync_player_camera(
+    player_q: Query<&Transform, With<Predicted>>,
+    mut cam_q: Query<(&mut CamInfo, &mut Transform), Without<Predicted>>,
+) {
+    if let Ok(player_transform) = player_q.get_single() {
+        let (cam, mut cam_transform) = cam_q.get_single_mut().expect("Camera to exist");
 
-//     let rotation_matrix = Mat3::from_quat(cam_transform.rotation);
+        let rotation_matrix = Mat3::from_quat(cam_transform.rotation);
 
-//     let desired_translation = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius));
-//     // Update the camera translation
-//     cam_transform.translation = desired_translation + player.translation;
-// }
+        let desired_translation = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius));
+        // Update the camera translation
+        cam_transform.translation = desired_translation + player_transform.translation;
+    } else {
+        info!("Not findign player");
+    }
+}

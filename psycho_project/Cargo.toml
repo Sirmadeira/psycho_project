@@ -20,7 +20,7 @@ lightyear = {version = "0.17", features = [
   "webtransport",
   "websocket",
 ] }
-
+bevy_third_person_camera = "0.1.14"
 
 
 # Utils
@@ -33,3 +33,4 @@ rand = "0.8"
 metrics-exporter-prometheus = { version = "0.15.1", optional = true }
 
 common = {path = "../common"}
+
