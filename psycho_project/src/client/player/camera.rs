@@ -88,16 +88,12 @@ impl Zoom {
 
 fn spawn_begin_camera(mut commands: Commands) {
     commands
-        .spawn(Camera3dBundle {
-            transform: Transform::from_translation(Vec3::new(0.0, 1.0, 4.5))
-                .looking_at(Vec3::new(0.0, 1.5, 0.0), Vec3::Y),
-            ..default()
-        })
+        .spawn(Camera3dBundle::default())
         .insert(MainCamera)
         .insert(CamInfo {
             mouse_sens: 0.75,
             zoom_enabled: true,
-            zoom: Zoom::new(5.0, 20.0),
+            zoom: Zoom::new(5.0, 10.0),
             zoom_sens: 2.0,
             cursor_lock_activation_key: KeyCode::KeyR,
             cursor_lock_active: false,
@@ -194,8 +190,10 @@ pub fn sync_player_camera(
 
         let rotation_matrix = Mat3::from_quat(cam_transform.rotation);
 
-        let desired_translation = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam.zoom.radius));
+        // Offset actually
+        let offset = rotation_matrix.mul_vec3(Vec3::new(0.0, 0.5, cam.zoom.radius));
+
         // Update the camera translation
-        cam_transform.translation = desired_translation + player_transform.translation;
+        cam_transform.translation = offset + player_transform.translation;
     }
 }

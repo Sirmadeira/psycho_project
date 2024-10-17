@@ -220,6 +220,7 @@ pub(crate) fn handle_disconnections(
     }
 }
 
+/// GRabbving server player and moving him in server too so we can have someone to rollback too if needed
 fn movement(
     mut position_query: Query<&mut PlayerPosition>,
     entity_map: Res<PlayerEntityMap>,

@@ -7,20 +7,22 @@ use crate::shared::protocol::player_structs::PlayerBundleMap;
 use bevy::prelude::*;
 
 mod change_res;
-pub mod essentials;
-mod player;
+mod essentials;
 mod load_assets;
+mod player;
 pub mod rtt;
 mod start_game;
 mod ui;
+mod voxel_gen;
 
 // SElLF MADE IMPORTS
 use self::change_res::ChangeResPlugin;
 use self::essentials::SystemsPlugin;
-use self::player::CreateCharPlugin;
 use self::load_assets::LoadingAssetsPlugin;
+use self::player::CreateCharPlugin;
 use self::rtt::FormRttsPlugin;
 use self::start_game::InGamePlugin;
+use self::voxel_gen::VoxelGenPlugin;
 
 // OTHER PLUGINS
 use bevy_panorbit_camera::PanOrbitCameraPlugin;
@@ -51,6 +53,7 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(CreateCharPlugin);
         app.add_plugins(FormRttsPlugin);
         app.add_plugins(InGamePlugin);
+        app.add_plugins(VoxelGenPlugin);
 
         // Connection systems - Systems that dialogues with server
     }

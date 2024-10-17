@@ -7,6 +7,8 @@ use lightyear::client::input::native::*;
 use lightyear::client::prediction::Predicted;
 use lightyear::shared::tick_manager::TickManager;
 
+use super::CamInfo;
+
 pub struct PlayerPhysicsPlugin;
 
 impl Plugin for PlayerPhysicsPlugin {
@@ -53,6 +55,7 @@ fn buffer_input(
 fn player_movement(
     mut position_query: Query<&mut PlayerPosition, With<Predicted>>,
     mut input_reader: EventReader<InputEvent<Inputs>>,
+    camera_direction: Query<&Transform, With<CamInfo>>,
 ) {
     for input in input_reader.read() {
         if let Some(input) = input.input() {
@@ -61,6 +64,10 @@ fn player_movement(
                 continue;
             }
             for position in position_query.iter_mut() {
+                if let Ok(camera_direction) = camera_direction.get_single() {
+                } else {
+                    error!("Weird this predicted player doesnt have a camera synced")
+                }
                 shared_movement_behaviour(position, input);
             }
         }
