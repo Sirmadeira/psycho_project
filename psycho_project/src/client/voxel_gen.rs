@@ -1,12 +1,7 @@
 //! A simple voxel generator made only to make cute bevel like cubes no lod no nothing just cubes
-use bevy::{prelude::*, render::mesh};
-use bevy::{
-    render::{
-        mesh::{Indices, VertexAttributeValues},
-        render_asset::RenderAssetUsages,
-        render_resource::PrimitiveTopology,
-    },
-    transform::commands,
+use bevy::prelude::*;
+use bevy::render::{
+    mesh::Indices, render_asset::RenderAssetUsages, render_resource::PrimitiveTopology,
 };
 
 pub struct VoxelGenPlugin;
@@ -16,9 +11,6 @@ impl Plugin for VoxelGenPlugin {
         app.add_systems(Startup, spawn_cube);
     }
 }
-
-#[derive(Component)]
-pub struct CustomCube;
 
 fn spawn_cube(
     mut meshes: ResMut<Assets<Mesh>>,

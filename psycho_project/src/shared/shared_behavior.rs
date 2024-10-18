@@ -1,7 +1,10 @@
-//! Here lies every single function that should occur both to server and client
+//! Here lies every single function that should occur both to server and client. And structs for no
+//! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
+//! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
 use crate::shared::protocol::player_structs::{Inputs, PlayerPosition};
 use bevy::prelude::*;
 
+/// Depending on input both server and client need to be moved accordingly
 pub(crate) fn shared_movement_behaviour(mut position: Mut<PlayerPosition>, input: &Inputs) {
     const MOVE_SPEED: f32 = 0.1;
     match input {
