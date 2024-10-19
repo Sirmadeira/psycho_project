@@ -14,6 +14,7 @@ mod player;
 
 use self::essentials::*;
 
+/// Important plugin here you should centralize all systems/plugins that are heavily correlated to server
 pub struct ExampleServerPlugin;
 
 impl Plugin for ExampleServerPlugin {

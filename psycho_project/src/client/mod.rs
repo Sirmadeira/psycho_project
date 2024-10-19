@@ -1,6 +1,3 @@
-//! The client plugin.
-//! This plugin will act as the entire client meaning every single plugin that relies on the user computer is gonna run here
-
 use crate::client::ui::UiPlugin;
 use crate::shared::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::PlayerBundleMap;
@@ -25,7 +22,7 @@ use self::rtt::FormRttsPlugin;
 use self::start_game::InGamePlugin;
 use self::voxel_gen::VoxelGenPlugin;
 
-// Centralization of plugins
+/// Important plugin centralizes most of our client related logic
 pub struct ExampleClientPlugin;
 
 impl Plugin for ExampleClientPlugin {

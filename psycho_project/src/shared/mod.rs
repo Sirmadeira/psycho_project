@@ -1,8 +1,3 @@
-//! This module contains the shared code between the client and the server.
-//!
-//! The rendering code is here because you might want to run the example in host-server mode, where the server also acts as a client.
-//! The simulation logic (movement, etc.) should be shared between client and server to guarantee that there won't be
-//! mispredictions/rollbacks.
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use lightyear::prelude::*;
@@ -15,6 +10,7 @@ use crate::shared::protocol::player_structs::Inputs;
 use crate::shared::shared_behavior::update_transform;
 
 /// In this plugin you should add all systems/plugins that need to exist both in server and in client
+/// Worth noting that most input logic should be here, as you move something in client you should also move in server. When doing client side prediction
 #[derive(Clone)]
 pub struct SharedPlugin;
 
