@@ -5,6 +5,7 @@ use crate::client::ui::UiPlugin;
 use crate::shared::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::PlayerBundleMap;
 use bevy::prelude::*;
+use bevy_panorbit_camera::PanOrbitCameraPlugin;
 
 mod change_res;
 mod essentials;
@@ -24,9 +25,6 @@ use self::rtt::FormRttsPlugin;
 use self::start_game::InGamePlugin;
 use self::voxel_gen::VoxelGenPlugin;
 
-// OTHER PLUGINS
-use bevy_panorbit_camera::PanOrbitCameraPlugin;
-
 // Centralization of plugins
 pub struct ExampleClientPlugin;
 
@@ -42,7 +40,7 @@ impl Plugin for ExampleClientPlugin {
         app.register_type::<Lobbies>();
         app.register_type::<PlayerBundleMap>();
 
-        //Imported plugins
+        //Imported plugins - Made by others
         app.add_plugins(PanOrbitCameraPlugin);
 
         // Self made plugins

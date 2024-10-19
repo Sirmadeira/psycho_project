@@ -36,7 +36,7 @@ impl Default for ResolutionSettings {
 // Sets default resolution runs once
 fn def_resolution(mut windows: Query<&mut Window>, resolution: Res<ResolutionSettings>) {
     let mut window = windows.single_mut();
-    let res = resolution.full;
+    let res = resolution.medium;
     window.resolution.set(res.x, res.y);
 }
 

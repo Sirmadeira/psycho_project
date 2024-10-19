@@ -2,6 +2,7 @@ use crate::shared::protocol::player_structs::PlayerBundleMap;
 use bevy::prelude::*;
 use bincode::serialize_into;
 use lobby::LobbyPlugin;
+use physics_world::PhysicsWorldPlugin;
 use player::PlayerPlugin;
 use std::fs::File;
 use std::io::BufWriter;
@@ -19,7 +20,9 @@ impl Plugin for ExampleServerPlugin {
     fn build(&self, app: &mut App) {
         // Do this if adjustment were made in main struct
         // app.add_systems(Startup, create_save_files);
+
         //Self made plugins
+        app.add_plugins(PhysicsWorldPlugin);
         app.add_plugins(EssentialsPlugin);
         app.add_plugins(LobbyPlugin);
         app.add_plugins(PlayerPlugin);

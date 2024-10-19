@@ -4,6 +4,7 @@
 //! The simulation logic (movement, etc.) should be shared between client and server to guarantee that there won't be
 //! mispredictions/rollbacks.
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 use lightyear::prelude::*;
 
 pub mod protocol;
@@ -13,17 +14,21 @@ use self::protocol::ProtocolPlugin;
 use crate::shared::protocol::player_structs::Inputs;
 use crate::shared::shared_behavior::update_transform;
 
+/// In this plugin you should add all systems/plugins that need to exist both in server and in client
 #[derive(Clone)]
 pub struct SharedPlugin;
 
 impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
-        // IMPORTED SHARED PLUGINS - TODO MAKE THIS LEAFWING
+        // Imported plugins
         app.add_plugins(InputPlugin::<Inputs>::default());
+        app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+        app.add_plugins(RapierDebugRenderPlugin::default());
 
+        // Shared input systems
         app.add_systems(Update, update_transform);
 
-        // the protocol needs to be shared between the client and server
+        // Self made plugins
         app.add_plugins(ProtocolPlugin);
     }
 }

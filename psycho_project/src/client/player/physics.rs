@@ -1,13 +1,14 @@
 use crate::shared::protocol::player_structs::Direction;
 use crate::shared::protocol::player_structs::*;
+use crate::shared::protocol::world_structs::FloorMarker;
 use crate::shared::shared_behavior::shared_movement_behaviour;
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::Collider;
 use lightyear::client::events::InputEvent;
 use lightyear::client::input::native::*;
 use lightyear::client::prediction::Predicted;
+use lightyear::shared::replication::components::Replicated;
 use lightyear::shared::tick_manager::TickManager;
-
-use super::CamInfo;
 
 pub struct PlayerPhysicsPlugin;
 
@@ -18,6 +19,7 @@ impl Plugin for PlayerPhysicsPlugin {
             buffer_input.in_set(InputSystemSet::BufferInputs),
         );
         app.add_systems(FixedUpdate, player_movement);
+        app.add_systems(Update, spawn_world);
     }
 }
 
@@ -66,5 +68,18 @@ fn player_movement(
                 shared_movement_behaviour(position, input);
             }
         }
+    }
+}
+
+fn spawn_world(
+    floor: Query<Entity, (Added<Replicated>, With<FloorMarker>)>,
+    mut commands: Commands,
+) {
+    if let Ok(floor) = floor.get_single() {
+        info!("Spawning physical floor");
+        // Usually it is recommended that this is a shared bundle but for now fuck it
+        let collider = Collider::cuboid(100.0, 0.5, 100.0);
+        let name = Name::new("PhysicalFloor");
+        commands.entity(floor).insert(collider).insert(name);
     }
 }
