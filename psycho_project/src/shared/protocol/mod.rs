@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::prelude::{App, Plugin};
 
+use bevy_rapier3d::dynamics::Velocity;
 use lightyear::client::components::ComponentSyncMode;
 use lightyear::prelude::*;
 
@@ -44,10 +45,13 @@ impl Plugin for ProtocolPlugin {
             .add_interpolation(ComponentSyncMode::Full)
             .add_linear_interpolation_fn();
 
+        // Not self made components - Physics
+        // app.register_component::<Velocity>(ChannelDirection::ServerToClient)
+        //     .add_prediction(ComponentSyncMode::Full);
+
         // World components
         app.register_component::<FloorMarker>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
-
         // Channels
         app.add_channel::<Channel1>(ChannelSettings {
             mode: ChannelMode::OrderedReliable(ReliableSettings::default()),

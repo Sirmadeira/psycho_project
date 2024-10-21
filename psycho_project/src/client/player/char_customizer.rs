@@ -28,10 +28,10 @@ impl Plugin for CustomizeCharPlugin {
         app.register_type::<BodyPartMap>();
         app.register_type::<SkeletonMap>();
 
-        // Observes when to create players
-        app.observe(spawn_main_player);
+        // Creates player
+        app.add_systems(Update, spawn_main_player.run_if(in_state(MyAppState::Game)));
 
-        // Technicaly and observer that check if there is a side player
+        // Creates side player
         app.add_systems(Update, spawn_side_player.run_if(in_state(MyAppState::Game)));
 
         // Does the anim transfer
@@ -152,9 +152,10 @@ fn find_child_with_name_containing(
 
 /// Spawns visuals scenes and parents them to predicted player
 fn spawn_main_player(
-    trigger: Trigger<OnInsert, Predicted>,
-    easy_client: Res<EasyClient>,
-    player_bundle_map: Res<PlayerBundleMap>,
+    main_player: Query<
+        (Entity, &PlayerId, &PlayerVisuals, Has<HasVisuals>),
+        (Added<Predicted>, With<PlayerId>),
+    >,
     gltfs: Res<Assets<Gltf>>,
     client_collection: Res<CharCollection>,
     mut body_part_map: ResMut<BodyPartMap>,
@@ -162,47 +163,52 @@ fn spawn_main_player(
     mut transfer_anim: EventWriter<TranferAnim>,
     mut commands: Commands,
 ) {
-    let main_player = trigger.entity();
-    let client_id = easy_client.0;
-    if let Some(player_bundle) = player_bundle_map.0.get(&client_id) {
-        let main_player_scenes = player_bundle.visuals.clone();
+    for (entity, player_id, player_visuals, has_visual) in main_player.iter() {
+        info_once!("Found main player {}", entity);
+        if !has_visual {
+            let client_id = player_id.0;
 
-        info!("Formulating main player entitty");
-        let main_player = commands
-            .entity(main_player)
-            .insert(SpatialBundle {
-                transform: Transform::default().looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
-                ..default()
-            })
-            .insert(Name::new("MainPlayer"))
-            .id();
+            info!("Inserting additonal info  component in interpolated player");
+            commands
+                .entity(entity)
+                .insert(SpatialBundle::default())
+                .insert(Name::new("MainPlayer"))
+                .insert(HasVisuals);
 
-        info!("Spawning it is visuals and setting him as parent and inserting into body part map");
-        for file_path in main_player_scenes.iter_visuals() {
-            if file_path.contains("skeleton") {
-                let visual_scene =
-                    spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
-                commands.entity(visual_scene).set_parent(main_player);
-                info!("Inserting skeleton into map");
-                skeleton_map.0.insert(client_id, visual_scene);
-            } else {
-                let visual_scene =
-                    spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
-                commands.entity(visual_scene).set_parent(main_player);
+            for file_path in player_visuals.iter_visuals() {
+                if file_path.contains("skeleton") {
+                    info!("Found side player skeleton");
+                    let visual_scene =
+                        spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
+                    commands.entity(visual_scene).set_parent(entity);
 
-                body_part_map
-                    .0
-                    .insert((client_id, file_path.to_string()), visual_scene);
+                    info!("Inserting skeleton into map");
+                    skeleton_map.0.insert(client_id, visual_scene);
+                } else {
+                    let visual_scene =
+                        spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
+
+                    commands.entity(visual_scene).set_parent(entity);
+
+                    body_part_map
+                        .0
+                        .insert((client_id, file_path.to_string()), visual_scene);
+                }
             }
+            info!("Telling him to transfer animation targets according to his skeleton");
+            transfer_anim.send(TranferAnim(client_id));
+        } else {
+            info_once!("This player already has visuals {}", entity)
         }
-        info!("Telling him to transfer animation targets according to his skeleton");
-        transfer_anim.send(TranferAnim(client_id));
     }
 }
 
 /// Spawns visual scenes and parents them to interpolated players
 fn spawn_side_player(
-    side_player: Query<(Entity, &PlayerId, &PlayerVisuals, Has<HasVisuals>), With<Interpolated>>,
+    side_player: Query<
+        (Entity, &PlayerId, &PlayerVisuals, Has<HasVisuals>),
+        (Added<Interpolated>, With<PlayerId>),
+    >,
     gltfs: Res<Assets<Gltf>>,
     client_collection: Res<CharCollection>,
     mut body_part_map: ResMut<BodyPartMap>,

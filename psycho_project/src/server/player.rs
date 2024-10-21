@@ -1,9 +1,10 @@
 //! All logic associated to player
 use crate::server::save_file;
 use crate::shared::protocol::player_structs::*;
-use crate::shared::shared_behavior::shared_movement_behaviour;
+use crate::shared::shared_behavior::{shared_movement_behaviour, CharacterPhysicsBundle};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use bevy_rapier3d::dynamics::Velocity;
 use bincode::deserialize_from;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
@@ -130,16 +131,18 @@ pub(crate) fn spawn_server_player(
     };
 
     if let Some(old_player_bun) = player_bundle {
-        info!("Inserting into server map resource");
+        info!("Inserting into entity map resource");
         let id = commands
             .spawn(old_player_bun.clone())
             .insert(online_state)
             .insert(name)
+            // .insert(CharacterPhysicsBundle::default())
+            // .insert(Velocity::zero())
             .id();
         player_entity_map.0.insert(client_id, id);
         return old_player_bun;
     } else {
-        info!("Inserting new player into server map");
+        info!("Inserting new player into entity map resource");
         // Setting default visuals
         let player_visual = PlayerVisuals::default();
         let player_position = PlayerPosition::default();
@@ -148,6 +151,8 @@ pub(crate) fn spawn_server_player(
             .spawn(new_player_bundle.clone())
             .insert(online_state)
             .insert(name)
+            // .insert(CharacterPhysicsBundle::default())
+            // .insert(Velocity::zero())
             .id();
 
         player_entity_map.0.insert(client_id, id);
