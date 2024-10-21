@@ -3,7 +3,6 @@
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
 use crate::shared::protocol::player_structs::{Inputs, PlayerPosition};
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
 
 
 

@@ -33,10 +33,6 @@ impl Plugin for ExampleClientPlugin {
         // Initializing states that must exist
         app.init_state::<MyAppState>();
 
-        // Debugging
-        app.register_type::<Lobbies>();
-        app.register_type::<PlayerBundleMap>();
-
         //Imported plugins - Made by others
         app.add_plugins(PanOrbitCameraPlugin);
 

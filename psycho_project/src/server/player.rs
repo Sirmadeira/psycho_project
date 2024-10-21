@@ -20,9 +20,7 @@ impl Plugin for PlayerPlugin {
         app.init_resource::<PlayerEntityMap>();
 
         // Debug registering
-        app.register_type::<PlayerBundleMap>();
         app.register_type::<PlayerStateConnection>();
-        app.register_type::<PlayerVisuals>();
 
         // Replication of resource
         app.add_systems(Startup, replicate_resource);
@@ -135,8 +133,7 @@ pub(crate) fn spawn_server_player(
             .spawn(old_player_bun.clone())
             .insert(online_state)
             .insert(name)
-            // .insert(CharacterPhysicsBundle::default())
-            // .insert(Velocity::zero())
+            .insert(PlayerPhysics::default())
             .id();
         player_entity_map.0.insert(client_id, id);
         return old_player_bun;
@@ -150,8 +147,7 @@ pub(crate) fn spawn_server_player(
             .spawn(new_player_bundle.clone())
             .insert(online_state)
             .insert(name)
-            // .insert(CharacterPhysicsBundle::default())
-            // .insert(Velocity::zero())
+            .insert(PlayerPhysics::default())
             .id();
 
         player_entity_map.0.insert(client_id, id);
