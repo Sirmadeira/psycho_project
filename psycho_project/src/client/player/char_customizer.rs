@@ -29,10 +29,16 @@ impl Plugin for CustomizeCharPlugin {
         app.register_type::<SkeletonMap>();
 
         // Creates player
-        app.add_systems(Update, spawn_main_player.run_if(in_state(MyAppState::Game)));
+        app.add_systems(
+            Update,
+            add_cosmetics_main_player.run_if(in_state(MyAppState::Game)),
+        );
 
         // Creates side player
-        app.add_systems(Update, spawn_side_player.run_if(in_state(MyAppState::Game)));
+        app.add_systems(
+            Update,
+            add_cosmetics_side_player.run_if(in_state(MyAppState::Game)),
+        );
 
         // Does the anim transfer
         app.add_systems(PreUpdate, transfer_essential_components);
@@ -151,7 +157,7 @@ fn find_child_with_name_containing(
 }
 
 /// Spawns visuals scenes and parents them to predicted player
-fn spawn_main_player(
+fn add_cosmetics_main_player(
     main_player: Query<
         (Entity, &PlayerId, &PlayerVisuals, Has<HasVisuals>),
         (Added<Predicted>, With<PlayerId>),
@@ -204,7 +210,7 @@ fn spawn_main_player(
 }
 
 /// Spawns visual scenes and parents them to interpolated players
-fn spawn_side_player(
+fn add_cosmetics_side_player(
     side_player: Query<
         (Entity, &PlayerId, &PlayerVisuals, Has<HasVisuals>),
         (Added<Interpolated>, With<PlayerId>),

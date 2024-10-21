@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::{reflect::Reflect, utils::HashMap};
+use bevy_rapier3d::prelude::*;
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, Mul};
@@ -92,6 +93,11 @@ impl Mul<f32> for &PlayerPosition {
         PlayerPosition(self.0 * rhs)
     }
 }
+
+#[derive(
+    Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Reflect, Default,
+)]
+pub struct PlayerPhysics(RigidBody);
 
 /// Gives me my player action
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]

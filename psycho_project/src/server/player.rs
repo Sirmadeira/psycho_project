@@ -1,10 +1,9 @@
 //! All logic associated to player
 use crate::server::save_file;
 use crate::shared::protocol::player_structs::*;
-use crate::shared::shared_behavior::{shared_movement_behaviour, CharacterPhysicsBundle};
+use crate::shared::shared_behavior::shared_movement_behaviour;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use bevy_rapier3d::dynamics::Velocity;
 use bincode::deserialize_from;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;

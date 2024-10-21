@@ -45,9 +45,12 @@ impl Plugin for ProtocolPlugin {
             .add_interpolation(ComponentSyncMode::Full)
             .add_linear_interpolation_fn();
 
+        app.register_component::<PlayerPhysics>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once);
+
         // Not self made components - Physics
-        // app.register_component::<Velocity>(ChannelDirection::ServerToClient)
-        //     .add_prediction(ComponentSyncMode::Full);
+        app.register_component::<Velocity>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Full);
 
         // World components
         app.register_component::<FloorMarker>(ChannelDirection::ServerToClient)
