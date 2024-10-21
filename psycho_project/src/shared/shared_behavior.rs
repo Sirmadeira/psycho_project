@@ -31,7 +31,11 @@ pub fn update_transform(
     mut player: Query<(&mut Transform, &PlayerPosition), With<PlayerPosition>>,
     time: Res<Time>,
 ) {
+    let interpolation_speed = 10.0;
     for (mut transform, player_position) in player.iter_mut() {
-        transform.translation += player_position.0 * time.delta_seconds();
+        let target_position = player_position.0;
+        let current_position = transform.translation;
+        transform.translation =
+            current_position.lerp(target_position, interpolation_speed * time.delta_seconds());
     }
 }
