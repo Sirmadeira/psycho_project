@@ -18,15 +18,15 @@ pub struct PlayerBundleMap(pub HashMap<ClientId, PlayerBundle>);
 pub struct PlayerBundle {
     pub id: PlayerId,
     pub visuals: PlayerVisuals,
-    pub position: PlayerPosition,
+    // pub position: PlayerPosition,
 }
 
 impl PlayerBundle {
-    pub fn new(id: ClientId, visuals: PlayerVisuals, position: PlayerPosition) -> Self {
+    pub fn new(id: ClientId, visuals: PlayerVisuals) -> Self {
         Self {
             id: PlayerId(id),
             visuals: visuals,
-            position: position,
+            // position: position,
         }
     }
 }
@@ -71,27 +71,27 @@ impl PlayerVisuals {
 }
 
 /// Give mes my player position important to be shared since server also needs to know it
-#[derive(
-    Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Reflect, Default,
-)]
-pub struct PlayerPosition(pub Vec3);
+// #[derive(
+//     Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Reflect, Default,
+// )]
+// pub struct PlayerPosition(pub Vec3);
 
-impl Add for PlayerPosition {
-    type Output = PlayerPosition;
-    // A optimization type when exportin such functions
-    #[inline]
-    fn add(self, rhs: PlayerPosition) -> PlayerPosition {
-        PlayerPosition(self.0.add(rhs.0))
-    }
-}
+// impl Add for PlayerPosition {
+//     type Output = PlayerPosition;
+//     // A optimization type when exportin such functions
+//     #[inline]
+//     fn add(self, rhs: PlayerPosition) -> PlayerPosition {
+//         PlayerPosition(self.0.add(rhs.0))
+//     }
+// }
 
-impl Mul<f32> for &PlayerPosition {
-    type Output = PlayerPosition;
-    #[inline]
-    fn mul(self, rhs: f32) -> Self::Output {
-        PlayerPosition(self.0 * rhs)
-    }
-}
+// impl Mul<f32> for &PlayerPosition {
+//     type Output = PlayerPosition;
+//     #[inline]
+//     fn mul(self, rhs: f32) -> Self::Output {
+//         PlayerPosition(self.0 * rhs)
+//     }
+// }
 
 /// Gives me my player action
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]

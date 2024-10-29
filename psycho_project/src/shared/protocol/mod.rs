@@ -40,12 +40,12 @@ impl Plugin for ProtocolPlugin {
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
 
-        app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Full)
-            .add_interpolation(ComponentSyncMode::Full)
-            .add_linear_interpolation_fn();
+        // app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
+        //     .add_prediction(ComponentSyncMode::Full)
+        //     .add_interpolation(ComponentSyncMode::Full)
+        //     .add_linear_interpolation_fn();
 
-        // Not self made components - Physics
+        // Components that influence player position
         app.register_component::<Velocity>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full);
 

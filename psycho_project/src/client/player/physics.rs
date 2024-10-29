@@ -3,7 +3,7 @@ use crate::shared::protocol::player_structs::*;
 use crate::shared::protocol::world_structs::FloorMarker;
 use crate::shared::shared_behavior::{shared_movement_behaviour, CharacterPhysicsBundle};
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::Collider;
+use bevy_rapier3d::prelude::{Collider, Velocity};
 use lightyear::client::events::InputEvent;
 use lightyear::client::input::native::*;
 use lightyear::client::prediction::Predicted;
@@ -68,7 +68,7 @@ fn buffer_input(
 }
 
 fn player_movement(
-    mut position_query: Query<&mut PlayerPosition, With<Predicted>>,
+    mut position_query: Query<&mut Velocity, With<Predicted>>,
     mut input_reader: EventReader<InputEvent<Inputs>>,
 ) {
     for input in input_reader.read() {
