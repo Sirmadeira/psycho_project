@@ -3,10 +3,12 @@ use crate::shared::protocol::player_structs::*;
 use crate::shared::protocol::world_structs::FloorMarker;
 use crate::shared::shared_behavior::{shared_movement_behaviour, CharacterPhysicsBundle};
 use bevy::prelude::*;
+use bevy::transform::commands;
 use bevy_rapier3d::prelude::{Collider, Velocity};
 use lightyear::client::events::InputEvent;
 use lightyear::client::input::native::*;
 use lightyear::client::prediction::Predicted;
+use lightyear::prelude::client::Interpolated;
 use lightyear::shared::replication::components::Replicated;
 use lightyear::shared::tick_manager::TickManager;
 
@@ -21,12 +23,24 @@ impl Plugin for PlayerPhysicsPlugin {
         app.add_systems(FixedUpdate, player_movement);
 
         app.add_systems(Update, add_physics_to_players);
+        app.add_systems(Update, add_physics_to_sideplayers);
         app.add_systems(Update, spawn_world);
     }
 }
 
 fn add_physics_to_players(
     players: Query<Entity, (Added<Predicted>, With<PlayerId>)>,
+    mut commands: Commands,
+) {
+    for player in players.iter() {
+        commands
+            .entity(player)
+            .insert(CharacterPhysicsBundle::default());
+    }
+}
+
+fn add_physics_to_sideplayers(
+    players: Query<Entity, (Added<Interpolated>, With<PlayerId>)>,
     mut commands: Commands,
 ) {
     for player in players.iter() {

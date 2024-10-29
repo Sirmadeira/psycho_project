@@ -47,7 +47,9 @@ impl Plugin for ProtocolPlugin {
 
         // Components that influence player position
         app.register_component::<Velocity>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Full);
+            .add_prediction(ComponentSyncMode::Full)
+            .add_interpolation(ComponentSyncMode::Full)
+            .add_interpolation_fn(interpolate_velocity);
 
         // World components
         app.register_component::<FloorMarker>(ChannelDirection::ServerToClient)
@@ -57,5 +59,12 @@ impl Plugin for ProtocolPlugin {
             mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
             ..default()
         });
+    }
+}
+
+fn interpolate_velocity(a: &Velocity, b: &Velocity, alpha: f32) -> Velocity {
+    Velocity {
+        linvel: a.linvel.lerp(b.linvel, alpha),
+        angvel: a.angvel.lerp(b.angvel, alpha),
     }
 }
