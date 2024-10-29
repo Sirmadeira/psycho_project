@@ -7,6 +7,7 @@ use bevy_panorbit_camera::PanOrbitCameraPlugin;
 mod change_res;
 mod essentials;
 mod load_assets;
+mod physical_world;
 mod player;
 pub mod rtt;
 mod start_game;
@@ -17,6 +18,7 @@ mod voxel_gen;
 use self::change_res::ChangeResPlugin;
 use self::essentials::SystemsPlugin;
 use self::load_assets::LoadingAssetsPlugin;
+use self::physical_world::PhysicalWorldPlugin;
 use self::player::CreateCharPlugin;
 use self::rtt::FormRttsPlugin;
 use self::start_game::InGamePlugin;
@@ -45,7 +47,7 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(FormRttsPlugin);
         app.add_plugins(InGamePlugin);
         app.add_plugins(VoxelGenPlugin);
-
+        app.add_plugins(PhysicalWorldPlugin);
         // Connection systems - Systems that dialogues with server
     }
 }

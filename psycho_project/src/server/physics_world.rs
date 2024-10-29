@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use lightyear::prelude::server::Replicate;
 
-use crate::shared::protocol::world_structs::FloorMarker;
+use crate::shared::{protocol::world_structs::FloorMarker, shared_behavior::FloorPhysicsBundle};
 
 /// Responsible for spawning the entities that are correlated to physics mechanic
 pub struct PhysicsWorldPlugin;
@@ -17,12 +17,9 @@ impl Plugin for PhysicsWorldPlugin {
 /// Spawn in both server and client a single cubicle collider
 fn spawn_floor_collider(mut commands: Commands) {
     info!("Spawning server floor and replicating to client");
-    let collider = Collider::cuboid(100.0, 0.5, 100.0);
-    let replicate = Replicate::default();
-    let name = Name::new("PhysicalFloor");
     commands
-        .spawn(collider)
-        .insert(replicate)
-        .insert(name)
+        .spawn(FloorPhysicsBundle::default())
+        .insert(Replicate::default())
+        .insert(Name::new("PhysicalFloor"))
         .insert(FloorMarker);
 }

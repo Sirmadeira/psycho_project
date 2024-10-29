@@ -1,15 +1,9 @@
 use crate::shared::protocol::player_structs::Direction;
 use crate::shared::protocol::player_structs::*;
-use crate::shared::protocol::world_structs::FloorMarker;
-use crate::shared::shared_behavior::{shared_movement_behaviour, CharacterPhysicsBundle};
+use crate::shared::shared_behavior::CharacterPhysicsBundle;
 use bevy::prelude::*;
-use bevy::transform::commands;
-use bevy_rapier3d::prelude::{Collider, Velocity};
-use lightyear::client::events::InputEvent;
 use lightyear::client::input::native::*;
 use lightyear::client::prediction::Predicted;
-use lightyear::prelude::client::Interpolated;
-use lightyear::shared::replication::components::Replicated;
 use lightyear::shared::tick_manager::TickManager;
 
 pub struct PlayerPhysicsPlugin;
@@ -20,27 +14,13 @@ impl Plugin for PlayerPhysicsPlugin {
             FixedPreUpdate,
             buffer_input.in_set(InputSystemSet::BufferInputs),
         );
-        app.add_systems(FixedUpdate, player_movement);
-
+        // Add physical components to predicted players
         app.add_systems(Update, add_physics_to_players);
-        app.add_systems(Update, add_physics_to_sideplayers);
-        app.add_systems(Update, spawn_world);
     }
 }
 
 fn add_physics_to_players(
     players: Query<Entity, (Added<Predicted>, With<PlayerId>)>,
-    mut commands: Commands,
-) {
-    for player in players.iter() {
-        commands
-            .entity(player)
-            .insert(CharacterPhysicsBundle::default());
-    }
-}
-
-fn add_physics_to_sideplayers(
-    players: Query<Entity, (Added<Interpolated>, With<PlayerId>)>,
     mut commands: Commands,
 ) {
     for player in players.iter() {
@@ -79,34 +59,4 @@ fn buffer_input(
         input = Inputs::Direction(direction);
     }
     input_manager.add_input(input, tick)
-}
-
-fn player_movement(
-    mut position_query: Query<&mut Velocity, With<Predicted>>,
-    mut input_reader: EventReader<InputEvent<Inputs>>,
-) {
-    for input in input_reader.read() {
-        if let Some(input) = input.input() {
-            //No need to iterate the position when the input is None
-            if input == &Inputs::None {
-                continue;
-            }
-            for position in position_query.iter_mut() {
-                shared_movement_behaviour(position, input);
-            }
-        }
-    }
-}
-
-fn spawn_world(
-    floor: Query<Entity, (Added<Replicated>, With<FloorMarker>)>,
-    mut commands: Commands,
-) {
-    if let Ok(floor) = floor.get_single() {
-        info!("Spawning physical floor");
-        // Usually it is recommended that this is a shared bundle but for now fuck it
-        let collider = Collider::cuboid(100.0, 0.5, 100.0);
-        let name = Name::new("PhysicalFloor");
-        commands.entity(floor).insert(collider).insert(name);
-    }
 }

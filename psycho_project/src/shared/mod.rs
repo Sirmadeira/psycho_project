@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use lightyear::prelude::*;
-use shared_behavior::SharedBehavior;
+use shared_behavior::SharedBehaviorPlugin;
 
 pub mod protocol;
 pub mod shared_behavior;
@@ -27,6 +27,6 @@ impl Plugin for SharedPlugin {
         app.register_type::<Lobbies>();
         // Self made plugins
         app.add_plugins(ProtocolPlugin);
-        app.add_plugins(SharedBehavior);
+        app.add_plugins(SharedBehaviorPlugin);
     }
 }
