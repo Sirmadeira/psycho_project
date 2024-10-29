@@ -20,6 +20,7 @@ impl Plugin for SharedBehavior {
 pub struct CharacterPhysicsBundle {
     rigid_body: RigidBody,
     collider: Collider,
+    locked_axes: LockedAxes,
 }
 
 impl Default for CharacterPhysicsBundle {
@@ -27,6 +28,7 @@ impl Default for CharacterPhysicsBundle {
         Self {
             rigid_body: RigidBody::Dynamic,
             collider: Collider::capsule(Vec3::new(0.0, 0.1, 0.0), Vec3::new(0.0, 0.5, 0.0), 0.5),
+            locked_axes: LockedAxes::ROTATION_LOCKED,
         }
     }
 }
