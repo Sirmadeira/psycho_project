@@ -24,7 +24,7 @@ impl Plugin for SharedPlugin {
 
         // Shared debuging
         app.register_type::<PlayerVisuals>();
-        app.register_type::<PlayerPhysics>();
+
         app.register_type::<PlayerBundleMap>();
         app.register_type::<Lobbies>();
 

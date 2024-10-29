@@ -1,5 +1,4 @@
 //! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
-use crate::client::essentials::EasyClient;
 use crate::client::load_assets::CharCollection;
 use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
