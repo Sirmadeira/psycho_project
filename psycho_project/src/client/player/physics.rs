@@ -14,7 +14,6 @@ pub struct PlayerPhysicsPlugin;
 
 impl Plugin for PlayerPhysicsPlugin {
     fn build(&self, app: &mut App) {
-
         app.add_systems(
             FixedPreUpdate,
             buffer_input.in_set(InputSystemSet::BufferInputs),
@@ -26,12 +25,16 @@ impl Plugin for PlayerPhysicsPlugin {
     }
 }
 
-fn add_physics_to_players(players: Query<Entity,(Added<Predicted>,With<PlayerId>)>,mut commands: Commands){
-    for player in players.iter(){
-        commands.entity(player).insert(CharacterPhysicsBundle::default());
+fn add_physics_to_players(
+    players: Query<Entity, (Added<Predicted>, With<PlayerId>)>,
+    mut commands: Commands,
+) {
+    for player in players.iter() {
+        commands
+            .entity(player)
+            .insert(CharacterPhysicsBundle::default());
     }
 }
-
 
 fn buffer_input(
     tick_manager: Res<TickManager>,

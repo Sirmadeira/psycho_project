@@ -5,23 +5,31 @@ use crate::shared::protocol::player_structs::{Inputs, PlayerPosition};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
+/// Probably dismantle later or dissociate but know contains all logic that is shared among client
+pub struct SharedBehavior;
+
+impl Plugin for SharedBehavior {
+    fn build(&self, app: &mut App) {
+        // Shared input systems
+        app.add_systems(Update, update_transform);
+    }
+}
 
 /// Struct that contains the logic that corresponds to physical component that dont need sync
 #[derive(Bundle)]
-pub struct CharacterPhysicsBundle{
+pub struct CharacterPhysicsBundle {
     rigid_body: RigidBody,
     collider: Collider,
 }
 
-
-impl Default for CharacterPhysicsBundle{
+impl Default for CharacterPhysicsBundle {
     fn default() -> Self {
-        Self { rigid_body: RigidBody::Dynamic, collider: Collider::capsule(Vec3::new(0.0, 0.1, 0.0), 
-            Vec3::new(0.0,0.5,0.0), 0.5) }
+        Self {
+            rigid_body: RigidBody::Dynamic,
+            collider: Collider::capsule(Vec3::new(0.0, 0.1, 0.0), Vec3::new(0.0, 0.5, 0.0), 0.5),
+        }
     }
 }
-
-
 
 /// Depending on input both server and client need to be moved accordingly
 pub(crate) fn shared_movement_behaviour(mut position: Mut<PlayerPosition>, input: &Inputs) {

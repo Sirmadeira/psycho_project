@@ -93,7 +93,6 @@ impl Mul<f32> for &PlayerPosition {
     }
 }
 
-
 /// Gives me my player action
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum Inputs {

@@ -32,4 +32,3 @@ fn form_client_id(mut connection_event: EventReader<ConnectEvent>, mut commands:
         commands.insert_resource(EasyClient(client_id));
     }
 }
-
