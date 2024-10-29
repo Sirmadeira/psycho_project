@@ -1,7 +1,7 @@
 use crate::shared::protocol::player_structs::Direction;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::protocol::world_structs::FloorMarker;
-use crate::shared::shared_behavior::shared_movement_behaviour;
+use crate::shared::shared_behavior::{shared_movement_behaviour, CharacterPhysicsBundle};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::Collider;
 use lightyear::client::events::InputEvent;
@@ -14,14 +14,24 @@ pub struct PlayerPhysicsPlugin;
 
 impl Plugin for PlayerPhysicsPlugin {
     fn build(&self, app: &mut App) {
+
         app.add_systems(
             FixedPreUpdate,
             buffer_input.in_set(InputSystemSet::BufferInputs),
         );
         app.add_systems(FixedUpdate, player_movement);
+
+        app.add_systems(Update, add_physics_to_players);
         app.add_systems(Update, spawn_world);
     }
 }
+
+fn add_physics_to_players(players: Query<Entity,(Added<Predicted>,With<PlayerId>)>,mut commands: Commands){
+    for player in players.iter(){
+        commands.entity(player).insert(CharacterPhysicsBundle::default());
+    }
+}
+
 
 fn buffer_input(
     tick_manager: Res<TickManager>,

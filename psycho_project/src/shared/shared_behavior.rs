@@ -3,8 +3,23 @@
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
 use crate::shared::protocol::player_structs::{Inputs, PlayerPosition};
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 
 
+/// Struct that contains the logic that corresponds to physical component that dont need sync
+#[derive(Bundle)]
+pub struct CharacterPhysicsBundle{
+    rigid_body: RigidBody,
+    collider: Collider,
+}
+
+
+impl Default for CharacterPhysicsBundle{
+    fn default() -> Self {
+        Self { rigid_body: RigidBody::Dynamic, collider: Collider::capsule(Vec3::new(0.0, 0.1, 0.0), 
+            Vec3::new(0.0,0.5,0.0), 0.5) }
+    }
+}
 
 
 
