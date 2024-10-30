@@ -1,7 +1,9 @@
+use avian3d::prelude::Position;
 use crate::shared::{
     protocol::world_structs::FloorMarker,
     physics::{FloorPhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
 };
+use lightyear::client::interpolation::VisualInterpolationPlugin;
 use bevy::prelude::*;
 use lightyear::shared::replication::components::Replicated;
 
@@ -9,6 +11,7 @@ pub struct PhysicalWorldPlugin;
 
 impl Plugin for PhysicalWorldPlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(VisualInterpolationPlugin::<Position>::default());
         app.add_systems(Update, add_cosmetic_floor);
     }
 }

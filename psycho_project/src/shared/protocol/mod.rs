@@ -16,6 +16,7 @@ pub(crate) struct ProtocolPlugin;
 
 impl Plugin for ProtocolPlugin {
     fn build(&self, app: &mut App) {
+
         //Resources
         app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);
         app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
@@ -40,11 +41,18 @@ impl Plugin for ProtocolPlugin {
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
 
-        // This specific component has utils based on lightyear TODO - MAYBE MIGRATE
+        // When you add a simple collider and rigidbody in avian he already comes with all other components
+        app.register_component::<LinearVelocity>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Full);
+
+        
+        // This specific component has utils based on lightyear
         app.register_component::<Position>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full)
             .add_interpolation_fn(position::lerp)
             .add_correction_fn(position::lerp);
+
+
 
         // app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
         //     .add_prediction(ComponentSyncMode::Full)
