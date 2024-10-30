@@ -1,5 +1,6 @@
 use crate::shared::protocol::player_structs::Direction;
 use crate::shared::protocol::player_structs::*;
+use crate::shared::shared_behavior::CharacterPhysicsBundle;
 use bevy::prelude::*;
 use lightyear::client::input::native::*;
 use lightyear::client::prediction::Predicted;
@@ -23,7 +24,9 @@ fn add_physics_to_players(
     mut commands: Commands,
 ) {
     for player in players.iter() {
-        commands.entity(player);
+        commands
+            .entity(player)
+            .insert(CharacterPhysicsBundle::default());
     }
 }
 

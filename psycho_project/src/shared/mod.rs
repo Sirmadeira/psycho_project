@@ -24,9 +24,11 @@ impl Plugin for SharedPlugin {
             PhysicsPlugins::new(FixedUpdate)
                 .build()
                 .disable::<ColliderHierarchyPlugin>(),
-        )
-        .insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)))
-        .insert_resource(Gravity(Vec3::ZERO));
+        );
+        app.add_plugins(PhysicsDebugPlugin::default());
+        // Physics resources
+        app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
+        app.insert_resource(Gravity(Vec3::ZERO));
         // Shared debuging
         app.register_type::<PlayerVisuals>();
         app.register_type::<PlayerBundleMap>();

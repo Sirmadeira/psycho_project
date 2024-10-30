@@ -2,6 +2,7 @@
 use crate::server::player::*;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
+use crate::shared::shared_behavior::REPLICATION_GROUP;
 use bevy::prelude::*;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
@@ -72,7 +73,7 @@ fn listener_join_lobby(
         let lobby_id = lobbies.lobbies[0].lobby_id;
         info!("Grabbed lobby {}", lobby_id);
 
-        info!("Defining type of replicatinon");
+        info!("Defining type of replicatinon for that player important to know he is from replication_group 1");
         let replicate = Replicate {
             sync: SyncTarget {
                 prediction: NetworkTarget::Single(*client_id),
@@ -82,6 +83,7 @@ fn listener_join_lobby(
                 target: NetworkTarget::Single(*client_id),
                 ..default()
             },
+            group: REPLICATION_GROUP,
             ..default()
         };
 
