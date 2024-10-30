@@ -26,6 +26,7 @@ pub struct CharacterPhysicsBundle {
     rigid_body: RigidBody,
     collider: Collider,
     lock_axes: LockedAxes,
+    friction: Friction,
 }
 
 impl Default for CharacterPhysicsBundle {
@@ -37,6 +38,7 @@ impl Default for CharacterPhysicsBundle {
                 .lock_rotation_x()
                 .lock_rotation_y()
                 .lock_rotation_z(),
+            friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
     }
 }
@@ -57,7 +59,7 @@ impl Default for FloorPhysicsBundle {
         Self {
             rigid_body: RigidBody::Static,
             collider: Collider::cuboid(FLOOR_WIDTH, FLOOR_HEIGHT, FLOOR_WIDTH),
-            position: Position(Vec3::new(0.0, 0.0, 0.0)),
+            position: Position(Vec3::new(0.0, -0.5, 0.0)),
         }
     }
 }

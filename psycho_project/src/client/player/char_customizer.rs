@@ -95,7 +95,7 @@ fn spawn_scene(
 
     let scene = SceneBundle {
         scene: visual_scene,
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+        transform: Transform::from_translation(Vec3::new(0.0, -0.75, 0.0)),
         ..default()
     };
 
