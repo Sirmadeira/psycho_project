@@ -1,11 +1,8 @@
-use avian3d::prelude::*;
 use bevy::prelude::*;
-use common::shared::FIXED_TIMESTEP_HZ;
-use lightyear::prelude::*;
-use shared_behavior::SharedBehaviorPlugin;
+use physics::SharedPhysicsPlugin;
 
+pub mod physics;
 pub mod protocol;
-pub mod shared_behavior;
 
 use self::protocol::ProtocolPlugin;
 use crate::shared::protocol::lobby_structs::*;
@@ -19,22 +16,12 @@ pub struct SharedPlugin;
 impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
         // Imported plugins
-        app.add_plugins(InputPlugin::<Inputs>::default());
-        app.add_plugins(
-            PhysicsPlugins::new(FixedUpdate)
-                .build()
-                .disable::<ColliderHierarchyPlugin>(),
-        );
-        app.add_plugins(PhysicsDebugPlugin::default());
-        // Physics resources
-        app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
-        app.insert_resource(Gravity(Vec3::ZERO));
         // Shared debuging
         app.register_type::<PlayerVisuals>();
         app.register_type::<PlayerBundleMap>();
         app.register_type::<Lobbies>();
         // Self made plugins
         app.add_plugins(ProtocolPlugin);
-        app.add_plugins(SharedBehaviorPlugin);
+        app.add_plugins(SharedPhysicsPlugin);
     }
 }

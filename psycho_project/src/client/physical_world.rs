@@ -1,6 +1,6 @@
 use crate::shared::{
     protocol::world_structs::FloorMarker,
-    shared_behavior::{FloorPhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
+    physics::{FloorPhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
 };
 use bevy::prelude::*;
 use lightyear::shared::replication::components::Replicated;

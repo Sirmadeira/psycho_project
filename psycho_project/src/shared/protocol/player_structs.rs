@@ -94,28 +94,6 @@ impl Mul<f32> for &PlayerPosition {
     }
 }
 
-/// Gives me my player action
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-pub enum Inputs {
-    Direction(Direction),
-    None,
-}
-
-/// It is very common to transform inputs into an player action per say.
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-pub struct Direction {
-    pub(crate) forward: bool,
-    pub(crate) down: bool,
-    pub(crate) left: bool,
-    pub(crate) right: bool,
-}
-
-impl Direction {
-    pub(crate) fn is_none(&self) -> bool {
-        !self.forward && !self.down && !self.left && !self.right
-    }
-}
-
 // Channels
 #[derive(Channel)]
 pub struct Channel1;

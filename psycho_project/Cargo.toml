@@ -20,8 +20,10 @@ lightyear = {version = "0.17", features = [
   "steam",
   "webtransport",
   "websocket",
-  "avian3d"
+  "avian3d",
+  "leafwing"
 ] }
+leafwing-input-manager = "0.15"
 
 
 # Utils

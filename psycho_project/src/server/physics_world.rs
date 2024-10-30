@@ -3,7 +3,7 @@ use avian3d::prelude::Position;
 use bevy::prelude::*;
 use lightyear::prelude::server::Replicate;
 
-use crate::shared::{protocol::world_structs::FloorMarker, shared_behavior::FloorPhysicsBundle};
+use crate::shared::{protocol::world_structs::FloorMarker, physics::FloorPhysicsBundle};
 
 /// Responsible for spawning the entities that are correlated to physics mechanic
 pub struct PhysicsWorldPlugin;
