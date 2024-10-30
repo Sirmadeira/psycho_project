@@ -2,6 +2,7 @@
 use crate::server::save_file;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::shared_behavior::CharacterPhysicsBundle;
+use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bincode::deserialize_from;
@@ -131,6 +132,7 @@ pub(crate) fn spawn_server_player(
             .insert(online_state)
             .insert(name)
             .insert(CharacterPhysicsBundle::default())
+            .insert(Position(Vec3::new(1.0, 0.0, 0.0)))
             .id();
         player_entity_map.0.insert(client_id, id);
         return old_player_bun;
@@ -145,6 +147,7 @@ pub(crate) fn spawn_server_player(
             .insert(online_state)
             .insert(name)
             .insert(CharacterPhysicsBundle::default())
+            .insert(Position(Vec3::new(0.0, 0.0, 0.0)))
             .id();
 
         player_entity_map.0.insert(client_id, id);
