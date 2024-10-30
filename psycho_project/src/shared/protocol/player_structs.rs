@@ -12,7 +12,7 @@ use std::vec;
 pub struct PlayerBundleMap(pub HashMap<ClientId, PlayerBundle>);
 
 // Components
-// Player bundle - Shared player related info important to server and client
+// Player bundle - Shared player related info important to server and client here we add things that need to be saved
 #[derive(Bundle, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 #[reflect(PartialEq, Debug, Serialize, Deserialize)]
 pub struct PlayerBundle {

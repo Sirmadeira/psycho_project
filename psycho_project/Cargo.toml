@@ -13,7 +13,7 @@ bevy = { version = "0.14.2", features = [
   "serialize",
 ] }
 bevy_panorbit_camera = "0.19"
-avian3d = "0.1"
+avian3d = {version = "0.1.1",default_features = false, features = ["3d","f32","parry-f32","parallel","serialize","debug-plugin"]}
 bevy-inspector-egui = "0.25"
 bevy_asset_loader = "0.21"
 lightyear = {version = "0.17", features = [

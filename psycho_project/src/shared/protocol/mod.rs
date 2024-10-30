@@ -1,7 +1,9 @@
+use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy::prelude::{App, Plugin};
 use lightyear::client::components::ComponentSyncMode;
 use lightyear::prelude::*;
+use lightyear::utils::avian3d::*;
 
 pub mod lobby_structs;
 pub mod player_structs;
@@ -37,6 +39,11 @@ impl Plugin for ProtocolPlugin {
         app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
+        // This specific component has utils based on lightyear TODO - MAYBE MIGRATE
+        app.register_component::<Position>(ChannelDirection::Bidirectional)
+            .add_prediction(ComponentSyncMode::Full)
+            .add_interpolation_fn(position::lerp)
+            .add_correction_fn(position::lerp);
 
         // app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
         //     .add_prediction(ComponentSyncMode::Full)
