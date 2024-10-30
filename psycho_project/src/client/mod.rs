@@ -46,7 +46,7 @@ impl Plugin for ExampleClientPlugin {
         app.add_plugins(CreateCharPlugin);
         app.add_plugins(FormRttsPlugin);
         app.add_plugins(InGamePlugin);
-        app.add_plugins(VoxelGenPlugin);
+        // app.add_plugins(VoxelGenPlugin);
         app.add_plugins(PhysicalWorldPlugin);
         // Connection systems - Systems that dialogues with server
     }

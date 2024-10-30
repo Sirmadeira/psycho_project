@@ -1,5 +1,6 @@
+use avian3d::prelude::*;
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
+use common::shared::FIXED_TIMESTEP_HZ;
 use lightyear::prelude::*;
 use shared_behavior::SharedBehaviorPlugin;
 
@@ -19,8 +20,13 @@ impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
         // Imported plugins
         app.add_plugins(InputPlugin::<Inputs>::default());
-        app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
-        app.add_plugins(RapierDebugRenderPlugin::default());
+        app.add_plugins(
+            PhysicsPlugins::new(FixedUpdate)
+                .build()
+                .disable::<ColliderHierarchyPlugin>(),
+        )
+        .insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)))
+        .insert_resource(Gravity(Vec3::ZERO));
         // Shared debuging
         app.register_type::<PlayerVisuals>();
         app.register_type::<PlayerBundleMap>();

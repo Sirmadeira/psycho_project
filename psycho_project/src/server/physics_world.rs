@@ -1,6 +1,5 @@
 //! Responsible for mantaining all the physical world of our game meaning most collider shall be spawmed and replicated to server
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
 use lightyear::prelude::server::Replicate;
 
 use crate::shared::{protocol::world_structs::FloorMarker, shared_behavior::FloorPhysicsBundle};
@@ -19,7 +18,7 @@ fn spawn_floor_collider(mut commands: Commands) {
     info!("Spawning server floor and replicating to client");
     commands
         .spawn(FloorPhysicsBundle::default())
+        .insert(FloorMarker)
         .insert(Replicate::default())
-        .insert(Name::new("PhysicalFloor"))
-        .insert(FloorMarker);
+        .insert(Name::new("PhysicalFloor"));
 }
