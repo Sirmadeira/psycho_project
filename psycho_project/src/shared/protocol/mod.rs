@@ -39,6 +39,7 @@ impl Plugin for ProtocolPlugin {
         app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once)
             .add_interpolation(ComponentSyncMode::Once);
+
         // This specific component has utils based on lightyear TODO - MAYBE MIGRATE
         app.register_component::<Position>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full)

@@ -1,4 +1,5 @@
 //! Responsible for mantaining all the physical world of our game meaning most collider shall be spawmed and replicated to server
+use avian3d::prelude::Position;
 use bevy::prelude::*;
 use lightyear::prelude::server::Replicate;
 
@@ -20,5 +21,6 @@ fn spawn_floor_collider(mut commands: Commands) {
         .spawn(FloorPhysicsBundle::default())
         .insert(FloorMarker)
         .insert(Replicate::default())
-        .insert(Name::new("PhysicalFloor"));
+        .insert(Name::new("PhysicalFloor"))
+        .insert(Position(Vec3::new(0.0, -0.5, 0.0)));
 }

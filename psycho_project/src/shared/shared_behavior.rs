@@ -51,7 +51,6 @@ pub const FLOOR_HEIGHT: f32 = 0.5;
 pub struct FloorPhysicsBundle {
     rigid_body: RigidBody,
     collider: Collider,
-    position: Position,
 }
 
 impl Default for FloorPhysicsBundle {
@@ -59,7 +58,6 @@ impl Default for FloorPhysicsBundle {
         Self {
             rigid_body: RigidBody::Static,
             collider: Collider::cuboid(FLOOR_WIDTH, FLOOR_HEIGHT, FLOOR_WIDTH),
-            position: Position(Vec3::new(0.0, -0.5, 0.0)),
         }
     }
 }

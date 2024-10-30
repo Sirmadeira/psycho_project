@@ -70,7 +70,8 @@ impl PlayerVisuals {
     }
 }
 
-/// Give mes my player position important to be shared since server also needs to know it
+/// Give mes my player position, used for when player is gonna respawn he respawns at the same place
+/// TODO
 #[derive(
     Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Reflect, Default,
 )]
