@@ -33,12 +33,10 @@ impl Plugin for ProtocolPlugin {
         // Components
         // Player Components
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once)
-            .add_interpolation(ComponentSyncMode::Once);
+            .add_prediction(ComponentSyncMode::Once);
 
         app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once)
-            .add_interpolation(ComponentSyncMode::Once);
+            .add_prediction(ComponentSyncMode::Once);
 
         // When you add a simple collider and rigidbody in avian he already comes with all other components
         app.register_component::<LinearVelocity>(ChannelDirection::ServerToClient)
