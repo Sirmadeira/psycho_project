@@ -1,4 +1,5 @@
 //! Plugin responsible for customizing the player character in rtt and the final result shall be used and replicated when enter ingame state
+use crate::client::essentials::EasyClient;
 use crate::client::load_assets::CharCollection;
 use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
@@ -6,9 +7,9 @@ use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use lightyear::client::events::MessageEvent;
-use lightyear::client::interpolation::Interpolated;
 use lightyear::connection::id::ClientId;
 use lightyear::prelude::client::Predicted;
+use lightyear::shared::replication::components::Replicated;
 use std::collections::VecDeque;
 
 pub struct CustomizeCharPlugin;
@@ -208,55 +209,59 @@ fn add_cosmetics_main_player(
     }
 }
 
-/// Spawns visual scenes and parents them to interpolated players
+/// Spawns visual scenes and parents them to replicated players
 fn add_cosmetics_side_player(
     side_player: Query<
         (Entity, &PlayerId, &PlayerVisuals, Has<HasVisuals>),
-        (Added<Interpolated>, With<PlayerId>),
+        (Added<Replicated>, With<PlayerId>),
     >,
     gltfs: Res<Assets<Gltf>>,
     client_collection: Res<CharCollection>,
     mut body_part_map: ResMut<BodyPartMap>,
     mut skeleton_map: ResMut<SkeletonMap>,
+    easy_client: Res<EasyClient>,
     mut transfer_anim: EventWriter<TranferAnim>,
     mut commands: Commands,
 ) {
     for (entity, player_id, player_visuals, has_visual) in side_player.iter() {
-        info_once!("Found interpolated side player {}", entity);
-        if !has_visual {
-            let client_id = player_id.0;
+        info_once!("Found replicated side player {}", entity);
+        if player_id.0 != easy_client.0 {
+            info!("Check if is not same replicated as client");
+            if !has_visual {
+                let client_id = player_id.0;
 
-            info!("Inserting additonal info  component in interpolated player");
-            commands
-                .entity(entity)
-                .insert(SpatialBundle::default())
-                .insert(Name::new("SidePlayer"))
-                .insert(HasVisuals);
+                info!("Inserting additonal info  component in replicated player");
+                commands
+                    .entity(entity)
+                    .insert(SpatialBundle::default())
+                    .insert(Name::new("SidePlayer"))
+                    .insert(HasVisuals);
 
-            for file_path in player_visuals.iter_visuals() {
-                if file_path.contains("skeleton") {
-                    info!("Found side player skeleton");
-                    let visual_scene =
-                        spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
-                    commands.entity(visual_scene).set_parent(entity);
+                for file_path in player_visuals.iter_visuals() {
+                    if file_path.contains("skeleton") {
+                        info!("Found side player skeleton");
+                        let visual_scene =
+                            spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
+                        commands.entity(visual_scene).set_parent(entity);
 
-                    info!("Inserting skeleton into map");
-                    skeleton_map.0.insert(client_id, visual_scene);
-                } else {
-                    let visual_scene =
-                        spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
+                        info!("Inserting skeleton into map");
+                        skeleton_map.0.insert(client_id, visual_scene);
+                    } else {
+                        let visual_scene =
+                            spawn_scene(&file_path, &client_collection, &gltfs, &mut commands);
 
-                    commands.entity(visual_scene).set_parent(entity);
+                        commands.entity(visual_scene).set_parent(entity);
 
-                    body_part_map
-                        .0
-                        .insert((client_id, file_path.to_string()), visual_scene);
+                        body_part_map
+                            .0
+                            .insert((client_id, file_path.to_string()), visual_scene);
+                    }
                 }
+                info!("Telling him to transfer animation targets according to his skeleton");
+                transfer_anim.send(TranferAnim(client_id));
+            } else {
+                info_once!("This player already has visuals {}", entity)
             }
-            info!("Telling him to transfer animation targets according to his skeleton");
-            transfer_anim.send(TranferAnim(client_id));
-        } else {
-            info_once!("This player already has visuals {}", entity)
         }
     }
 }
@@ -313,9 +318,7 @@ fn customizes_character(
                     "COngratulation you manage to access the resource before it is even possible"
                 );
             }
-        } else {
-            error!("Couldnt despawn old part therefore no new part for you")
-        }
+        } 
     }
 }
 

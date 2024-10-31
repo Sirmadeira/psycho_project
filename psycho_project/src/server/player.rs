@@ -1,7 +1,7 @@
 //! All logic associated to player
 use crate::server::save_file;
-use crate::shared::protocol::player_structs::*;
 use crate::shared::physics::*;
+use crate::shared::protocol::player_structs::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -40,8 +40,7 @@ impl Plugin for PlayerPlugin {
         app.add_systems(Update, handle_disconnections);
 
         // It is essential that input bases systems occur in fixedupdate
-        app.add_systems(FixedUpdate, handle_character_actions.in_set(InputPhysicsSet::Input));
-
+        // app.add_systems(FixedUpdate, handle_character_actions.in_set(InputPhysicsSet::Input));
     }
 }
 

@@ -16,8 +16,6 @@ pub(crate) struct ProtocolPlugin;
 
 impl Plugin for ProtocolPlugin {
     fn build(&self, app: &mut App) {
-        
-
         //Resources
         app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);
         app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
@@ -46,14 +44,11 @@ impl Plugin for ProtocolPlugin {
         app.register_component::<LinearVelocity>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full);
 
-        
         // This specific component has utils based on lightyear
         app.register_component::<Position>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full)
             .add_interpolation_fn(position::lerp)
             .add_correction_fn(position::lerp);
-
-
 
         // app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
         //     .add_prediction(ComponentSyncMode::Full)

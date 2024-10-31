@@ -1,12 +1,12 @@
 use crate::shared::physics::*;
 use crate::shared::protocol::player_structs::*;
-use bevy::prelude::*;
 use avian3d::prelude::*;
+use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
+use lightyear::client::prediction::rollback::Rollback;
 use lightyear::client::prediction::Predicted;
 use lightyear::inputs::leafwing::input_buffer::InputBuffer;
 use lightyear::shared::replication::components::Controlled;
-use lightyear::client::prediction::rollback::Rollback;
 use lightyear::shared::tick_manager::TickManager;
 
 pub struct PlayerPhysicsPlugin;
@@ -17,8 +17,10 @@ impl Plugin for PlayerPhysicsPlugin {
         app.add_systems(Update, add_physics_to_players);
 
         // It is essential that input bases systems occur in fixedupdate
-        app.add_systems(FixedUpdate, handle_character_actions.in_set(InputPhysicsSet::Input));
-
+        app.add_systems(
+            FixedUpdate,
+            handle_character_actions.in_set(InputPhysicsSet::Input),
+        );
     }
 }
 
@@ -43,6 +45,8 @@ fn add_physics_to_players(
             .insert(CharacterPhysicsBundle::default());
     }
 }
+
+fn add_physics_to_side_player() {}
 
 /// Process character actions and apply them to their associated character
 /// entity.

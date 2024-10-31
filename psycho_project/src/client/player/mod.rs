@@ -22,7 +22,7 @@ impl Plugin for CreateCharPlugin {
         app.add_plugins(PlayerCameraPlugin);
         app.add_plugins(CustomizeCharPlugin);
         app.add_plugins(AnimPlayerPlugin);
-        app.add_plugins(PlayerPhysicsPlugin);
+        // app.add_plugins(PlayerPhysicsPlugin);
 
         // Debugging RTT
         app.add_systems(Update, disable_culling);
