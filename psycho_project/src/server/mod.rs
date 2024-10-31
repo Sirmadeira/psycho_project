@@ -23,7 +23,7 @@ impl Plugin for ExampleServerPlugin {
         // app.add_systems(Startup, create_save_files);
 
         //Self made plugins
-        // app.add_plugins(PhysicsWorldPlugin);
+        app.add_plugins(PhysicsWorldPlugin);
         app.add_plugins(EssentialsPlugin);
         app.add_plugins(LobbyPlugin);
         app.add_plugins(PlayerPlugin);

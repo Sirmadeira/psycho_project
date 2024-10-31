@@ -27,7 +27,7 @@ impl Plugin for SharedPhysicsPlugin {
                 .build()
                 .disable::<SyncPlugin>(),
         );
-        // app.add_plugins(PhysicsDebugPlugin::default());
+        app.add_plugins(PhysicsDebugPlugin::default());
         // We change SyncPlugin to PostUpdate, because we want the visually
         // interpreted values synced to transform every time, not just when
         // Fixed schedule runs.
@@ -86,6 +86,7 @@ pub struct CharacterPhysicsBundle {
     external_force: ExternalForce,
     external_impulse: ExternalImpulse,
     friction: Friction,
+    position: Position,
 }
 
 impl Default for CharacterPhysicsBundle {
@@ -100,6 +101,7 @@ impl Default for CharacterPhysicsBundle {
             external_force: ExternalForce::ZERO.with_persistence(false),
             external_impulse: ExternalImpulse::ZERO.with_persistence(false),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
+            position: Position(Vec3::new(0.0, 1.0, 0.0)),
         }
     }
 }

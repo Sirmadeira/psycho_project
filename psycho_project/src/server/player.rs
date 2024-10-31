@@ -39,8 +39,15 @@ impl Plugin for PlayerPlugin {
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
 
-        // It is essential that input bases systems occur in fixedupdate
-        // app.add_systems(FixedUpdate, handle_character_actions.in_set(InputPhysicsSet::Input));
+        // this system will replicate the inputs of a client to other clients
+        // so that a client can predict other clients
+        app.add_systems(PreUpdate, replicate_inputs.after(MainSet::EmitEvents));
+
+        // It is essential that input based systems occur in fixedupdate
+        app.add_systems(
+            FixedUpdate,
+            handle_character_actions.in_set(InputPhysicsSet::Input),
+        );
     }
 }
 
@@ -136,7 +143,6 @@ pub(crate) fn spawn_server_player(
             .insert(online_state)
             .insert(name)
             .insert(CharacterPhysicsBundle::default())
-            .insert(Position(Vec3::new(1.0, 0.0, 0.0)))
             .insert(ActionState::<CharacterAction>::default())
             .id();
         player_entity_map.0.insert(client_id, id);
@@ -152,7 +158,6 @@ pub(crate) fn spawn_server_player(
             .insert(online_state)
             .insert(name)
             .insert(CharacterPhysicsBundle::default())
-            .insert(Position(Vec3::new(0.0, 0.0, 0.0)))
             .insert(ActionState::<CharacterAction>::default())
             .id();
 
@@ -233,5 +238,25 @@ fn handle_character_actions(
 ) {
     for (action_state, mut character) in &mut query {
         apply_character_action(&time, &spatial_query, action_state, &mut character);
+    }
+}
+
+fn replicate_inputs(
+    mut connection: ResMut<ConnectionManager>,
+    mut input_events: ResMut<Events<MessageEvent<InputMessage<CharacterAction>>>>,
+) {
+    for mut event in input_events.drain() {
+        let client_id = *event.context();
+
+        // Optional: do some validation on the inputs to check that there's no cheating
+        // Inputs for a specific tick should be write *once*. Don't let players change old inputs.
+
+        // rebroadcast the input to other clients
+        connection
+            .send_message_to_target::<InputChannel, _>(
+                &mut event.message,
+                NetworkTarget::AllExceptSingle(client_id),
+            )
+            .unwrap()
     }
 }

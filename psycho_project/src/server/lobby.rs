@@ -76,8 +76,8 @@ fn listener_join_lobby(
         info!("Defining type of replicatinon for that player important to know he is from replication_group 1");
         let replicate = Replicate {
             sync: SyncTarget {
-                prediction: NetworkTarget::Single(*client_id),
-                interpolation: NetworkTarget::AllExceptSingle(*client_id),
+                prediction: NetworkTarget::All,
+                ..default()
             },
             controlled_by: ControlledBy {
                 target: NetworkTarget::Single(*client_id),
