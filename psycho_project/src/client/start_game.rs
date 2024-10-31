@@ -1,4 +1,3 @@
-//! Systems correlated to starting game will occur here
 use crate::client::ui::inventory_screen::ScreenInventory;
 use crate::client::ui::main_screen::ScreenMainMenu;
 use crate::client::ui::pause_screen::ScreenPause;
@@ -8,6 +7,7 @@ use bevy::prelude::*;
 use bevy_panorbit_camera::PanOrbitCamera;
 use lightyear::client::events::MessageEvent;
 
+/// Systems correlated to managing game states will be set here
 pub struct InGamePlugin;
 
 impl Plugin for InGamePlugin {

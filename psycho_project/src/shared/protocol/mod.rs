@@ -16,6 +16,7 @@ pub(crate) struct ProtocolPlugin;
 
 impl Plugin for ProtocolPlugin {
     fn build(&self, app: &mut App) {
+        
 
         //Resources
         app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);

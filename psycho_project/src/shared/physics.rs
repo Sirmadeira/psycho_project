@@ -12,18 +12,22 @@ use lightyear::prelude::ReplicationGroup;
 use lightyear::shared::input::leafwing::LeafwingInputPlugin;
 use serde::{Deserialize, Serialize};
 
-/// Probably dismantle later or dissociate but know contains all logic that is shared among client
+/// Here lies all the shared setup needed to make physics work in our game
+/// Warning: This game is solely based on running an independent server and clients any other mode will break it
 pub struct SharedPhysicsPlugin;
 
 impl Plugin for SharedPhysicsPlugin {
     fn build(&self, app: &mut App) {
+        // Leafwing input plugin handles the whole leafwing shenanigans
         app.add_plugins(LeafwingInputPlugin::<CharacterAction>::default());
+
+        // SETUP FOR MAKING OUR PHYSICS WORK
         app.add_plugins(
             PhysicsPlugins::new(FixedUpdate)
                 .build()
                 .disable::<SyncPlugin>(),
         );
-        app.add_plugins(PhysicsDebugPlugin::default());
+        // app.add_plugins(PhysicsDebugPlugin::default());
         // We change SyncPlugin to PostUpdate, because we want the visually
         // interpreted values synced to transform every time, not just when
         // Fixed schedule runs.
@@ -38,13 +42,40 @@ impl Plugin for SharedPhysicsPlugin {
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
         // Setting up gravity
         app.insert_resource(Gravity(Vec3::ZERO));
+
+        // Make sure that any physics simulation happens after the input
+        // SystemSet (i.e. where we apply user's actions).
+        app.configure_sets(
+            FixedUpdate,
+            (
+                (
+                    PhysicsSet::Prepare,
+                    PhysicsSet::StepSimulation,
+                    PhysicsSet::Sync,
+                )
+                    .in_set(InputPhysicsSet::Physics),
+                (InputPhysicsSet::Input, InputPhysicsSet::Physics).chain(),
+            ),
+        );
     }
+}
+
+/// Super important set ensures that our input systems occur before the physics, if not followed get ready for stuttering
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone, Copy)]
+pub enum InputPhysicsSet {
+    // Main fixed update systems (i.e. handle inputs).
+    Input,
+    // Apply physics steps.
+    Physics,
 }
 
 pub const REPLICATION_GROUP: ReplicationGroup = ReplicationGroup::new_id(1);
 
 pub const CHARACTER_CAPSULE_RADIUS: f32 = 0.5;
 pub const CHARACTER_CAPSULE_HEIGHT: f32 = 0.5;
+
+pub const FLOOR_WIDTH: f32 = 100.0;
+pub const FLOOR_HEIGHT: f32 = 0.5;
 
 /// Bundle that stores physical info for my character
 #[derive(Bundle)]
@@ -72,9 +103,6 @@ impl Default for CharacterPhysicsBundle {
         }
     }
 }
-
-pub const FLOOR_WIDTH: f32 = 100.0;
-pub const FLOOR_HEIGHT: f32 = 0.5;
 
 /// Bundle that store physical info for my floor
 #[derive(Bundle)]

@@ -38,6 +38,10 @@ impl Plugin for PlayerPlugin {
 
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
+
+        // It is essential that input bases systems occur in fixedupdate
+        app.add_systems(FixedUpdate, handle_character_actions.in_set(InputPhysicsSet::Input));
+
     }
 }
 
@@ -111,7 +115,7 @@ fn listener_save_visuals(
     }
 }
 
-/// Helper function spawns the player that is gonna be replciated
+/// Helper function spawns the player that is gonna be replicated
 pub(crate) fn spawn_server_player(
     client_id: ClientId,
     commands: &mut Commands,
@@ -220,5 +224,15 @@ pub(crate) fn handle_disconnections(
         } else {
             error!("Player entity not found for client ID: {}", client_id);
         }
+    }
+}
+
+fn handle_character_actions(
+    time: Res<Time>,
+    spatial_query: SpatialQuery,
+    mut query: Query<(&ActionState<CharacterAction>, CharacterQuery)>,
+) {
+    for (action_state, mut character) in &mut query {
+        apply_character_action(&time, &spatial_query, action_state, &mut character);
     }
 }
