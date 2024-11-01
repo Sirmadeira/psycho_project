@@ -9,6 +9,8 @@ use core::f32::consts::PI;
 use lightyear::client::prediction::Predicted;
 use lightyear::shared::replication::components::Controlled;
 
+use bevy_panorbit_camera::PanOrbitCamera;
+
 pub struct PlayerCameraPlugin;
 
 impl Plugin for PlayerCameraPlugin {
@@ -29,6 +31,8 @@ impl Plugin for PlayerCameraPlugin {
                 .run_if(in_state(MyAppState::Game))
                 .chain(),
         );
+
+        app.add_systems(Update, sync_rtt_to_player);
 
         app.add_systems(
             PostUpdate,
@@ -182,7 +186,6 @@ fn zoom_mouse(mut scroll_evr: EventReader<MouseWheel>, mut cam_q: Query<&mut Cam
     }
 }
 
-/// Syncs player camera to it is player
 pub fn sync_player_camera(
     player_q: Query<&Transform, (With<Predicted>, With<Controlled>)>,
     mut cam_q: Query<(&mut CamInfo, &mut Transform), Without<Predicted>>,
@@ -197,5 +200,21 @@ pub fn sync_player_camera(
 
         // Update the camera translation
         cam_transform.translation = offset + player_transform.translation;
+    }
+}
+
+// Gonna grab controlled entity position and mark it
+fn sync_rtt_to_player(
+    mut pan_orbit: Query<&mut PanOrbitCamera>,
+    player: Query<&Transform, (With<Predicted>, With<Controlled>)>,
+) {
+    for mut pan_orbit in pan_orbit.iter_mut() {
+        if let Ok(target_transform) = player.get_single() {
+            pan_orbit.target_focus = target_transform.translation;
+            // Whenever changing properties manually like this, it's necessary to force
+            // PanOrbitCamera to update this frame (by default it only updates when there are
+            // input events).
+            pan_orbit.force_update = true;
+        }
     }
 }

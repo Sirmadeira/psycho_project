@@ -8,7 +8,6 @@ use bevy::utils::HashMap;
 use lightyear::client::events::MessageEvent;
 use lightyear::connection::id::ClientId;
 use lightyear::prelude::client::Predicted;
-use lightyear::shared::replication::components::Controlled;
 use std::collections::VecDeque;
 
 pub struct CustomizeCharPlugin;
@@ -33,11 +32,13 @@ impl Plugin for CustomizeCharPlugin {
             add_cosmetics_player.run_if(in_state(MyAppState::Game)),
         );
 
-        // Does the anim transfer
-        app.add_systems(PreUpdate, transfer_essential_components);
-
         // System to customize character correctly
         app.add_systems(Update, customizes_character);
+
+        // Does the anim transfer - I know preupdate here is weird but here is the thing because of the way child entities spawn in bevy
+        // We need to wait a frame or 2 until we consume the events or else he wont find the sub children of skeleton and scene entities
+        app.add_systems(PreUpdate, transfer_essential_components);
+
         app.add_systems(Update, reset_animation);
     }
 }
@@ -167,10 +168,11 @@ fn add_cosmetics_player(
         if !has_visual {
             let client_id = player_id.0;
 
-            info!("Inserting additonal info  component in interpolated player");
+            info!("Inserting additonal info  component in player");
             commands
                 .entity(entity)
-                .insert(SpatialBundle::default())
+                .insert(InheritedVisibility::default())
+                .insert(GlobalTransform::default())
                 .insert(Name::new("Player"))
                 .insert(HasVisuals);
 

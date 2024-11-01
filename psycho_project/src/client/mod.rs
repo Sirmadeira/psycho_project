@@ -7,10 +7,10 @@ use bevy_panorbit_camera::PanOrbitCameraPlugin;
 mod change_res;
 mod essentials;
 mod load_assets;
+mod manage_game;
 mod physical_world;
 mod player;
 pub mod rtt;
-mod start_game;
 mod ui;
 mod voxel_gen;
 
@@ -18,10 +18,10 @@ mod voxel_gen;
 use self::change_res::ChangeResPlugin;
 use self::essentials::SystemsPlugin;
 use self::load_assets::LoadingAssetsPlugin;
+use self::manage_game::InGamePlugin;
 use self::physical_world::PhysicalWorldPlugin;
 use self::player::CreateCharPlugin;
 use self::rtt::FormRttsPlugin;
-use self::start_game::InGamePlugin;
 use self::voxel_gen::VoxelGenPlugin;
 
 /// Important plugin centralizes most of our client related logic

@@ -500,7 +500,6 @@ fn display_matches(
     }
 }
 
-// Grabs marker component
 fn fill_rtt_ui_images(
     rtt_images: Res<RttImages>,
     mut rtt_placeholders: Query<(Entity, &RttPlaceholder), Added<RttPlaceholder>>,

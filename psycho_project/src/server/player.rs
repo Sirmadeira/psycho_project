@@ -225,19 +225,11 @@ pub(crate) fn handle_disconnections(
         // Find and despawn the player's entity
         if let Some(disconnecting_player) = player_entity_map.0.remove(&client_id) {
             info!("This player disconnected {}", disconnecting_player);
+            // Right now lightyear does that for us
+            // commands.entity(disconnecting_player).despawn();
         } else {
             error!("Player entity not found for client ID: {}", client_id);
         }
-    }
-}
-
-fn handle_character_actions(
-    time: Res<Time>,
-    spatial_query: SpatialQuery,
-    mut query: Query<(&ActionState<CharacterAction>, CharacterQuery)>,
-) {
-    for (action_state, mut character) in &mut query {
-        apply_character_action(&time, &spatial_query, action_state, &mut character);
     }
 }
 
@@ -258,5 +250,15 @@ fn replicate_inputs(
                 NetworkTarget::AllExceptSingle(client_id),
             )
             .unwrap()
+    }
+}
+
+fn handle_character_actions(
+    time: Res<Time>,
+    spatial_query: SpatialQuery,
+    mut query: Query<(&ActionState<CharacterAction>, CharacterQuery)>,
+) {
+    for (action_state, mut character) in &mut query {
+        apply_character_action(&time, &spatial_query, action_state, &mut character);
     }
 }
