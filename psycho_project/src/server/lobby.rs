@@ -50,7 +50,7 @@ fn listener_join_lobby(
     mut online_state: Query<&mut PlayerStateConnection>,
     mut events: EventReader<MessageEvent<EnterLobby>>,
     player_entity_map: Res<PlayerEntityMap>,
-    lobbies: Res<Lobbies>,
+    mut lobbies: ResMut<Lobbies>,
     mut connection_manager: ResMut<ConnectionManager>,
     mut commands: Commands,
 ) {
@@ -66,13 +66,14 @@ fn listener_join_lobby(
             .get_mut(*player_entity)
             .expect("For online player to have player state component");
 
+        info!("Adjusting player state to in_game");
         *on_state = PlayerStateConnection {
             online: true,
             in_game: true,
         };
-
         let lobby_id = lobbies.lobbies[0].lobby_id;
-        info!("Grabbed lobby {}", lobby_id);
+        info!("Inserted player {} unto lobby {}", client_id, lobby_id);
+        lobbies.lobbies[0].players.push(*client_id);
 
         info!("Defining type of replicatinon for that player important to know he is from replication_group 1");
         let replicate = Replicate {
