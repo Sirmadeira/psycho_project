@@ -42,11 +42,19 @@ impl Plugin for ProtocolPlugin {
         app.register_component::<LinearVelocity>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full);
 
+        app.register_component::<AngularVelocity>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Full);
+
         // This specific component has utils based on lightyear
         app.register_component::<Position>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full)
             .add_interpolation_fn(position::lerp)
             .add_correction_fn(position::lerp);
+
+        app.register_component::<Rotation>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Full)
+            .add_interpolation_fn(rotation::lerp)
+            .add_correction_fn(rotation::lerp);
 
         // app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
         //     .add_prediction(ComponentSyncMode::Full)

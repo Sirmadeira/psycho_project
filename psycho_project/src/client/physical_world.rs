@@ -1,14 +1,14 @@
-use avian3d::prelude::Position;
 use crate::shared::{
-    protocol::world_structs::FloorMarker,
     physics::{FloorPhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
+    protocol::world_structs::FloorMarker,
 };
-use lightyear::client::interpolation::VisualInterpolationPlugin;
-use lightyear::client::interpolation::VisualInterpolateStatus;
+use avian3d::prelude::Position;
+use avian3d::prelude::Rotation;
 use bevy::prelude::*;
-use lightyear::shared::replication::components::Replicated;
 use lightyear::client::components::Confirmed;
-
+use lightyear::client::interpolation::VisualInterpolateStatus;
+use lightyear::client::interpolation::VisualInterpolationPlugin;
+use lightyear::shared::replication::components::Replicated;
 /// Anything correlated to general physics should be placed in this pluign
 pub struct PhysicalWorldPlugin;
 
@@ -18,7 +18,9 @@ impl Plugin for PhysicalWorldPlugin {
         // do anything until you add VisualInterpolationStatus components to
         // entities.
         app.add_plugins(VisualInterpolationPlugin::<Position>::default());
+        app.add_plugins(VisualInterpolationPlugin::<Rotation>::default());
         app.observe(add_visual_interpolation_components::<Position>);
+        app.observe(add_visual_interpolation_components::<Rotation>);
 
         app.add_systems(Update, add_cosmetic_physics_floor);
     }

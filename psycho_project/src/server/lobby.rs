@@ -1,9 +1,10 @@
 //! Basically all the events associated to lobby logic
 use crate::server::player::*;
-use crate::shared::physics::REPLICATION_GROUP;
+use crate::shared::physics::*;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use bevy::prelude::*;
+use leafwing_input_manager::prelude::ActionState;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
@@ -88,7 +89,11 @@ fn listener_join_lobby(
         };
 
         info!("Replicate the player to all client_ids");
-        commands.entity(*player_entity).insert(replicate);
+        commands
+            .entity(*player_entity)
+            .insert(replicate)
+            .insert(CharacterPhysicsBundle::default())
+            .insert(ActionState::<CharacterAction>::default());
 
         info!("Starting game for client {}", client_id);
         let _ = connection_manager
