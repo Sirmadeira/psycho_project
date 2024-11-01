@@ -7,6 +7,7 @@ use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
 use core::f32::consts::PI;
 use lightyear::client::prediction::Predicted;
+use lightyear::shared::replication::components::Controlled;
 
 pub struct PlayerCameraPlugin;
 
@@ -181,8 +182,9 @@ fn zoom_mouse(mut scroll_evr: EventReader<MouseWheel>, mut cam_q: Query<&mut Cam
     }
 }
 
+/// Syncs player camera to it is player
 pub fn sync_player_camera(
-    player_q: Query<&Transform, With<Predicted>>,
+    player_q: Query<&Transform, (With<Predicted>, With<Controlled>)>,
     mut cam_q: Query<(&mut CamInfo, &mut Transform), Without<Predicted>>,
 ) {
     if let Ok(player_transform) = player_q.get_single() {

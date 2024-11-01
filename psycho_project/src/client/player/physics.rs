@@ -6,7 +6,6 @@ use leafwing_input_manager::prelude::*;
 use lightyear::client::prediction::rollback::Rollback;
 use lightyear::client::prediction::Predicted;
 use lightyear::inputs::leafwing::input_buffer::InputBuffer;
-use lightyear::prelude::Replicated;
 use lightyear::shared::replication::components::Controlled;
 use lightyear::shared::tick_manager::TickManager;
 
