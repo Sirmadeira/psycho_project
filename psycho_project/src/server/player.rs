@@ -44,7 +44,7 @@ impl Plugin for PlayerPlugin {
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
 
-        app.add_systems(Update, physical_player);
+        // app.add_systems(Update, physical_player);
 
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
@@ -261,18 +261,15 @@ fn handle_character_actions(
     }
 }
 
-/// Acoording to players in lobby make their server physical entity
-fn physical_player(
-    lobbies: Res<Lobbies>,
-    player_entity_map: Res<PlayerEntityMap>,
-    mut commands: Commands,
-) {
-    for client_id in lobbies.lobbies[0].players.iter() {
-        if let Some(player) = player_entity_map.0.get(client_id) {
-            commands
-                .entity(*player)
-                .insert(CharacterPhysicsBundle::default())
-                .insert(ActionState::<CharacterAction>::default());
-        }
-    }
-}
+// /// Acoording to players in lobby make their server physical entity
+// fn physical_player(
+//     lobbies: Res<Lobbies>,
+//     player_entity_map: Res<PlayerEntityMap>,
+//     mut commands: Commands,
+// ) {
+//     for client_id in lobbies.lobbies[0].players.iter() {
+//         if let Some(player) = player_entity_map.0.get(client_id) {
+//             commands.entity(*player);
+//         }
+//     }
+// }
