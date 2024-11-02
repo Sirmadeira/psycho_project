@@ -41,8 +41,6 @@ impl Plugin for SharedPhysicsPlugin {
         // Setting timestep to same rate as fixed timestep hz
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
 
-        // Setting up gravity
-        app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
         // SystemSet (i.e. where we apply user's actions).

@@ -1,4 +1,5 @@
 //! Responsible for mantaining all the physical world of our game meaning most collider shall be spawmed and replicated to server
+use avian3d::prelude::Gravity;
 use avian3d::prelude::Position;
 use bevy::prelude::*;
 use lightyear::prelude::server::Replicate;
