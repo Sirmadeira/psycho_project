@@ -60,11 +60,9 @@ fn add_cosmetic_physics_floor(
 ) {
     if let Ok(floor) = floor.get_single() {
         info!("Spawning physical floor and adding it is cosmetic");
-        let name = Name::new("PhysicalFloor");
         commands
             .entity(floor)
             .insert(PhysicsBundle::floor())
-            .insert(name)
             .insert(PbrBundle {
                 mesh: meshes.add(Cuboid::new(FLOOR_WIDTH, FLOOR_HEIGHT, FLOOR_WIDTH)),
                 material: materials.add(Color::srgb(1.0, 1.0, 1.0)),

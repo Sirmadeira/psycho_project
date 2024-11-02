@@ -22,7 +22,6 @@ use self::manage_game::InGamePlugin;
 use self::physical_world::PhysicalWorldPlugin;
 use self::player::CreateCharPlugin;
 use self::rtt::FormRttsPlugin;
-use self::voxel_gen::VoxelGenPlugin;
 
 /// Important plugin centralizes most of our client related logic
 pub struct ExampleClientPlugin;

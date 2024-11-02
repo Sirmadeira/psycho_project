@@ -173,7 +173,6 @@ fn add_cosmetics_player(
                 .entity(entity)
                 .insert(InheritedVisibility::default())
                 .insert(GlobalTransform::default())
-                .insert(Name::new("Player"))
                 .insert(HasVisuals);
 
             for file_path in player_visuals.iter_visuals() {

@@ -38,14 +38,20 @@ impl Plugin for ProtocolPlugin {
         app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
 
-        // When you add a simple collider and rigidbody in avian he already comes with all other components
         app.register_component::<LinearVelocity>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full);
 
         app.register_component::<AngularVelocity>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full);
 
-        // This specific component has utils based on lightyear
+        app.register_component::<Name>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once);
+
+        // Position and Rotation have a `correction_fn` set, which is used to smear rollback errors
+        // over a few frames, just for the rendering part in postudpate.
+        //
+        // They also set `interpolation_fn` which is used by the VisualInterpolationPlugin to smooth
+        // out rendering between fixedupdate ticks.
         app.register_component::<Position>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full)
             .add_interpolation_fn(position::lerp)
@@ -59,6 +65,7 @@ impl Plugin for ProtocolPlugin {
         // World components
         app.register_component::<FloorMarker>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
+
         // Channels
         app.add_channel::<Channel1>(ChannelSettings {
             mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
