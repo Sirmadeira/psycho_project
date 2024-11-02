@@ -40,8 +40,9 @@ impl Plugin for SharedPhysicsPlugin {
         });
         // Setting timestep to same rate as fixed timestep hz
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
+
         // Setting up gravity
-        app.insert_resource(Gravity::ZERO);
+        app.insert_resource(Gravity(Vec3::new(0.0, -1.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
         // SystemSet (i.e. where we apply user's actions).
@@ -86,7 +87,6 @@ pub struct CharacterPhysicsBundle {
     external_force: ExternalForce,
     external_impulse: ExternalImpulse,
     friction: Friction,
-    position: Position,
 }
 
 impl Default for CharacterPhysicsBundle {
@@ -101,7 +101,6 @@ impl Default for CharacterPhysicsBundle {
             external_force: ExternalForce::ZERO.with_persistence(false),
             external_impulse: ExternalImpulse::ZERO.with_persistence(false),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
-            position: Position(Vec3::new(0.0, 1.0, 0.0)),
         }
     }
 }

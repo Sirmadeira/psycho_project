@@ -8,6 +8,8 @@ use leafwing_input_manager::prelude::ActionState;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
+use super::player;
+
 /// Utilized to manage the super lobby and the lower end duel lobbies
 pub struct LobbyPlugin;
 
@@ -90,13 +92,9 @@ fn listener_join_lobby(
         };
 
         info!("Replicate the player to all client_ids");
-        commands
-            .entity(*player_entity)
-            .insert(replicate)
-            .insert(CharacterPhysicsBundle::default())
-            .insert(ActionState::<CharacterAction>::default());
+        commands.entity(*player_entity).insert(replicate);
 
-        info!("Starting game for client {}", client_id);
+        info!("Starting game for client since it is entity is predicted is usually recomended to start the game for it first{}", client_id);
         let _ = connection_manager
             .send_message::<Channel1, StartGame>(*client_id, &mut StartGame { lobby_id });
     }

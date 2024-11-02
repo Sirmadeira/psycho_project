@@ -56,11 +56,6 @@ impl Plugin for ProtocolPlugin {
             .add_interpolation_fn(rotation::lerp)
             .add_correction_fn(rotation::lerp);
 
-        // app.register_component::<PlayerPosition>(ChannelDirection::ServerToClient)
-        //     .add_prediction(ComponentSyncMode::Full)
-        //     .add_interpolation(ComponentSyncMode::Full)
-        //     .add_linear_interpolation_fn();
-
         // World components
         app.register_component::<FloorMarker>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);

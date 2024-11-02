@@ -1,6 +1,7 @@
 //! All logic associated to player
 use crate::server::save_file;
 use crate::shared::physics::*;
+use crate::shared::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
@@ -27,6 +28,10 @@ impl Plugin for PlayerPlugin {
         // Replication of resource
         app.add_systems(Startup, replicate_resource);
 
+        // this system will replicate the inputs of a client to other clients
+        // so that a client can predict other clients
+        app.add_systems(PreUpdate, replicate_inputs.after(MainSet::EmitEvents));
+
         // Reads player bundle map and make it readily available when server boots up
         app.add_systems(Startup, read_save_files);
 
@@ -39,9 +44,7 @@ impl Plugin for PlayerPlugin {
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
 
-        // this system will replicate the inputs of a client to other clients
-        // so that a client can predict other clients
-        app.add_systems(PreUpdate, replicate_inputs.after(MainSet::EmitEvents));
+        app.add_systems(Update, physical_player);
 
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
@@ -256,5 +259,21 @@ fn handle_character_actions(
 ) {
     for (action_state, mut character) in &mut query {
         apply_character_action(&time, &spatial_query, action_state, &mut character);
+    }
+}
+
+/// Acoording to players in lobby make their server physical entity
+fn physical_player(
+    lobbies: Res<Lobbies>,
+    player_entity_map: Res<PlayerEntityMap>,
+    mut commands: Commands,
+) {
+    for client_id in lobbies.lobbies[0].players.iter() {
+        if let Some(player) = player_entity_map.0.get(client_id) {
+            commands
+                .entity(*player)
+                .insert(CharacterPhysicsBundle::default())
+                .insert(ActionState::<CharacterAction>::default());
+        }
     }
 }

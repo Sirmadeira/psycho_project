@@ -3,7 +3,7 @@ use avian3d::prelude::Position;
 use bevy::prelude::*;
 use lightyear::prelude::server::Replicate;
 
-use crate::shared::{protocol::world_structs::FloorMarker, physics::FloorPhysicsBundle};
+use crate::shared::{physics::FloorPhysicsBundle, protocol::world_structs::FloorMarker};
 
 /// Responsible for spawning the entities that are correlated to physics mechanic
 pub struct PhysicsWorldPlugin;
@@ -22,5 +22,5 @@ fn spawn_floor_collider(mut commands: Commands) {
         .insert(FloorMarker)
         .insert(Replicate::default())
         .insert(Name::new("PhysicalFloor"))
-        .insert(Position(Vec3::new(0.0, -0.5, 0.0)));
+        .insert(Position(Vec3::new(0.0, -1.0, 0.0)));
 }
