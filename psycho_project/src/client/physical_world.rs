@@ -1,5 +1,5 @@
 use crate::shared::{
-    physics::{FloorPhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
+    physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
     protocol::world_structs::FloorMarker,
 };
 use avian3d::prelude::Position;
@@ -63,7 +63,7 @@ fn add_cosmetic_physics_floor(
         let name = Name::new("PhysicalFloor");
         commands
             .entity(floor)
-            .insert(FloorPhysicsBundle::default())
+            .insert(PhysicsBundle::floor())
             .insert(name)
             .insert(PbrBundle {
                 mesh: meshes.add(Cuboid::new(FLOOR_WIDTH, FLOOR_HEIGHT, FLOOR_WIDTH)),

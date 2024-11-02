@@ -40,9 +40,7 @@ fn add_physics_to_players(
         } else {
             info!("Remote character replicated to us: {player:?}");
         }
-        commands
-            .entity(player)
-            .insert(CharacterPhysicsBundle::default());
+        commands.entity(player).insert(PhysicsBundle::player());
     }
 }
 

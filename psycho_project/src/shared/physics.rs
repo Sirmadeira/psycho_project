@@ -41,6 +41,8 @@ impl Plugin for SharedPhysicsPlugin {
         // Setting timestep to same rate as fixed timestep hz
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
 
+        // Setting up gravity
+        app.insert_resource(Gravity(Vec3::new(0.0, -1.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
         // SystemSet (i.e. where we apply user's actions).
@@ -73,52 +75,42 @@ pub const REPLICATION_GROUP: ReplicationGroup = ReplicationGroup::new_id(1);
 pub const CHARACTER_CAPSULE_RADIUS: f32 = 0.5;
 pub const CHARACTER_CAPSULE_HEIGHT: f32 = 0.5;
 
-/// Bundle that stores physical info for my character
-#[derive(Bundle)]
-pub struct CharacterPhysicsBundle {
-    rigid_body: RigidBody,
-    collider: Collider,
-    lock_axes: LockedAxes,
-    external_force: ExternalForce,
-    external_impulse: ExternalImpulse,
-    friction: Friction,
-}
-
-impl Default for CharacterPhysicsBundle {
-    fn default() -> Self {
-        Self {
-            rigid_body: RigidBody::Dynamic,
-            collider: Collider::capsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT),
-            lock_axes: LockedAxes::default()
-                .lock_rotation_x()
-                .lock_rotation_y()
-                .lock_rotation_z(),
-            external_force: ExternalForce::ZERO.with_persistence(false),
-            external_impulse: ExternalImpulse::ZERO.with_persistence(false),
-            friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
-        }
-    }
-}
-
 pub const FLOOR_WIDTH: f32 = 100.0;
 pub const FLOOR_HEIGHT: f32 = 0.5;
 
-/// Bundle that store physical info for my floor
 #[derive(Bundle)]
-pub struct FloorPhysicsBundle {
-    rigid_body: RigidBody,
-    collider: Collider,
+pub struct PhysicsBundle {
+    pub collider: Collider,
+    pub collider_density: ColliderDensity,
+    pub rigid_body: RigidBody,
+    pub external_force: ExternalForce,
+    pub locked_axes: LockedAxes,
 }
 
-impl Default for FloorPhysicsBundle {
-    fn default() -> Self {
+impl PhysicsBundle {
+    pub fn player() -> Self {
+        let collider = Collider::capsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT);
         Self {
-            rigid_body: RigidBody::Static,
+            collider,
+            collider_density: ColliderDensity(1.0),
+            locked_axes: LockedAxes::default()
+                .lock_rotation_x()
+                .lock_rotation_y()
+                .lock_rotation_z(),
+            rigid_body: RigidBody::Dynamic,
+            external_force: ExternalForce::ZERO.with_persistence(false),
+        }
+    }
+    pub fn floor() -> Self {
+        Self {
             collider: Collider::cuboid(FLOOR_WIDTH, FLOOR_HEIGHT, FLOOR_WIDTH),
+            collider_density: ColliderDensity(1.0),
+            rigid_body: RigidBody::Static,
+            external_force: ExternalForce::ZERO.with_persistence(false),
+            locked_axes: LockedAxes::default(),
         }
     }
 }
-
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Reflect, Serialize, Deserialize)]
 pub enum CharacterAction {
     Move,

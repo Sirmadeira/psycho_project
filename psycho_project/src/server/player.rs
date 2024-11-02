@@ -1,7 +1,6 @@
 //! All logic associated to player
 use crate::server::save_file;
 use crate::shared::physics::*;
-use crate::shared::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;

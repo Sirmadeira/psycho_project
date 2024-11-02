@@ -93,7 +93,7 @@ fn listener_join_lobby(
         commands
             .entity(*player_entity)
             .insert(replicate)
-            .insert(CharacterPhysicsBundle::default())
+            .insert(PhysicsBundle::player())
             .insert(ActionState::<CharacterAction>::default());
 
         info!("Starting game for client since it is entity is predicted is usually recomended to start the game for it first{}", client_id);

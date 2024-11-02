@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy::{reflect::Reflect, utils::HashMap};
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::ops::{Add, Mul};
 use std::vec;
 
 //Resources
@@ -76,23 +75,6 @@ impl PlayerVisuals {
     Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Reflect, Default,
 )]
 pub struct PlayerPosition(pub Vec3);
-
-impl Add for PlayerPosition {
-    type Output = PlayerPosition;
-    // A optimization type when exportin such functions
-    #[inline]
-    fn add(self, rhs: PlayerPosition) -> PlayerPosition {
-        PlayerPosition(self.0.add(rhs.0))
-    }
-}
-
-impl Mul<f32> for &PlayerPosition {
-    type Output = PlayerPosition;
-    #[inline]
-    fn mul(self, rhs: f32) -> Self::Output {
-        PlayerPosition(self.0 * rhs)
-    }
-}
 
 // Channels
 #[derive(Channel)]
