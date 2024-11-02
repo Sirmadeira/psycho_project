@@ -22,5 +22,5 @@ fn spawn_floor_collider(mut commands: Commands) {
         .insert(FloorMarker)
         .insert(Replicate::default())
         .insert(Name::new("PhysicalFloor"))
-        .insert(Position(Vec3::new(0.0, -1.0, 0.0)));
+        .insert(Position(Vec3::new(0.0, -1.5, 0.0)));
 }

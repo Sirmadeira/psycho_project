@@ -225,7 +225,6 @@ pub(crate) fn handle_disconnections(
         if let Some(disconnecting_player) = player_entity_map.0.remove(&client_id) {
             info!("This player disconnected {}", disconnecting_player);
             // Right now lightyear does that for us
-            // commands.entity(disconnecting_player).despawn();
         } else {
             error!("Player entity not found for client ID: {}", client_id);
         }
