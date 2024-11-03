@@ -55,8 +55,6 @@ fn listener_join_lobby(
         lobbies.lobbies[0].players.push(*client_id);
     }
 }
-
-
 // Listening for clients who somehow exited the games
 fn listener_exit_lobby(
     mut events: EventReader<MessageEvent<ExitLobby>>,
@@ -66,18 +64,19 @@ fn listener_exit_lobby(
     for event in events.read() {
         let client_id = event.context();
 
-        let player_entity = player_entity_map
-            .0
-            .get(client_id)
-            .expect("To find player in map when searching for his player state");
+        if let Some(player_entity) = player_entity_map.0.get(client_id) {
+            info!("Client disconnected but still in game {}", client_id);
 
-        let mut on_state = online_state
-            .get_mut(*player_entity)
-            .expect("For online player to have player state component");
-
-        *on_state = PlayerStateConnection {
-            online: true,
-            in_game: false,
+            if let Ok(mut on_state) = online_state.get_mut(*player_entity){
+                *on_state = PlayerStateConnection {
+                    online: true,
+                    in_game: false,
+                };
+                info!(
+                    "Manage to adjust his online state to not in game {}",client_id
+                )
+            }
         }
+
     }
 }
