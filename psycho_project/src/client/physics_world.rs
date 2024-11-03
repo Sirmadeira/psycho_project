@@ -1,5 +1,5 @@
 use crate::shared::{
-    physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
+    shared_physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
     protocol::world_structs::FloorMarker,
 };
 use avian3d::prelude::Position;

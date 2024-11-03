@@ -1,7 +1,8 @@
 //! All logic associated to player
 use crate::server::save_file;
-use crate::shared::physics::*;
+use crate::shared::protocol::lobby_structs::{Lobbies, StartGame};
 use crate::shared::protocol::player_structs::*;
+use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -43,7 +44,8 @@ impl Plugin for PlayerPlugin {
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
 
-        // app.add_systems(Update, physical_player);
+        // Tells to replicate entities and also adds physics and input map for them
+        app.add_systems(Update, replicate_players);
 
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
@@ -260,15 +262,53 @@ fn handle_character_actions(
     }
 }
 
-// /// Acoording to players in lobby make their server physical entity
-// fn physical_player(
-//     lobbies: Res<Lobbies>,
-//     player_entity_map: Res<PlayerEntityMap>,
-//     mut commands: Commands,
-// ) {
-//     for client_id in lobbies.lobbies[0].players.iter() {
-//         if let Some(player) = player_entity_map.0.get(client_id) {
-//             commands.entity(*player);
-//         }
-//     }
-// }
+fn replicate_players(
+    lobbies: Res<Lobbies>,
+    player_entity_map: Res<PlayerEntityMap>,
+    mut online_state: Query<&mut PlayerStateConnection>,
+    mut connection_manager: ResMut<ConnectionManager>,
+    mut commands: Commands,
+) {
+    for client_id in lobbies.lobbies[0].players.iter() {
+        let player_entity = player_entity_map
+            .0
+            .get(client_id)
+            .expect("To find player in map when searching for his player state");
+
+        let mut on_state = online_state
+            .get_mut(*player_entity)
+            .expect("For online player to have player state component");
+
+        if on_state.in_game != true {
+            info!("Adjusting player state to in_game");
+            *on_state = PlayerStateConnection {
+                online: true,
+                in_game: true,
+            };
+            info!("Defining type of replicatinon for that player important to know he is from replication_group 1");
+            let replicate = Replicate {
+                sync: SyncTarget {
+                    prediction: NetworkTarget::All,
+                    ..default()
+                },
+                controlled_by: ControlledBy {
+                    target: NetworkTarget::Single(*client_id),
+                    ..default()
+                },
+                group: REPLICATION_GROUP,
+                ..default()
+            };
+
+            info!("Replicate the player to all client_ids and adding it is physics");
+            // This looks weird i know but it is for later to access your own lobby
+            let lobby_id = lobbies.lobbies[0].lobby_id;
+            commands
+                .entity(*player_entity)
+                .insert(replicate)
+                .insert(PhysicsBundle::player())
+                .insert(ActionState::<CharacterAction>::default());
+            let _ = connection_manager
+                .send_message::<Channel1, StartGame>(*client_id, &mut StartGame { lobby_id });
+        }
+    }
+}

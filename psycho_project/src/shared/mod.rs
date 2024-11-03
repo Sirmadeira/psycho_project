@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use physics::SharedPhysicsPlugin;
+use shared_physics::SharedPhysicsPlugin;
 
-pub mod physics;
+pub mod shared_physics;
 pub mod protocol;
 
 use self::protocol::ProtocolPlugin;

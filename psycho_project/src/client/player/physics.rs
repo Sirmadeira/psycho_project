@@ -1,4 +1,4 @@
-use crate::shared::physics::*;
+use crate::shared::shared_physics::*;
 use crate::shared::protocol::player_structs::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;

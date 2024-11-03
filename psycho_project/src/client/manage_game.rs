@@ -18,18 +18,6 @@ impl Plugin for InGamePlugin {
     }
 }
 
-/// Starts the game this and despawn the current ui screen
-fn listener_start_game(
-    mut events: EventReader<MessageEvent<StartGame>>,
-    mut next_state: ResMut<NextState<MyAppState>>,
-) {
-    for event in events.read() {
-        let content = event.message();
-        info!("Start game for lobby {}", content.lobby_id);
-        next_state.set(MyAppState::Game);
-    }
-}
-
 /// Despawns ui screens, despawn rtt cameras and if anything else needs despawnign he your boy
 fn despawn_useless_entities(
     current_ui_screen: Query<
@@ -52,6 +40,18 @@ fn despawn_useless_entities(
     }
     if let Ok(rtt_camera) = rtt_cameras.get_single() {
         commands.entity(rtt_camera).despawn();
+    }
+}
+
+/// Starts the game this and despawn the current ui screen
+fn listener_start_game(
+    mut events: EventReader<MessageEvent<StartGame>>,
+    mut next_state: ResMut<NextState<MyAppState>>,
+) {
+    for event in events.read() {
+        let content = event.message();
+        info!("Start game for lobby {}", content.lobby_id);
+        next_state.set(MyAppState::Game);
     }
 }
 

@@ -35,9 +35,9 @@ impl Plugin for CustomizeCharPlugin {
         // System to customize character correctly
         app.add_systems(Update, customizes_character);
 
-        // Does the anim transfer - I know preupdate here is weird but here is the thing because of the way child entities spawn in bevy
-        // We need to wait a frame or 2 until we consume the events or else he wont find the sub children of skeleton and scene entities
-        app.add_systems(PreUpdate, transfer_essential_components);
+        // Does the anim transfer - I know last here is weird but here is the thing because of the way child entities spawn in bevy
+        // We need to wait a good while before running this guy
+        app.add_systems(Last, transfer_essential_components);
 
         app.add_systems(Update, reset_animation);
     }

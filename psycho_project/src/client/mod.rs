@@ -8,7 +8,7 @@ mod change_res;
 mod essentials;
 mod load_assets;
 mod manage_game;
-mod physical_world;
+mod physics_world;
 mod player;
 pub mod rtt;
 mod ui;
@@ -19,7 +19,7 @@ use self::change_res::ChangeResPlugin;
 use self::essentials::SystemsPlugin;
 use self::load_assets::LoadingAssetsPlugin;
 use self::manage_game::InGamePlugin;
-use self::physical_world::PhysicalWorldPlugin;
+use self::physics_world::PhysicalWorldPlugin;
 use self::player::CreateCharPlugin;
 use self::rtt::FormRttsPlugin;
 
