@@ -41,11 +41,10 @@ impl Plugin for PlayerPlugin {
         // What happens when you connects to server
         app.add_systems(Update, handle_connections);
 
+        app.add_systems(Update, add_physics_to_server_player);
+
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
-
-        // Tells to replicate entities and also adds physics and input map for them
-        app.add_systems(Update, replicate_players);
 
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
@@ -166,6 +165,20 @@ pub(crate) fn spawn_server_player(
     }
 }
 
+/// Helper function run when you wanna spawn the physics of player
+fn add_physics_to_server_player(
+    server_players: Query<Entity, Added<PlayerId>>,
+    mut commands: Commands,
+) {
+    if let Ok(player_entity) = server_players.get_single() {
+        info!("Adding phyiscs to player {}", player_entity);
+        commands
+            .entity(player_entity)
+            .insert(PhysicsBundle::player())
+            .insert(ActionState::<CharacterAction>::default());
+    }
+}
+
 /// Spawns a server player everytime someone connects
 pub(crate) fn handle_connections(
     mut current_players: ResMut<PlayerAmount>,
@@ -259,56 +272,5 @@ fn handle_character_actions(
 ) {
     for (action_state, mut character) in &mut query {
         apply_character_action(&time, &spatial_query, action_state, &mut character);
-    }
-}
-
-fn replicate_players(
-    lobbies: Res<Lobbies>,
-    player_entity_map: Res<PlayerEntityMap>,
-    mut online_state: Query<&mut PlayerStateConnection>,
-    mut connection_manager: ResMut<ConnectionManager>,
-    mut commands: Commands,
-) {
-    for client_id in lobbies.lobbies[0].players.iter() {
-        let player_entity = player_entity_map
-            .0
-            .get(client_id)
-            .expect("To find player in map when searching for his player state");
-
-        let mut on_state = online_state
-            .get_mut(*player_entity)
-            .expect("For online player to have player state component");
-
-        if on_state.in_game != true {
-            info!("Adjusting player state to in_game");
-            *on_state = PlayerStateConnection {
-                online: true,
-                in_game: true,
-            };
-            info!("Defining type of replicatinon for that player important to know he is from replication_group 1");
-            let replicate = Replicate {
-                sync: SyncTarget {
-                    prediction: NetworkTarget::All,
-                    ..default()
-                },
-                controlled_by: ControlledBy {
-                    target: NetworkTarget::Single(*client_id),
-                    ..default()
-                },
-                group: REPLICATION_GROUP,
-                ..default()
-            };
-
-            info!("Replicate the player to all client_ids and adding it is physics");
-            // This looks weird i know but it is for later to access your own lobby
-            let lobby_id = lobbies.lobbies[0].lobby_id;
-            commands
-                .entity(*player_entity)
-                .insert(replicate)
-                .insert(PhysicsBundle::player())
-                .insert(ActionState::<CharacterAction>::default());
-            let _ = connection_manager
-                .send_message::<Channel1, StartGame>(*client_id, &mut StartGame { lobby_id });
-        }
     }
 }

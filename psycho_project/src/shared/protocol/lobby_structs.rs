@@ -16,12 +16,12 @@ pub struct Lobby {
     // List of lobby players
     pub players: Vec<ClientId>,
     // Identifier of lobby in list
-    pub lobby_id: usize,
+    pub lobby_id: u64,
 }
 // Messages
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct StartGame {
-    pub lobby_id: usize,
+    pub lobby_id: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

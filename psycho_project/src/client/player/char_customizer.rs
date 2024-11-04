@@ -26,7 +26,7 @@ impl Plugin for CustomizeCharPlugin {
         app.register_type::<BodyPartMap>();
         app.register_type::<SkeletonMap>();
 
-        // Creates player
+        // Creates player - RC because he should only run in game, not before and such
         app.add_systems(
             Update,
             add_cosmetics_player.run_if(in_state(MyAppState::Game)),
@@ -286,17 +286,17 @@ fn transfer_essential_components(
             info!("Grabbing bones in visuals entity and making animation targets for them according to old bones ids");
 
             // Meh i am lazy not gonna filter out entities
-            for ((_, file_path), body_part) in body_part_map.0.iter_mut() {
+            for ((_, _), body_part) in body_part_map.0.iter_mut() {
                 if let Ok(_) = has_transfered.get(*body_part) {
                     // info!(
                     //     "This part is already ready for animation not gonna do it again {}",
                     //     file_path
                     // );
                 } else {
-                    info!(
-                        "Transfering components to apply animation to file path {}",
-                        file_path
-                    );
+                    // info!(
+                    //     "Transfering components to apply animation to file path {}",
+                    //     file_path
+                    // );
                     let new_entity = find_child_with_name_containing(
                         &children_entities,
                         &names,
