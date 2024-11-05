@@ -3,7 +3,9 @@ use crate::server::player::*;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::shared_physics::REPLICATION_GROUP;
+use crate::shared::shared_physics::*;
 use bevy::prelude::*;
+use leafwing_input_manager::prelude::ActionState;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
@@ -51,6 +53,7 @@ fn listener_join_lobby(
     player_entity_map: Res<PlayerEntityMap>,
     mut online_state: Query<&mut PlayerStateConnection>,
     mut connection_manager: ResMut<ConnectionManager>,
+    mut replication_target: Query<(&mut ReplicationTarget, &mut SyncTarget)>,
     mut commands: Commands,
 ) {
     for event in events.read() {
@@ -59,33 +62,62 @@ fn listener_join_lobby(
         info!("Inserted player {} unto lobby {}", client_id, lobby_id);
         lobbies.lobbies[0].players.push(*client_id);
 
-        for client in lobbies.lobbies[0].players.iter() {
-            if let Some(player) = player_entity_map.0.get(client) {
-                let mut on_state = online_state
-                    .get_mut(*player)
-                    .expect("For online player to have player state component");
+        let all_players = lobbies.lobbies[0].players.clone();
 
-                info!("Adjusting player state to in_game");
-                *on_state = PlayerStateConnection {
-                    online: true,
-                    in_game: true,
-                };
+        // Adding type of replication to player who recently joined
+        if let Some(player) = player_entity_map.0.get(client_id) {
+            info!("New player entering game state {}", player);
+            let mut on_state = online_state
+                .get_mut(*player)
+                .expect("For online player to have player state component");
 
-                info!("Defining type of replicatinon for that player important to know he is from replication_group 1");
-                // THIS IS WRONG NEEDS TO REPLACE BUT LIGHTYEAR BBROKEN SO FOR NOW STAYS LIKE THIS
-                let replicate = Replicate {
-                    sync: SyncTarget {
-                        prediction: NetworkTarget::All,
+            let (mut replication, mut sync_target) = replication_target
+                .get_mut(*player)
+                .expect("To pre exist replication");
+
+            info!("Adjusting replicationg target ");
+            *replication = ReplicationTarget {
+                target: NetworkTarget::Only(all_players.clone()),
+                ..default()
+            };
+
+            *sync_target = SyncTarget {
+                prediction: NetworkTarget::Only(all_players.clone()),
+                ..default()
+            };
+
+            info!("Adjusting player state to in_game");
+            *on_state = PlayerStateConnection {
+                online: true,
+                in_game: true,
+            };
+
+            // NEVER EVER MOVE THIS GUY - THIS GUYS NEEDS TO OCCUR REALLY CLOSELY TO THE PHYSICS BUNDLE IN CLIENT
+            // IF NOT HE WILL STUTTER JUST AS PLAYER SPAWNS
+
+            commands
+                .entity(*player)
+                .insert(PhysicsBundle::player())
+                .insert(ActionState::<CharacterAction>::default());
+        }
+        for all_client in lobbies.lobbies[0].players.iter() {
+            if all_client != client_id {
+                if let Some(other_player) = player_entity_map.0.get(all_client) {
+                    let (mut replication, mut sync_target) = replication_target
+                        .get_mut(*other_player)
+                        .expect("To pre exist replication");
+
+                    info!("Adjusting replicationg target ");
+                    *replication = ReplicationTarget {
+                        target: NetworkTarget::Only(all_players.clone()),
                         ..default()
-                    },
-                    controlled_by: ControlledBy {
-                        target: NetworkTarget::Single(*client_id),
+                    };
+
+                    *sync_target = SyncTarget {
+                        prediction: NetworkTarget::Only(all_players.clone()),
                         ..default()
-                    },
-                    group: REPLICATION_GROUP,
-                    ..default()
-                };
-                commands.entity(*player).insert(replicate);
+                    };
+                }
             }
         }
 

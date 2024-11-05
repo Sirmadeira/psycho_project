@@ -41,8 +41,6 @@ impl Plugin for PlayerPlugin {
         // What happens when you connects to server
         app.add_systems(Update, handle_connections);
 
-        app.add_systems(Update, add_physics_to_server_player);
-
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
 
@@ -139,12 +137,29 @@ pub(crate) fn spawn_server_player(
         in_game: false,
     };
 
+    let replicate = Replicate {
+        target: ReplicationTarget {
+            target: NetworkTarget::None,
+        },
+        controlled_by: ControlledBy {
+            target: NetworkTarget::Single(client_id),
+            ..default()
+        },
+        sync: SyncTarget {
+            prediction: NetworkTarget::None,
+            ..default()
+        },
+        group: REPLICATION_GROUP,
+        ..default()
+    };
+
     if let Some(old_player_bun) = player_bundle {
         info!("Inserting into entity map resource");
         let id = commands
             .spawn(old_player_bun.clone())
             .insert(online_state)
             .insert(name)
+            .insert(replicate)
             .id();
         player_entity_map.0.insert(client_id, id);
         return old_player_bun;
@@ -158,24 +173,11 @@ pub(crate) fn spawn_server_player(
             .spawn(new_player_bundle.clone())
             .insert(online_state)
             .insert(name)
+            .insert(replicate)
             .id();
 
         player_entity_map.0.insert(client_id, id);
         return new_player_bundle;
-    }
-}
-
-/// Helper function run when you wanna spawn the physics of player
-fn add_physics_to_server_player(
-    server_players: Query<Entity, Added<PlayerId>>,
-    mut commands: Commands,
-) {
-    if let Ok(player_entity) = server_players.get_single() {
-        info!("Adding phyiscs to player {}", player_entity);
-        commands
-            .entity(player_entity)
-            .insert(PhysicsBundle::player())
-            .insert(ActionState::<CharacterAction>::default());
     }
 }
 

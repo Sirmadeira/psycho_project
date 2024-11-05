@@ -42,7 +42,7 @@ impl Plugin for SharedPhysicsPlugin {
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
 
         // Setting up gravity - NEED TO BE ZERO, OR ELSE IT WILL AFFECT CONFIRMED ENTITIES TOO AND REPLICATED AND ANYONE WHO HAS VELOCITY
-    
+
         app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
@@ -79,6 +79,12 @@ pub const CHARACTER_CAPSULE_HEIGHT: f32 = 0.5;
 pub const FLOOR_WIDTH: f32 = 100.0;
 pub const FLOOR_HEIGHT: f32 = 0.5;
 
+#[derive(PhysicsLayer)]
+enum GameLayer {
+    Player, // Layer 0
+    Ground, // Layer 2
+}
+
 #[derive(Bundle)]
 pub struct PhysicsBundle {
     pub collider: Collider,
@@ -86,6 +92,7 @@ pub struct PhysicsBundle {
     pub rigid_body: RigidBody,
     pub external_force: ExternalForce,
     pub locked_axes: LockedAxes,
+    pub collison_layer: CollisionLayers,
 }
 
 impl PhysicsBundle {
@@ -100,6 +107,7 @@ impl PhysicsBundle {
                 .lock_rotation_z(),
             rigid_body: RigidBody::Dynamic,
             external_force: ExternalForce::ZERO.with_persistence(false),
+            collison_layer: CollisionLayers::new(GameLayer::Player, [GameLayer::Ground]),
         }
     }
     pub fn floor() -> Self {
@@ -109,6 +117,10 @@ impl PhysicsBundle {
             rigid_body: RigidBody::Static,
             external_force: ExternalForce::ZERO.with_persistence(false),
             locked_axes: LockedAxes::default(),
+            collison_layer: CollisionLayers::new(
+                GameLayer::Ground,
+                [GameLayer::Ground, GameLayer::Player],
+            ),
         }
     }
 }

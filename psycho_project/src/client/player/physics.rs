@@ -37,9 +37,7 @@ fn add_physics_to_players(
                 InputMap::new([(CharacterAction::Jump, KeyCode::Space)])
                     .with_dual_axis(CharacterAction::Move, KeyboardVirtualDPad::WASD),
             );
-        } else {
-            info!("Remote character replicated to us: {player:?}");
-        }
+        } 
         commands.entity(player).insert(PhysicsBundle::player());
     }
 }
