@@ -92,6 +92,7 @@ pub struct PhysicsBundle {
     pub external_force: ExternalForce,
     pub locked_axes: LockedAxes,
     pub collison_layer: CollisionLayers,
+    pub friction: Friction,
 }
 
 impl PhysicsBundle {
@@ -107,6 +108,7 @@ impl PhysicsBundle {
             rigid_body: RigidBody::Dynamic,
             external_force: ExternalForce::ZERO.with_persistence(false),
             collison_layer: CollisionLayers::new(GameLayer::Player, [GameLayer::Ground]),
+            friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
     }
     pub fn floor() -> Self {
@@ -120,6 +122,7 @@ impl PhysicsBundle {
                 GameLayer::Ground,
                 [GameLayer::Ground, GameLayer::Player],
             ),
+            friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
     }
 }
