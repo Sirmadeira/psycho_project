@@ -14,7 +14,7 @@ pub struct PlayerPhysicsPlugin;
 impl Plugin for PlayerPhysicsPlugin {
     fn build(&self, app: &mut App) {
         // Add physical components to predicted players
-        app.add_systems(Update, add_physics_to_players);
+        app.add_systems(FixedUpdate, add_physics_to_players);
 
         // It is essential that input bases systems occur in fixedupdate
         app.add_systems(
@@ -24,8 +24,7 @@ impl Plugin for PlayerPhysicsPlugin {
     }
 }
 
-/// Will add physics to predicted entities, interpolated entities do not require physics.
-/// As their position is solely based on the predicted and confirmed entity interpolation
+/// Will add physics to predicted entities
 fn add_physics_to_players(
     players: Query<(Entity, Has<Controlled>), (Added<Predicted>, With<PlayerId>)>,
     mut commands: Commands,

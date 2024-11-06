@@ -1,7 +1,7 @@
 //! Responsible for mantaining all the physical world of our game meaning most collider shall be spawmed and replicated to server
 use crate::shared::protocol::world_structs::FloorMarker;
 use crate::shared::shared_physics::PhysicsBundle;
-use avian3d::prelude::{ExternalForce, Position};
+use avian3d::prelude:: Position;
 use bevy::prelude::*;
 use lightyear::prelude::server::Replicate;
 

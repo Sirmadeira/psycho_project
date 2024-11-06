@@ -7,9 +7,8 @@ use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
-use lightyear::prelude::{client::Predicted, ReplicationGroup};
+use lightyear::prelude::ReplicationGroup;
 use lightyear::shared::input::leafwing::LeafwingInputPlugin;
-use lightyear::shared::replication::components::Replicating;
 use serde::{Deserialize, Serialize};
 
 /// Here lies all the shared setup needed to make physics work in our game
@@ -196,7 +195,7 @@ pub fn apply_character_action(
     let move_dir = action_state
         .axis_pair(&CharacterAction::Move)
         .clamp_length_max(1.0);
-    let move_dir = Vec3::new(-move_dir.x, -2.0, move_dir.y);
+    let move_dir = Vec3::new(-move_dir.x, 0.0, move_dir.y);
 
     // Linear velocity of the character ignoring vertical speed.
     let ground_linear_velocity = Vec3::new(

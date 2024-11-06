@@ -47,9 +47,7 @@ impl Plugin for PlayerPlugin {
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
             FixedUpdate,
-            handle_character_actions
-                .after(replicate_inputs)
-                .in_set(InputPhysicsSet::Input),
+            handle_character_actions.in_set(InputPhysicsSet::Input),
         );
     }
 }
