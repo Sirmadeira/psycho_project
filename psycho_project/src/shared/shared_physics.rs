@@ -1,16 +1,15 @@
 //! Here lies every single function that should occur both to server and client. And structs for no
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
-use crate::shared::PlayerId;
 use avian3d::prelude::*;
 use avian3d::sync::SyncConfig;
 use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
-use lightyear::prelude::ReplicationTarget;
 use lightyear::prelude::{client::Predicted, ReplicationGroup};
 use lightyear::shared::input::leafwing::LeafwingInputPlugin;
+use lightyear::shared::replication::components::Replicating;
 use serde::{Deserialize, Serialize};
 
 /// Here lies all the shared setup needed to make physics work in our game
@@ -197,7 +196,7 @@ pub fn apply_character_action(
     let move_dir = action_state
         .axis_pair(&CharacterAction::Move)
         .clamp_length_max(1.0);
-    let move_dir = Vec3::new(-move_dir.x, 0.0, move_dir.y);
+    let move_dir = Vec3::new(-move_dir.x, -2.0, move_dir.y);
 
     // Linear velocity of the character ignoring vertical speed.
     let ground_linear_velocity = Vec3::new(
@@ -230,11 +229,11 @@ pub fn apply_character_action(
         .apply_force(required_acceleration * character.mass.0);
 }
 
-pub fn shared_gravity_force(
-    mut player_force: Query<&mut ExternalForce, Or<(With<ReplicationTarget>, With<Predicted>)>>,
-) {
-    for mut force in player_force.iter_mut() {
-        let current = Vec2::new(force.x.clone(), force.y.clone());
-        force.apply_force(Vec3::new(current.x, -1.0, current.y));
-    }
-}
+// pub fn shared_gravity_force(
+//     mut player_force: Query<&mut ExternalForce, Or<(With<Replicating>, With<Predicted>)>>,
+// ) {
+//     for mut force in player_force.iter_mut() {
+//         let current = Vec2::new(force.x.clone(), force.z.clone());
+//         force.apply_force(Vec3::new(current.x, -2.0, current.y));
+//     }
+// }

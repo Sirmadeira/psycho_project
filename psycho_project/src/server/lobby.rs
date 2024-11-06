@@ -2,7 +2,6 @@
 use crate::server::player::*;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
-use crate::shared::shared_physics::REPLICATION_GROUP;
 use crate::shared::shared_physics::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;

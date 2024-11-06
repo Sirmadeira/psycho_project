@@ -9,6 +9,7 @@ use lightyear::client::interpolation::VisualInterpolateStatus;
 use lightyear::client::interpolation::VisualInterpolationPlugin;
 use lightyear::shared::replication::components::Replicated;
 use lightyear::{client::components::Confirmed, prelude::client::Predicted};
+
 /// Anything correlated to general physics should be placed in this pluign
 pub struct PhysicalWorldPlugin;
 
@@ -23,6 +24,7 @@ impl Plugin for PhysicalWorldPlugin {
         app.observe(add_visual_interpolation_components::<Rotation>);
 
         app.add_systems(Update, add_cosmetic_physics_floor);
+        // app.add_systems(FixedUpdate, shared_gravity_force);
     }
 }
 
