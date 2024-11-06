@@ -1,5 +1,5 @@
-use crate::shared::shared_physics::*;
 use crate::shared::protocol::player_structs::*;
+use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
@@ -19,7 +19,7 @@ impl Plugin for PlayerPhysicsPlugin {
         // It is essential that input bases systems occur in fixedupdate
         app.add_systems(
             FixedUpdate,
-            handle_character_actions.in_set(InputPhysicsSet::Input),
+            (handle_character_actions, shared_gravity_force).in_set(InputPhysicsSet::Input),
         );
     }
 }
@@ -37,7 +37,7 @@ fn add_physics_to_players(
                 InputMap::new([(CharacterAction::Jump, KeyCode::Space)])
                     .with_dual_axis(CharacterAction::Move, KeyboardVirtualDPad::WASD),
             );
-        } 
+        }
         commands.entity(player).insert(PhysicsBundle::player());
     }
 }

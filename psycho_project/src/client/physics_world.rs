@@ -1,14 +1,14 @@
 use crate::shared::{
-    shared_physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
     protocol::world_structs::FloorMarker,
+    shared_physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
 };
 use avian3d::prelude::Position;
 use avian3d::prelude::Rotation;
 use bevy::prelude::*;
-use lightyear::client::components::Confirmed;
 use lightyear::client::interpolation::VisualInterpolateStatus;
 use lightyear::client::interpolation::VisualInterpolationPlugin;
 use lightyear::shared::replication::components::Replicated;
+use lightyear::{client::components::Confirmed, prelude::client::Predicted};
 /// Anything correlated to general physics should be placed in this pluign
 pub struct PhysicalWorldPlugin;
 
@@ -30,7 +30,15 @@ impl Plugin for PhysicalWorldPlugin {
 /// Basically also made to avoid stuttering
 fn add_visual_interpolation_components<T: Component>(
     trigger: Trigger<OnAdd, T>,
-    query: Query<Entity, (With<T>, Without<Confirmed>, Without<FloorMarker>)>,
+    query: Query<
+        Entity,
+        (
+            With<T>,
+            With<Predicted>,
+            Without<Confirmed>,
+            Without<FloorMarker>,
+        ),
+    >,
     mut commands: Commands,
 ) {
     if !query.contains(trigger.entity()) {

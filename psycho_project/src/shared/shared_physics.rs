@@ -1,14 +1,15 @@
 //! Here lies every single function that should occur both to server and client. And structs for no
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
+use crate::shared::PlayerId;
 use avian3d::prelude::*;
 use avian3d::sync::SyncConfig;
 use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
-use lightyear::prelude::ReplicationGroup;
-
+use lightyear::prelude::ReplicationTarget;
+use lightyear::prelude::{client::Predicted, ReplicationGroup};
 use lightyear::shared::input::leafwing::LeafwingInputPlugin;
 use serde::{Deserialize, Serialize};
 
@@ -227,4 +228,12 @@ pub fn apply_character_action(
     character
         .external_force
         .apply_force(required_acceleration * character.mass.0);
+}
+
+pub fn shared_gravity_force(
+    mut player_force: Query<&mut ExternalForce, Or<(With<ReplicationTarget>, With<Predicted>)>>,
+) {
+    for mut force in player_force.iter_mut() {
+        force.apply_force(Vec3::new(0.0, -1.0, 0.0));
+    }
 }
