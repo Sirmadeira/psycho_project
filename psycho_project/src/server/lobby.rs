@@ -132,6 +132,7 @@ fn listener_exit_lobby(
     mut events: EventReader<MessageEvent<ExitLobby>>,
     player_entity_map: Res<PlayerEntityMap>,
     mut online_state: Query<&mut PlayerStateConnection>,
+    mut lobbies: ResMut<Lobbies>,
 ) {
     for event in events.read() {
         let client_id = event.context();

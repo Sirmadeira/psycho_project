@@ -1,6 +1,6 @@
 //! All logic associated to player
 use crate::server::save_file;
-use crate::shared::protocol::lobby_structs::{Lobbies, StartGame};
+use crate::shared::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
@@ -46,8 +46,10 @@ impl Plugin for PlayerPlugin {
 
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
-            FixedUpdate,
-            (handle_character_actions, shared_gravity_force).in_set(InputPhysicsSet::Input),
+            FixedPreUpdate,
+            handle_character_actions
+                .after(replicate_inputs)
+                .in_set(InputPhysicsSet::Input),
         );
     }
 }
@@ -250,18 +252,20 @@ pub(crate) fn handle_disconnections(
 fn replicate_inputs(
     mut connection: ResMut<ConnectionManager>,
     mut input_events: ResMut<Events<MessageEvent<InputMessage<CharacterAction>>>>,
+    lobbies: Res<Lobbies>,
 ) {
     for mut event in input_events.drain() {
-        let client_id = *event.context();
+        // let client_id = *event.context();
 
         // Optional: do some validation on the inputs to check that there's no cheating
         // Inputs for a specific tick should be write *once*. Don't let players change old inputs.
 
+        let lobby_players = lobbies.lobbies[0].players.clone();
         // rebroadcast the input to other clients
         connection
             .send_message_to_target::<InputChannel, _>(
                 &mut event.message,
-                NetworkTarget::AllExceptSingle(client_id),
+                NetworkTarget::Only(lobby_players),
             )
             .unwrap()
     }

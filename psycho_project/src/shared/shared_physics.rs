@@ -234,6 +234,7 @@ pub fn shared_gravity_force(
     mut player_force: Query<&mut ExternalForce, Or<(With<ReplicationTarget>, With<Predicted>)>>,
 ) {
     for mut force in player_force.iter_mut() {
-        force.apply_force(Vec3::new(0.0, -1.0, 0.0));
+        let current = Vec2::new(force.x.clone(), force.y.clone());
+        force.apply_force(Vec3::new(current.x, -1.0, current.y));
     }
 }

@@ -19,7 +19,7 @@ impl Plugin for PlayerPhysicsPlugin {
         // It is essential that input bases systems occur in fixedupdate
         app.add_systems(
             FixedUpdate,
-            (handle_character_actions, shared_gravity_force).in_set(InputPhysicsSet::Input),
+            handle_character_actions.in_set(InputPhysicsSet::Input),
         );
     }
 }
