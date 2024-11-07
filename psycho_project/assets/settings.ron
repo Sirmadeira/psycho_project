@@ -3,7 +3,7 @@ MySettings(
   input_delay_ticks: 6,
   // do not set a limit on the amount of prediction or else JIITTE
   max_prediction_ticks: 100,
-  correction_ticks_factor: 1.5,
+  correction_ticks_factor: 5.0,
   show_confirmed: true,
   common: Settings(
     client: ClientSettings(

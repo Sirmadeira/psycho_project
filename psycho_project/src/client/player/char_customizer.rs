@@ -18,6 +18,10 @@ impl Plugin for CustomizeCharPlugin {
         app.add_event::<TranferAnim>();
         app.add_event::<ResetAnimation>();
 
+        // Player debugging
+        app.register_type::<PlayerVisuals>();
+        app.register_type::<PlayerBundleMap>();
+
         // Starting up base resource
         app.init_resource::<BodyPartMap>();
         app.init_resource::<SkeletonMap>();

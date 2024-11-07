@@ -18,6 +18,7 @@ impl Plugin for ProtocolPlugin {
     fn build(&self, app: &mut App) {
         //Resources
         app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);
+        app.register_resource::<LobbyPositionMap>(ChannelDirection::ServerToClient);
         app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
 
         // Messages when starting game and just connection

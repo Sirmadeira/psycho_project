@@ -15,26 +15,31 @@ impl Plugin for LobbyPlugin {
     fn build(&self, app: &mut App) {
         // Resources started by server
         app.init_resource::<Lobbies>();
-        //Debugging
-        app.register_type::<Lobbies>();
+        app.init_resource::<LobbyPositionMap>();
+
+        // //Debugging
+        // app.register_type::<Lobbies>();
+        // app.register_type::<LobbyPositionMap>();
 
         // Replication systems
-        app.add_systems(Startup, replicate_resource);
-        app.add_systems(Startup, create_lobby);
+        app.add_systems(Startup, replicate_resources);
+        app.add_systems(Startup, creates_major_lobby);
 
         // Listens to event sent by client
         app.add_systems(Update, listener_join_lobby);
         app.add_systems(Update, listener_exit_lobby);
+        app.add_systems(Update, listener_disconnect_event);
     }
 }
 
-fn replicate_resource(mut commands: Commands) {
+fn replicate_resources(mut commands: Commands) {
     // Replicating resources to clients
     commands.replicate_resource::<Lobbies, Channel1>(NetworkTarget::All);
+    commands.replicate_resource::<LobbyPositionMap, Channel1>(NetworkTarget::All);
 }
 
 /// Creates the major lobby for players also know as the white world
-fn create_lobby(mut lobbies: ResMut<Lobbies>) {
+fn creates_major_lobby(mut lobbies: ResMut<Lobbies>) {
     let mut lobby = Lobby::default();
 
     info!("Grabbing lobby id");
@@ -48,20 +53,27 @@ fn create_lobby(mut lobbies: ResMut<Lobbies>) {
 /// Listening for clients that clicked the button start game
 fn listener_join_lobby(
     mut events: EventReader<MessageEvent<EnterLobby>>,
-    mut lobbies: ResMut<Lobbies>,
-    player_entity_map: Res<PlayerEntityMap>,
     mut online_state: Query<&mut PlayerStateConnection>,
-    mut connection_manager: ResMut<ConnectionManager>,
     mut replication_target: Query<(&mut ReplicationTarget, &mut SyncTarget)>,
+    mut lobbies: ResMut<Lobbies>,
+    mut lobby_position_map: ResMut<LobbyPositionMap>,
+    player_entity_map: Res<PlayerEntityMap>,
+    mut connection_manager: ResMut<ConnectionManager>,
     mut commands: Commands,
 ) {
     for event in events.read() {
         let client_id = event.context();
         let lobby_id = lobbies.lobbies[0].lobby_id;
+
         info!("Inserted player {} unto lobby {}", client_id, lobby_id);
         lobbies.lobbies[0].players.push(*client_id);
 
         let all_players = lobbies.lobbies[0].players.clone();
+
+        info!("Mapping client position in lobby");
+        lobby_position_map
+            .0
+            .insert(*client_id, all_players.len() - 1);
 
         // Adding type of replication to player who recently joined
         if let Some(player) = player_entity_map.0.get(client_id) {
@@ -126,15 +138,29 @@ fn listener_join_lobby(
     }
 }
 
-// Listening for clients who somehow exited the games
+/// Controlled lobby exit
 fn listener_exit_lobby(
     mut events: EventReader<MessageEvent<ExitLobby>>,
-    player_entity_map: Res<PlayerEntityMap>,
     mut online_state: Query<&mut PlayerStateConnection>,
+    player_entity_map: Res<PlayerEntityMap>,
+    mut lobby_position_map: ResMut<LobbyPositionMap>,
     mut lobbies: ResMut<Lobbies>,
 ) {
     for event in events.read() {
         let client_id = event.context();
+
+        if let Some(lobby_position) = lobby_position_map.0.remove(client_id) {
+            info!("Removing client from lobby {}", client_id);
+            // Safely remove the player from the `players` vector at the specified index
+            if lobby_position < lobbies.lobbies[0].players.len() {
+                lobbies.lobbies[0].players.remove(lobby_position);
+            } else {
+                warn!(
+                    "Attempted to remove player at an invalid position: {}",
+                    lobby_position
+                );
+            }
+        }
 
         if let Some(player_entity) = player_entity_map.0.get(client_id) {
             info!("Client disconnected but still in game {}", client_id);
@@ -148,6 +174,29 @@ fn listener_exit_lobby(
                     "Manage to adjust his online state to not in game {}",
                     client_id
                 )
+            }
+        }
+    }
+}
+
+/// When disconnect from game, for any reason whatsover player is gonna be removed from lobbby
+fn listener_disconnect_event(
+    mut events: EventReader<DisconnectEvent>,
+    mut lobby_position_map: ResMut<LobbyPositionMap>,
+    mut lobbies: ResMut<Lobbies>,
+) {
+    for event in events.read() {
+        let client_id = event.client_id;
+        if let Some(lobby_position) = lobby_position_map.0.remove(&client_id) {
+            // Safely remove the player from the `players` vector at the specified index
+            if lobby_position < lobbies.lobbies[0].players.len() {
+                info!("Removing client from lobby {}", client_id);
+                lobbies.lobbies[0].players.remove(lobby_position);
+            } else {
+                warn!(
+                    "Attempted to remove player at an invalid position: {}",
+                    lobby_position
+                );
             }
         }
     }
