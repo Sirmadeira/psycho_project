@@ -48,6 +48,32 @@ fn creates_major_lobby(mut lobbies: ResMut<Lobbies>) {
     lobbies.lobbies.push(lobby);
 }
 
+/// Helper patches up according to list of clietn id passed
+fn update_replication_targets(
+    player: Entity,
+    replication_target: &mut Query<(&mut ReplicationTarget, &mut SyncTarget)>,
+    all_players: &[ClientId],
+) {
+    info!("Updating replication targets for player {}", player);
+
+    if let Ok((mut replication, mut sync_target)) = replication_target.get_mut(player) {
+        *replication = ReplicationTarget {
+            target: NetworkTarget::Only(all_players.to_vec()),
+            ..Default::default()
+        };
+
+        *sync_target = SyncTarget {
+            prediction: NetworkTarget::Only(all_players.to_vec()),
+            ..Default::default()
+        };
+    } else {
+        warn!(
+            "Player {} is missing ReplicationTarget or SyncTarget component",
+            player
+        );
+    }
+}
+
 /// Listening for clients that clicked the button start game - MAKE THIS AS LIGHT AS POSSIBLE
 fn listener_join_lobby(
     mut events: EventReader<MessageEvent<EnterLobby>>,
@@ -92,32 +118,6 @@ fn listener_join_lobby(
         info!("Telling client id {} to start it is game", client_id);
         let _ = connection_manager
             .send_message::<Channel1, StartGame>(*client_id, &mut StartGame { lobby_id });
-    }
-}
-
-/// Helper patches up according to list of clietn id passed
-fn update_replication_targets(
-    player: Entity,
-    replication_target: &mut Query<(&mut ReplicationTarget, &mut SyncTarget)>,
-    all_players: &[ClientId],
-) {
-    info!("Updating replication targets for player {}", player);
-
-    if let Ok((mut replication, mut sync_target)) = replication_target.get_mut(player) {
-        *replication = ReplicationTarget {
-            target: NetworkTarget::Only(all_players.to_vec()),
-            ..Default::default()
-        };
-
-        *sync_target = SyncTarget {
-            prediction: NetworkTarget::Only(all_players.to_vec()),
-            ..Default::default()
-        };
-    } else {
-        warn!(
-            "Player {} is missing ReplicationTarget or SyncTarget component",
-            player
-        );
     }
 }
 

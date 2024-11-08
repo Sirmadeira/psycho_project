@@ -44,7 +44,7 @@ impl Plugin for PlayerPlugin {
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
 
-        app.add_systems(Update, insert_physics_server_player);
+        app.add_systems(FixedUpdate, insert_physics_server_player);
 
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
@@ -252,8 +252,7 @@ pub(crate) fn handle_disconnections(
 fn replicate_inputs(
     mut connection: ResMut<ConnectionManager>,
     mut input_events: ResMut<Events<MessageEvent<InputMessage<CharacterAction>>>>,
-    // lobbies: Res<Lobbies>,
-    // lobby_position_map: Res<LobbyPositionMap>,
+    lobby_position_map: Res<LobbyPositionMap>,
 ) {
     for mut event in input_events.drain() {
         let client_id = *event.context();
@@ -261,16 +260,16 @@ fn replicate_inputs(
         // Optional: do some validation on the inputs to check that there's no cheating
         // Inputs for a specific tick should be write *once*. Don't let players change old inputs.
 
-        // if let Some(index) = lobby_position_map.0.get(&client_id) {
-        //     let mut lobby_players = lobbies.lobbies[0].players.clone();
-        //     lobby_players.remove(*index);
-        connection
-            .send_message_to_target::<InputChannel, _>(
-                &mut event.message,
-                NetworkTarget::AllExceptSingle(client_id),
-            )
-            .unwrap()
-        // }
+        if let Some(client_info) = lobby_position_map.0.get(&client_id) {
+            if !client_info.lobby_without_me.is_empty() {
+                connection
+                    .send_message_to_target::<InputChannel, _>(
+                        &mut event.message,
+                        NetworkTarget::Only(client_info.lobby_without_me.clone()),
+                    )
+                    .unwrap()
+            }
+        }
     }
 }
 
