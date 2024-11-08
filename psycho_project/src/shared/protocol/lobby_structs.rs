@@ -20,10 +20,17 @@ pub struct Lobby {
     pub lobby_id: u64,
 }
 
-/// Tells me client current position in lobby
+/// Gives me client precious info for other logics
 #[derive(Resource, Default, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
-#[reflect(PartialEq, Debug, Default, Serialize, Deserialize)]
-pub struct LobbyPositionMap(pub HashMap<ClientId, usize>);
+#[reflect(Resource, PartialEq, Debug, Default, Serialize, Deserialize)]
+pub struct LobbyPositionMap(pub HashMap<ClientId, ClientInfo>);
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Reflect, Default)]
+#[reflect(Default, PartialEq, Debug, Serialize, Deserialize)]
+pub struct ClientInfo {
+    pub lobby_position: usize,
+    pub lobby_without_me: Vec<ClientId>,
+}
 
 // Messages
 /// Tells me when the game starts and what lobby to start too

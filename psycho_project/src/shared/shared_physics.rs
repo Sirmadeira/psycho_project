@@ -7,11 +7,8 @@ use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
-use lightyear::client::prediction::rollback::Rollback;
-use lightyear::client::prediction::Predicted;
-use lightyear::prelude::{ReplicationGroup, TickManager};
+use lightyear::prelude::ReplicationGroup;
 use lightyear::shared::input::leafwing::LeafwingInputPlugin;
-use lightyear::shared::replication::components::Replicating;
 use serde::{Deserialize, Serialize};
 
 /// Here lies all the shared setup needed to make physics work in our game
@@ -40,11 +37,10 @@ impl Plugin for SharedPhysicsPlugin {
             transform_to_position: false,
             position_to_transform: true,
         });
-        // Setting timestep to same rate as fixed timestep hz
+        // Setting timestep to same rate as fixed timestep hz it is 74 btw
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
 
-        // Setting up gravity - NEED TO BE ZERO, OR ELSE IT WILL AFFECT CONFIRMED ENTITIES TOO AND REPLICATED AND ANYONE WHO HAS VELOCITY
-
+        // Setting up gravity - NEED TO BE ZERO, OR ELSE jiter
         app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
@@ -162,7 +158,7 @@ pub fn apply_character_action(
     action_state: &ActionState<CharacterAction>,
     character: &mut CharacterQueryItem,
 ) {
-    const MAX_SPEED: f32 = 10.0;
+    const MAX_SPEED: f32 = 5.0;
     const MAX_ACCELERATION: f32 = 20.0;
     const GRAVITY: f32 = -9.8;
 

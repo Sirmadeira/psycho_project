@@ -11,8 +11,6 @@ pub struct PhysicsWorldPlugin;
 impl Plugin for PhysicsWorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_floor_collider);
-
-        // app.add_systems(FixedUpdate, shared_gravity_force);
     }
 }
 
