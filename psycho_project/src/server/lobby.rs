@@ -2,9 +2,7 @@
 use crate::server::player::*;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
-use crate::shared::shared_physics::*;
 use bevy::prelude::*;
-use leafwing_input_manager::prelude::ActionState;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
@@ -27,7 +25,6 @@ impl Plugin for LobbyPlugin {
 
         // Listens to event sent by client
         app.add_systems(Update, listener_join_lobby);
-        app.add_systems(Update, insert_physics);
         app.add_systems(Update, listener_exit_lobby);
         app.add_systems(Update, listener_disconnect_event);
     }
@@ -51,9 +48,7 @@ fn creates_major_lobby(mut lobbies: ResMut<Lobbies>) {
     lobbies.lobbies.push(lobby);
 }
 
-fn update_join_lobby() {}
-
-/// Listening for clients that clicked the button start game
+/// Listening for clients that clicked the button start game - MAKE THIS AS LIGHT AS POSSIBLE
 fn listener_join_lobby(
     mut events: EventReader<MessageEvent<EnterLobby>>,
     mut replication_target: Query<(&mut ReplicationTarget, &mut SyncTarget)>,
@@ -100,35 +95,7 @@ fn listener_join_lobby(
     }
 }
 
-fn insert_physics(
-    mut events: EventReader<MessageEvent<EnterLobby>>,
-    player_entity_map: Res<PlayerEntityMap>,
-    mut online_state: Query<&mut PlayerStateConnection>,
-    mut commands: Commands,
-) {
-    for event in events.read() {
-        let client_id = event.context();
-        if let Some(player) = player_entity_map.0.get(client_id) {
-            if let Ok(mut on_state) = online_state.get_mut(*player) {
-                *on_state = PlayerStateConnection {
-                    online: true,
-                    in_game: true,
-                };
-                // Insert required components for physics and action state.
-                commands
-                    .entity(*player)
-                    .insert(PhysicsBundle::player())
-                    .insert(ActionState::<CharacterAction>::default());
-            } else {
-                warn!(
-                    "Player {} is missing PlayerStateConnection component",
-                    player
-                );
-            }
-        };
-    }
-}
-
+/// Helper patches up according to list of clietn id passed
 fn update_replication_targets(
     player: Entity,
     replication_target: &mut Query<(&mut ReplicationTarget, &mut SyncTarget)>,

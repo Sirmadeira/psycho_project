@@ -44,6 +44,8 @@ impl Plugin for PlayerPlugin {
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
 
+        app.add_systems(Update, insert_physics_server_player);
+
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
             FixedUpdate,
@@ -269,6 +271,35 @@ fn replicate_inputs(
             )
             .unwrap()
         // }
+    }
+}
+
+fn insert_physics_server_player(
+    mut events: EventReader<MessageEvent<EnterLobby>>,
+    player_entity_map: Res<PlayerEntityMap>,
+    mut online_state: Query<&mut PlayerStateConnection>,
+    mut commands: Commands,
+) {
+    for event in events.read() {
+        let client_id = event.context();
+        if let Some(player) = player_entity_map.0.get(client_id) {
+            if let Ok(mut on_state) = online_state.get_mut(*player) {
+                *on_state = PlayerStateConnection {
+                    online: true,
+                    in_game: true,
+                };
+                // Insert required components for physics and action state.
+                commands
+                    .entity(*player)
+                    .insert(PhysicsBundle::player())
+                    .insert(ActionState::<CharacterAction>::default());
+            } else {
+                warn!(
+                    "Player {} is missing PlayerStateConnection component",
+                    player
+                );
+            }
+        };
     }
 }
 
