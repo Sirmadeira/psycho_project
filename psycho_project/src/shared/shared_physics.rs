@@ -7,8 +7,10 @@ use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
+use lightyear::client::prediction::Predicted;
 use lightyear::prelude::ReplicationGroup;
 use lightyear::shared::input::leafwing::LeafwingInputPlugin;
+use lightyear::shared::replication::components::Replicating;
 use serde::{Deserialize, Serialize};
 
 /// Here lies all the shared setup needed to make physics work in our game
@@ -43,6 +45,8 @@ impl Plugin for SharedPhysicsPlugin {
         // Setting up gravity - NEED TO BE ZERO, OR ELSE IT WILL AFFECT CONFIRMED ENTITIES TOO AND REPLICATED AND ANYONE WHO HAS VELOCITY
 
         app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
+
+        // app.add_systems(FixedUpdate, shared_gravity_force);
 
         // Make sure that any physics simulation happens after the input
         // SystemSet (i.e. where we apply user's actions).

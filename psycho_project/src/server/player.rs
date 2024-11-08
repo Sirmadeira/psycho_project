@@ -1,6 +1,6 @@
 //! All logic associated to player
 use crate::server::save_file;
-use crate::shared::protocol::lobby_structs::Lobbies;
+use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
@@ -250,22 +250,25 @@ pub(crate) fn handle_disconnections(
 fn replicate_inputs(
     mut connection: ResMut<ConnectionManager>,
     mut input_events: ResMut<Events<MessageEvent<InputMessage<CharacterAction>>>>,
-    lobbies: Res<Lobbies>,
+    // lobbies: Res<Lobbies>,
+    // lobby_position_map: Res<LobbyPositionMap>,
 ) {
     for mut event in input_events.drain() {
-        // let client_id = *event.context();
+        let client_id = *event.context();
 
         // Optional: do some validation on the inputs to check that there's no cheating
         // Inputs for a specific tick should be write *once*. Don't let players change old inputs.
 
-        let lobby_players = lobbies.lobbies[0].players.clone();
-        // rebroadcast the input to other clients
+        // if let Some(index) = lobby_position_map.0.get(&client_id) {
+        //     let mut lobby_players = lobbies.lobbies[0].players.clone();
+        //     lobby_players.remove(*index);
         connection
             .send_message_to_target::<InputChannel, _>(
                 &mut event.message,
-                NetworkTarget::Only(lobby_players),
+                NetworkTarget::AllExceptSingle(client_id),
             )
             .unwrap()
+        // }
     }
 }
 
