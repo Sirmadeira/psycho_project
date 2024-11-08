@@ -7,8 +7,9 @@ use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
+use lightyear::client::prediction::rollback::Rollback;
 use lightyear::client::prediction::Predicted;
-use lightyear::prelude::ReplicationGroup;
+use lightyear::prelude::{ReplicationGroup, TickManager};
 use lightyear::shared::input::leafwing::LeafwingInputPlugin;
 use lightyear::shared::replication::components::Replicating;
 use serde::{Deserialize, Serialize};
@@ -45,8 +46,6 @@ impl Plugin for SharedPhysicsPlugin {
         // Setting up gravity - NEED TO BE ZERO, OR ELSE IT WILL AFFECT CONFIRMED ENTITIES TOO AND REPLICATED AND ANYONE WHO HAS VELOCITY
 
         app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
-
-        // app.add_systems(FixedUpdate, shared_gravity_force);
 
         // Make sure that any physics simulation happens after the input
         // SystemSet (i.e. where we apply user's actions).
@@ -150,7 +149,7 @@ impl Actionlike for CharacterAction {
 pub struct CharacterQuery {
     pub external_force: &'static mut ExternalForce,
     pub external_impulse: &'static mut ExternalImpulse,
-    pub linear_velocity: &'static LinearVelocity,
+    pub linear_velocity: &'static mut LinearVelocity,
     pub mass: &'static Mass,
     pub position: &'static Position,
     pub entity: Entity,
@@ -163,8 +162,9 @@ pub fn apply_character_action(
     action_state: &ActionState<CharacterAction>,
     character: &mut CharacterQueryItem,
 ) {
-    const MAX_SPEED: f32 = 5.0;
+    const MAX_SPEED: f32 = 10.0;
     const MAX_ACCELERATION: f32 = 20.0;
+    const GRAVITY: f32 = -9.8;
 
     // How much velocity can change in a single tick given the max acceleration.
     let max_velocity_delta_per_tick = MAX_ACCELERATION * time.delta_seconds();
@@ -196,6 +196,9 @@ pub fn apply_character_action(
                 .external_impulse
                 .apply_impulse(Vec3::new(0.0, 5.0, 0.0));
         }
+    } else {
+        // Apply gravity to character's vertical velocity
+        character.linear_velocity.y += GRAVITY * time.delta_seconds();
     }
 
     // Handle moving.
@@ -234,12 +237,3 @@ pub fn apply_character_action(
         .external_force
         .apply_force(required_acceleration * character.mass.0);
 }
-
-// pub fn shared_gravity_force(
-//     mut player_force: Query<&mut ExternalForce, Or<(With<Replicating>, With<Predicted>)>>,
-// ) {
-//     for mut force in player_force.iter_mut() {
-//         let current = Vec2::new(force.x.clone(), force.z.clone());
-//         force.apply_force(Vec3::new(current.x, -2.0, current.y));
-//     }
-// }
