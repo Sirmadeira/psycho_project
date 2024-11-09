@@ -250,20 +250,15 @@ pub(crate) fn handle_disconnections(
 fn replicate_inputs(
     mut connection: ResMut<ConnectionManager>,
     mut input_events: ResMut<Events<MessageEvent<InputMessage<CharacterAction>>>>,
-    lobby_position_map: Res<LobbyPositionMap>,
+    lobby: Res<Lobbies>,
 ) {
     for mut event in input_events.drain() {
         let client_id = *event.context();
-
-        // Optional: do some validation on the inputs to check that there's no cheating
-        // Inputs for a specific tick should be write *once*. Don't let players change old inputs.
-
-        // if let Some(client_info) = lobby_position_map.0.get(&client_id) {
-        //     if !client_info.lobby_without_me.is_empty() {
+        // FIND A HYPER OPTIMAL WAY OF MAKIN ONLY LOBBY
         connection
             .send_message_to_target::<InputChannel, _>(
                 &mut event.message,
-                NetworkTarget::AllExceptSingle(client_id),
+                NetworkTarget::Only(lobby.lobbies[0].players.clone()),
             )
             .unwrap()
         //     }

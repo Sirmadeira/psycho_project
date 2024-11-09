@@ -26,7 +26,6 @@ impl Plugin for SharedPhysicsPlugin {
                 .build()
                 .disable::<SyncPlugin>(),
         );
-        app.add_plugins(PhysicsDebugPlugin::default());
         // We change SyncPlugin to PostUpdate, because we want the visually
         // interpreted values synced to transform every time, not just when
         // Fixed schedule runs.
@@ -40,8 +39,11 @@ impl Plugin for SharedPhysicsPlugin {
         // Setting timestep to same rate as fixed timestep hz it is 74 btw
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
 
+        // See your colliders
+        app.add_plugins(PhysicsDebugPlugin::default());
+
         // Setting up gravity - NEED TO BE ZERO, OR ELSE jiter
-        app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
+        app.insert_resource(Gravity(Vec3::new(0.0, -2.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
         // SystemSet (i.e. where we apply user's actions).
@@ -145,7 +147,7 @@ impl Actionlike for CharacterAction {
 pub struct CharacterQuery {
     pub external_force: &'static mut ExternalForce,
     pub external_impulse: &'static mut ExternalImpulse,
-    pub linear_velocity: &'static mut LinearVelocity,
+    pub linear_velocity: &'static LinearVelocity,
     pub mass: &'static Mass,
     pub position: &'static Position,
     pub entity: Entity,
@@ -160,8 +162,6 @@ pub fn apply_character_action(
 ) {
     const MAX_SPEED: f32 = 5.0;
     const MAX_ACCELERATION: f32 = 20.0;
-    const GRAVITY: f32 = -9.8;
-
     // How much velocity can change in a single tick given the max acceleration.
     let max_velocity_delta_per_tick = MAX_ACCELERATION * time.delta_seconds();
 
@@ -192,9 +192,6 @@ pub fn apply_character_action(
                 .external_impulse
                 .apply_impulse(Vec3::new(0.0, 5.0, 0.0));
         }
-    } else {
-        // Apply gravity to character's vertical velocity
-        character.linear_velocity.y += GRAVITY * time.delta_seconds();
     }
 
     // Handle moving.
