@@ -44,8 +44,6 @@ impl Plugin for PlayerPlugin {
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
 
-        app.add_systems(FixedUpdate, insert_physics_server_player);
-
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
             FixedUpdate,
@@ -260,48 +258,18 @@ fn replicate_inputs(
         // Optional: do some validation on the inputs to check that there's no cheating
         // Inputs for a specific tick should be write *once*. Don't let players change old inputs.
 
-        if let Some(client_info) = lobby_position_map.0.get(&client_id) {
-            if !client_info.lobby_without_me.is_empty() {
-                connection
-                    .send_message_to_target::<InputChannel, _>(
-                        &mut event.message,
-                        NetworkTarget::Only(client_info.lobby_without_me.clone()),
-                    )
-                    .unwrap()
-            }
-        }
+        // if let Some(client_info) = lobby_position_map.0.get(&client_id) {
+        //     if !client_info.lobby_without_me.is_empty() {
+        connection
+            .send_message_to_target::<InputChannel, _>(
+                &mut event.message,
+                NetworkTarget::AllExceptSingle(client_id),
+            )
+            .unwrap()
+        //     }
+        // }
     }
 }
-
-fn insert_physics_server_player(
-    mut events: EventReader<MessageEvent<EnterLobby>>,
-    player_entity_map: Res<PlayerEntityMap>,
-    mut online_state: Query<&mut PlayerStateConnection>,
-    mut commands: Commands,
-) {
-    for event in events.read() {
-        let client_id = event.context();
-        if let Some(player) = player_entity_map.0.get(client_id) {
-            if let Ok(mut on_state) = online_state.get_mut(*player) {
-                *on_state = PlayerStateConnection {
-                    online: true,
-                    in_game: true,
-                };
-                // Insert required components for physics and action state.
-                commands
-                    .entity(*player)
-                    .insert(PhysicsBundle::player())
-                    .insert(ActionState::<CharacterAction>::default());
-            } else {
-                warn!(
-                    "Player {} is missing PlayerStateConnection component",
-                    player
-                );
-            }
-        };
-    }
-}
-
 fn handle_character_actions(
     time: Res<Time>,
     spatial_query: SpatialQuery,

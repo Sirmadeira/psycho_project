@@ -9,6 +9,7 @@ use core::f32::consts::PI;
 use lightyear::client::prediction::Predicted;
 use lightyear::shared::replication::components::Controlled;
 
+use avian3d::prelude::PhysicsSet;
 use bevy_panorbit_camera::PanOrbitCamera;
 
 pub struct PlayerCameraPlugin;
@@ -32,11 +33,18 @@ impl Plugin for PlayerCameraPlugin {
                 .chain(),
         );
 
-        app.add_systems(Update, sync_rtt_to_player);
+        app.add_systems(
+            PostUpdate,
+            sync_rtt_to_player
+                .after(PhysicsSet::Sync)
+                .before(TransformSystem::TransformPropagate),
+        );
 
         app.add_systems(
             PostUpdate,
-            sync_player_camera.before(TransformSystem::TransformPropagate),
+            sync_player_camera
+                .after(PhysicsSet::Sync)
+                .before(TransformSystem::TransformPropagate),
         );
     }
 }
