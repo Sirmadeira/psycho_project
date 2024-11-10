@@ -3,6 +3,26 @@ use bevy::utils::HashMap;
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 
+/// Lobby plugin related to all lobby structs
+pub struct LobbyStructsPlugin;
+
+impl Plugin for LobbyStructsPlugin {
+    fn build(&self, app: &mut App) {
+        //Debugging
+        app.register_type::<Lobbies>();
+        app.register_type::<LobbyPositionMap>();
+
+        //Resources
+        app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);
+        app.register_resource::<LobbyPositionMap>(ChannelDirection::ServerToClient);
+        app.register_message::<StartGame>(ChannelDirection::ServerToClient);
+
+        // Message start match related
+        app.register_message::<EnterLobby>(ChannelDirection::ClientToServer);
+        app.register_message::<ExitLobby>(ChannelDirection::ClientToServer);
+    }
+}
+
 // Resources
 #[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Default, Reflect)]
 #[reflect(Resource, PartialEq, Debug, Default, Serialize, Deserialize)]

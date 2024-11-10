@@ -14,11 +14,6 @@ pub struct SharedPlugin;
 
 impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
-        // Shared debugging
-        //Debugging
-        app.register_type::<Lobbies>();
-        app.register_type::<LobbyPositionMap>();
-
         // Imported plugins
         // Self made plugins
         app.add_plugins(ProtocolPlugin);

@@ -1,8 +1,30 @@
+use crate::shared::protocol::ComponentSyncMode;
 use bevy::prelude::*;
 use bevy::{reflect::Reflect, utils::HashMap};
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::vec;
+
+/// Plugin related to all player structs
+pub struct PlayerStructPlugin;
+
+impl Plugin for PlayerStructPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once);
+
+        app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once);
+
+        app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
+
+        // Messages when starting game and just connection
+        app.register_message::<SendBundle>(ChannelDirection::ServerToClient);
+        // Messages related to visuals
+        app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
+        app.register_message::<ChangeChar>(ChannelDirection::Bidirectional);
+    }
+}
 
 //Resources
 // A map utilized to easily grab player info via it is client id. Avoids iterating through playerid when unecessary

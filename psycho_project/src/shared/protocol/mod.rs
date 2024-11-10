@@ -16,56 +16,9 @@ pub(crate) struct ProtocolPlugin;
 
 impl Plugin for ProtocolPlugin {
     fn build(&self, app: &mut App) {
-        //Resources
-        app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);
-        app.register_resource::<LobbyPositionMap>(ChannelDirection::ServerToClient);
-        app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
-
-        // Messages when starting game and just connection
-        app.register_message::<StartGame>(ChannelDirection::ServerToClient);
-        app.register_message::<SendBundle>(ChannelDirection::ServerToClient);
-        // Message start match related
-        app.register_message::<EnterLobby>(ChannelDirection::ClientToServer);
-        app.register_message::<ExitLobby>(ChannelDirection::ClientToServer);
-        // Messages related to visuals
-        app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
-        app.register_message::<ChangeChar>(ChannelDirection::Bidirectional);
-
-        // Components
-        // Player Components
-        app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once);
-
-        app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once);
-
-        app.register_component::<LinearVelocity>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Full);
-
-        app.register_component::<AngularVelocity>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Full);
-
-        app.register_component::<Name>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once);
-
-        // Position and Rotation have a `correction_fn` set, which is used to smear rollback errors
-        // over a few frames, just for the rendering part in postudpate.
-        //
-        // They also set `interpolation_fn` which is used by the VisualInterpolationPlugin to smooth
-        // out rendering between fixedupdate ticks.
-        app.register_component::<Position>(ChannelDirection::Bidirectional)
-            .add_prediction(ComponentSyncMode::Full)
-            .add_interpolation_fn(position::lerp)
-            .add_correction_fn(position::lerp);
-
-        app.register_component::<Rotation>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Full)
-            .add_interpolation_fn(rotation::lerp)
-            .add_correction_fn(rotation::lerp);
-
-        // World components
-        app.register_component::<FloorMarker>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once);
+        app.add_plugins(SharedWorldStructsPlugin);
+        app.add_plugins(LobbyStructsPlugin);
+        app.add_plugins(PlayerStructPlugin);
 
         // Channels
         app.add_channel::<Channel1>(ChannelSettings {
