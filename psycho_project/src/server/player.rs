@@ -253,7 +253,6 @@ fn replicate_inputs(
     lobby: Res<Lobbies>,
 ) {
     for mut event in input_events.drain() {
-        let client_id = *event.context();
         // FIND A HYPER OPTIMAL WAY OF MAKIN ONLY LOBBY
         connection
             .send_message_to_target::<InputChannel, _>(

@@ -16,6 +16,7 @@ bevy_panorbit_camera = "0.19"
 avian3d = {version = "0.1.2",default-features = false, features = ["3d","f32","parry-f32","parallel","serialize","debug-plugin"]}
 bevy-inspector-egui = "0.25"
 bevy_asset_loader = "0.21"
+bevy_screen_diagnostics = "0.6"
 lightyear = {version = "0.17", features = [
   "steam",
   "webtransport",

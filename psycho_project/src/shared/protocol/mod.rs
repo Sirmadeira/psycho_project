@@ -1,4 +1,3 @@
-use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy::prelude::{App, Plugin};
 use lightyear::client::components::ComponentSyncMode;
