@@ -1,6 +1,7 @@
 //! Here lies every single function that should occur both to server and client. And structs for no
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
+use crate::shared::protocol::player_structs::CharacterAction;
 use avian3d::prelude::*;
 use avian3d::sync::SyncConfig;
 use bevy::ecs::query::QueryData;
@@ -9,7 +10,6 @@ use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
 use lightyear::prelude::ReplicationGroup;
 use lightyear::shared::input::leafwing::LeafwingInputPlugin;
-use serde::{Deserialize, Serialize};
 
 /// Here lies all the shared setup needed to make physics work in our game
 /// Warning: This game is solely based on running an independent server and clients any other mode will break it
@@ -124,20 +124,6 @@ impl PhysicsBundle {
                 [GameLayer::Ground, GameLayer::Player],
             ),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
-        }
-    }
-}
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Reflect, Serialize, Deserialize)]
-pub enum CharacterAction {
-    Move,
-    Jump,
-}
-
-impl Actionlike for CharacterAction {
-    fn input_control_kind(&self) -> InputControlKind {
-        match self {
-            Self::Move => InputControlKind::DualAxis,
-            Self::Jump => InputControlKind::Button,
         }
     }
 }

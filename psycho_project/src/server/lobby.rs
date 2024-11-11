@@ -2,10 +2,9 @@
 use crate::server::player::*;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
-use crate::shared::shared_physics::CharacterAction;
+
 use crate::shared::shared_physics::PhysicsBundle;
 use bevy::prelude::*;
-use leafwing_input_manager::prelude::ActionState;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;
 
@@ -31,10 +30,7 @@ impl Plugin for LobbyPlugin {
         app.add_systems(Update, listener_exit_lobby);
         app.add_systems(Update, listener_disconnect_event);
 
-        app.add_systems(
-            FixedPostUpdate,
-            insert_physics_server_player.after(listener_join_lobby),
-        );
+        app.add_systems(FixedUpdate, insert_physics_server_player);
     }
 }
 
@@ -97,10 +93,7 @@ fn insert_physics_server_player(
                     in_game: true,
                 };
                 // Insert required components for physics and action state.
-                commands
-                    .entity(*player)
-                    .insert(PhysicsBundle::player())
-                    .insert(ActionState::<CharacterAction>::default());
+                commands.entity(*player).insert(PhysicsBundle::player());
             } else {
                 warn!(
                     "Player {} is missing PlayerStateConnection component",

@@ -1,10 +1,11 @@
 use crate::shared::protocol::ComponentSyncMode;
 use bevy::prelude::*;
 use bevy::{reflect::Reflect, utils::HashMap};
+use leafwing_input_manager::prelude::ActionState;
+use leafwing_input_manager::*;
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::vec;
-
 /// Plugin related to all player structs
 pub struct PlayerStructPlugin;
 
@@ -40,6 +41,8 @@ pub struct PlayerBundle {
     pub id: PlayerId,
     pub visuals: PlayerVisuals,
     pub position: PlayerPosition,
+    //TODO - SEPARATE SAVE BUNDLE
+    pub action_state: ActionState<CharacterAction>,
 }
 
 impl PlayerBundle {
@@ -48,6 +51,7 @@ impl PlayerBundle {
             id: PlayerId(id),
             visuals: visuals,
             position: position,
+            action_state: ActionState::<CharacterAction>::default(),
         }
     }
 }
@@ -97,6 +101,21 @@ impl PlayerVisuals {
     Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Reflect, Default,
 )]
 pub struct PlayerPosition(pub Vec3);
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Reflect, Serialize, Deserialize)]
+pub enum CharacterAction {
+    Move,
+    Jump,
+}
+
+impl Actionlike for CharacterAction {
+    fn input_control_kind(&self) -> InputControlKind {
+        match self {
+            Self::Move => InputControlKind::DualAxis,
+            Self::Jump => InputControlKind::Button,
+        }
+    }
+}
 
 // Channels
 #[derive(Channel)]

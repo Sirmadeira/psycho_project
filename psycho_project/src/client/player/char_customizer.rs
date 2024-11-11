@@ -256,12 +256,11 @@ fn customizes_character(
             part_to_change.new_part
         );
         if let Some(old_body_part) = body_part.0.remove(&(client_id, part_to_change.old_part)) {
+            info!("Found old body part in map removing it");
             let player = parent
                 .get(old_body_part)
                 .expect("To always have a father")
                 .get();
-
-            info!("Found new body part in map");
             commands.entity(old_body_part).despawn_recursive();
 
             if let Some(ref char_collection) = client_collection {
@@ -271,17 +270,19 @@ fn customizes_character(
                     &gltfs,
                     &mut commands,
                 );
-                info!("Setting father of new scene to");
+                info!("Setting father of new part to player");
                 commands.entity(scene).set_parent(player);
+
                 info!("Inserting in resource");
                 body_part
                     .0
                     .insert((client_id, part_to_change.new_part.clone()), scene);
-                info!("Sending transfer anim event to one sole animation");
+
+                info!("Sending transfer anim event to avoid desyncs between parts");
                 transfer_anim.send(TranferAnim(client_id));
             } else {
                 error!(
-                    "COngratulation you manage to access the resource before it is even possible"
+                    "Congratulation you manage to access the resource before it is even possible"
                 );
             }
         }
