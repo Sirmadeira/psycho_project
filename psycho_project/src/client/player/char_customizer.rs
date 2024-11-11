@@ -52,6 +52,25 @@ impl Plugin for CustomizeCharPlugin {
 #[reflect(Resource)]
 pub struct BodyPartMap(pub HashMap<(ClientId, String), Entity>);
 
+/// If you pass the client id it will tell you exactly who are all child entities of it
+impl BodyPartMap {
+    // Function to find all entities associated with a given ClientId
+    pub fn find_entities_by_client_id(&self, client_id: &ClientId) -> Vec<Entity> {
+        self.0
+            .iter()
+            .filter_map(
+                |((id, _part_name), entity)| {
+                    if id == client_id {
+                        Some(*entity)
+                    } else {
+                        None
+                    }
+                },
+            )
+            .collect()
+    }
+}
+
 /// Tell me who is the current skeleton of that player
 #[derive(Resource, Default, Reflect)]
 #[reflect(Resource)]
@@ -63,7 +82,7 @@ struct TranferAnim(ClientId);
 
 /// Resets animations when i finish the transition
 #[derive(Event, Reflect)]
-struct ResetAnimation;
+struct ResetAnimation(ClientId);
 
 /// A simple component that tells me if it already transfered the animation targets
 #[derive(Component)]
@@ -168,11 +187,14 @@ fn add_cosmetics_player(
     mut commands: Commands,
 ) {
     for (entity, player_id, player_visuals, has_visual) in main_player.iter() {
-        info_once!("Found main player {}", entity);
+        info_once!("Found player {}", entity);
         if !has_visual {
             let client_id = player_id.0;
 
-            info!("Inserting additonal info  component in player");
+            info!(
+                "Inserting additonal info  component in clientplayer {}",
+                client_id
+            );
             commands
                 .entity(entity)
                 .insert(InheritedVisibility::default())
@@ -199,7 +221,10 @@ fn add_cosmetics_player(
                         .insert((client_id, file_path.to_string()), visual_scene);
                 }
             }
-            info!("Telling him to transfer animation targets according to his skeleton");
+            info!(
+                "Telling client {} to transfer animation targets according to his skeleton",
+                client_id
+            );
             transfer_anim.send(TranferAnim(client_id));
         } else {
             info_once!("This player already has visuals {}", entity)
@@ -333,7 +358,7 @@ fn transfer_essential_components(
                     commands.entity(*body_part).insert(HasTarget);
                 }
             }
-            reset_anim.send(ResetAnimation);
+            reset_anim.send(ResetAnimation(client_id));
         } else {
             error!("The base skeleton of this {} doesnt exit", client_id);
         }
@@ -342,12 +367,32 @@ fn transfer_essential_components(
 
 /// Reset animations after transfering animation targets as to avoid desync
 fn reset_animation(
-    mut animation_players: Query<&mut AnimationPlayer, With<AnimationPlayer>>,
+    mut animation_players: Query<&mut AnimationPlayer>,
+    children_entities: Query<&Children>,
+    names: Query<&Name>,
+    body_part_map: Res<BodyPartMap>,
     mut reset_anim: EventReader<ResetAnimation>,
 ) {
-    for _ in reset_anim.read() {
-        for mut animation_player in animation_players.iter_mut() {
-            animation_player.rewind_all();
+    for event in reset_anim.read() {
+        let client_id = event.0;
+        info!("Reseting animation for client {}", client_id);
+        // Iter through scenes that are child of that player find their child recursively that has anim player reset it
+        for entity in body_part_map.find_entities_by_client_id(&client_id) {
+            if let Some(entity_with_anim_player) = find_child_with_name_containing(
+                &children_entities,
+                &names,
+                &entity,
+                "CharacterArmature",
+            ) {
+                if let Ok(mut anim_player) = animation_players.get_mut(entity_with_anim_player) {
+                    anim_player.rewind_all();
+                } else {
+                    warn!(
+                        "Couldnt rewind all anim player for this client or he doenst  have one {}",
+                        client_id
+                    )
+                }
+            }
         }
     }
 }
