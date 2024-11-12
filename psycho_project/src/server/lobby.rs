@@ -36,8 +36,8 @@ impl Plugin for LobbyPlugin {
 
 fn replicate_resources(mut commands: Commands) {
     // Replicating resources to clients
-    commands.replicate_resource::<Lobbies, Channel1>(NetworkTarget::All);
-    commands.replicate_resource::<LobbyPositionMap, Channel1>(NetworkTarget::All);
+    commands.replicate_resource::<Lobbies, CommonChannel>(NetworkTarget::All);
+    commands.replicate_resource::<LobbyPositionMap, CommonChannel>(NetworkTarget::All);
 }
 
 /// Creates the major lobby for players also know as the white world
@@ -147,7 +147,7 @@ fn listener_join_lobby(
 
         info!("Telling client id {} to start it is game", client_id);
         let _ = connection_manager
-            .send_message::<Channel1, StartGame>(*client_id, &mut StartGame { lobby_id });
+            .send_message::<CommonChannel, StartGame>(*client_id, &mut StartGame { lobby_id });
     }
 }
 

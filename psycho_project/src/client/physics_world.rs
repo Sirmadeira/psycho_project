@@ -1,12 +1,12 @@
 use crate::shared::{
-    protocol::world_structs::FloorMarker,
+    protocol::world_structs::{CycleTimer, FloorMarker, SunMarker},
     shared_physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
 };
-use avian3d::prelude::Position;
-use avian3d::prelude::Rotation;
+use avian3d::prelude::*;
+use bevy::pbr::CascadeShadowConfigBuilder;
+use bevy::prelude::light_consts::lux::OVERCAST_DAY;
 use bevy::prelude::*;
-use lightyear::client::interpolation::VisualInterpolateStatus;
-use lightyear::client::interpolation::VisualInterpolationPlugin;
+use lightyear::client::interpolation::*;
 use lightyear::shared::replication::components::Replicated;
 use lightyear::{client::components::Confirmed, prelude::client::Predicted};
 
@@ -24,7 +24,8 @@ impl Plugin for PhysicalWorldPlugin {
         app.observe(add_visual_interpolation_components::<Rotation>);
 
         app.add_systems(Update, add_cosmetic_physics_floor);
-        // app.add_systems(FixedUpdate, shared_gravity_force);
+        app.add_systems(Update, add_cosmetic_sun);
+        app.add_systems(Update, daylight_cycle);
     }
 }
 
@@ -78,5 +79,49 @@ fn add_cosmetic_physics_floor(
                 material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
                 ..default()
             });
+    }
+}
+
+/// Will add lighting to the sun
+fn add_cosmetic_sun(
+    suns: Query<Entity, (Added<SunMarker>, With<SunMarker>)>,
+    mut commands: Commands,
+) {
+    for sun in suns.iter() {
+        let sun_light = DirectionalLightBundle {
+            directional_light: DirectionalLight {
+                illuminance: light_consts::lux::OVERCAST_DAY,
+                shadows_enabled: true,
+                ..default()
+            },
+            transform: Transform {
+                translation: Vec3::new(0.0, 2.0, 0.0),
+                rotation: Quat::from_rotation_x(-std::f32::consts::PI / 4.),
+                ..default()
+            },
+            cascade_shadow_config: CascadeShadowConfigBuilder {
+                first_cascade_far_bound: 4.0,
+                maximum_distance: 10.0,
+                ..default()
+            }
+            .into(),
+            ..default()
+        };
+        commands.entity(sun).insert(sun_light);
+    }
+}
+
+fn daylight_cycle(
+    mut query: Query<&mut DirectionalLight, With<SunMarker>>,
+    timer: Res<CycleTimer>,
+    time: Res<Time>,
+) {
+    if timer.0.finished() {
+        let t = time.elapsed_seconds_wrapped() / 2.0;
+        info!("Sun should move");
+        if let Some(mut directional) = query.single_mut().into() {
+            // light_trans.rotation = Quat::from_rotation_x(-t);
+            directional.illuminance = t.sin().max(0.0).powf(2.0) * OVERCAST_DAY;
+        }
     }
 }

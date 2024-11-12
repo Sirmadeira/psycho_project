@@ -1,5 +1,5 @@
 //! Responsible for displaying in little squares the current items available to client
-use crate::shared::protocol::player_structs::Channel1;
+use crate::shared::protocol::player_structs::CommonChannel;
 use bevy::prelude::*;
 use lightyear::client::connection::ConnectionManager;
 
@@ -329,7 +329,7 @@ fn assets_buttons(
 
                             info!("Sending super message to all clients");
                             let _ = connection_manager
-                                .send_message_to_target::<Channel1, ChangeChar>(
+                                .send_message_to_target::<CommonChannel, ChangeChar>(
                                     &mut ChangeChar((
                                         client_id,
                                         PartToChange {
@@ -347,7 +347,7 @@ fn assets_buttons(
                             info!("Grabbing old part {}", player_visuals.torso.clone());
                             info!("Grabbing new part {}", asset_path.clone());
                             let _ = connection_manager
-                                .send_message_to_target::<Channel1, ChangeChar>(
+                                .send_message_to_target::<CommonChannel, ChangeChar>(
                                     &mut ChangeChar((
                                         client_id,
                                         PartToChange {
@@ -365,7 +365,7 @@ fn assets_buttons(
                             info!("Grabbing old part {}", player_visuals.legs.clone());
                             info!("Grabbing new part {}", asset_path.clone());
                             let _ = connection_manager
-                                .send_message_to_target::<Channel1, ChangeChar>(
+                                .send_message_to_target::<CommonChannel, ChangeChar>(
                                     &mut ChangeChar((
                                         client_id,
                                         PartToChange {
@@ -380,7 +380,7 @@ fn assets_buttons(
                         }
                     }
                     info!("Sending message to server to adjust visual resource");
-                    let _ = connection_manager.send_message::<Channel1, SaveVisual>(
+                    let _ = connection_manager.send_message::<CommonChannel, SaveVisual>(
                         &mut SaveVisual(player_visuals.clone()),
                     );
                 } else {

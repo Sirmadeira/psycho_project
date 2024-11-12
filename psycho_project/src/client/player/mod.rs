@@ -15,9 +15,6 @@ pub struct CreateCharPlugin;
 
 impl Plugin for CreateCharPlugin {
     fn build(&self, app: &mut App) {
-        // Simple light system
-        app.add_systems(Startup, spawn_light_bundle);
-
         // Self made plugins
         app.add_plugins(PlayerCameraPlugin);
         app.add_plugins(CustomizeCharPlugin);
@@ -27,18 +24,6 @@ impl Plugin for CreateCharPlugin {
         // Debugging RTT
         app.add_systems(Update, disable_culling);
     }
-}
-
-fn spawn_light_bundle(mut commands: Commands) {
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            color: Color::srgb(0.98, 0.95, 0.87),
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_translation(Vec3::new(0.0, 1.0, 5.0)),
-        ..default()
-    });
 }
 
 // Debugger function in animations

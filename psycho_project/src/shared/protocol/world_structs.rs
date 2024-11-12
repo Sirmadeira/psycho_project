@@ -1,7 +1,7 @@
 //! Here are located every single struct that is synced and envolves world
-use avian3d::prelude::*;
-use bevy::prelude::*;
 use crate::shared::protocol::*;
+use avian3d::prelude::*;
+use bevy::utils::Duration;
 use serde::{Deserialize, Serialize};
 
 /// Anything that is general and need to be synced is here
@@ -36,9 +36,34 @@ impl Plugin for SharedWorldStructsPlugin {
         // World components
         app.register_component::<FloorMarker>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
+
+        app.register_component::<SunMarker>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once);
+
+        app.register_component::<SunPosition>(ChannelDirection::ServerToClient)
+            .add_custom_interpolation(ComponentSyncMode::Full);
     }
 }
 
 /// Marker component utilized in sync to know which entity from server I should replicated
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Component)]
 pub struct FloorMarker;
+
+/// Markes our sun
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Component)]
+pub struct SunMarker;
+
+/// TODO
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Component)]
+pub struct SunPosition(Quat);
+
+/// Cycle time of the sun, a simple time that is repeating mode everytime he finished we tick a little bit our server sun position
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
+pub struct CycleTimer(pub Timer);
+
+impl Default for CycleTimer {
+    fn default() -> Self {
+        CycleTimer(Timer::new(Duration::from_secs(3600), TimerMode::Repeating))
+    }
+}

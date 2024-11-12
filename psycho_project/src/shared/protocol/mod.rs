@@ -20,9 +20,16 @@ impl Plugin for ProtocolPlugin {
         app.add_plugins(PlayerStructPlugin);
 
         // Channels
-        app.add_channel::<Channel1>(ChannelSettings {
+        app.add_channel::<CommonChannel>(ChannelSettings {
             mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
+            ..default()
+        });
+        app.add_channel::<UnorderedChannel>(ChannelSettings {
+            mode: ChannelMode::UnorderedReliable(ReliableSettings::default()),
             ..default()
         });
     }
 }
+
+#[derive(Channel)]
+pub struct UnorderedChannel;

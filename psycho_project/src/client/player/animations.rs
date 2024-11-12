@@ -1,8 +1,8 @@
 //! Player related animations are here
 use crate::client::load_assets::CharCollection;
 use crate::shared::protocol::player_structs::*;
+use bevy::prelude::*;
 use bevy::utils::{Duration, HashMap};
-use bevy::{animation, prelude::*};
 use leafwing_input_manager::prelude::ActionState;
 use lightyear::prelude::client::Predicted;
 
@@ -174,10 +174,9 @@ fn insert_gltf_animations(
     }
 }
 
-
 /// Since it already passes this information no need in input channel I dont need to set it
 fn state_machine(
-    mut query: Query<
+    query: Query<
         (
             Entity,
             &ActionState<CharacterAction>,
@@ -196,7 +195,6 @@ fn state_machine(
                 animation_components.get_mut(*animated_entity)
             {
                 if action_state.just_pressed(&CharacterAction::Jump) {
-                    info!("This player entity just jumped {}", entity);
                     let node = named_animations.get("Sword_Slash").unwrap();
                     animation_transition.play(&mut animation_player, *node, Duration::ZERO);
                 }

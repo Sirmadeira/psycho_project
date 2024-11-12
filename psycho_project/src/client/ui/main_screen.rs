@@ -1,4 +1,4 @@
-use crate::shared::protocol::player_structs::Channel1;
+use crate::shared::protocol::player_structs::CommonChannel;
 use crate::{client::MyAppState, shared::protocol::lobby_structs::EnterLobby};
 use bevy::prelude::*;
 use lightyear::client::connection::ConnectionManager;
@@ -155,7 +155,8 @@ fn start_button(
                 text.sections[0].value = "LETS F GO".to_string();
                 *color = PRESSED_BUTTON.into();
                 border_color.0 = Color::srgb(255.0, 0.0, 0.0);
-                let _ = connection_manager.send_message::<Channel1, EnterLobby>(&mut EnterLobby);
+                let _ =
+                    connection_manager.send_message::<CommonChannel, EnterLobby>(&mut EnterLobby);
             }
             Interaction::Hovered => {
                 text.sections[0].value = "FIGHT".to_string();

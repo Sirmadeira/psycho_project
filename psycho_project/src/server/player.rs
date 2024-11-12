@@ -72,7 +72,7 @@ pub struct PlayerStateConnection {
 }
 
 fn replicate_resource(mut commands: Commands) {
-    commands.replicate_resource::<PlayerBundleMap, Channel1>(NetworkTarget::All);
+    commands.replicate_resource::<PlayerBundleMap, CommonChannel>(NetworkTarget::All);
 }
 
 /// Reads current save files and fill up the resource playerbundlemap each basically gives me all player info
