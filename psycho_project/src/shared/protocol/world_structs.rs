@@ -9,6 +9,10 @@ pub struct SharedWorldStructsPlugin;
 
 impl Plugin for SharedWorldStructsPlugin {
     fn build(&self, app: &mut App) {
+        // Shared debuggin
+        app.register_type::<CycleTimer>();
+        app.register_type::<SunPosition>();
+        // Physics
         app.register_component::<LinearVelocity>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full);
 
@@ -54,7 +58,7 @@ pub struct FloorMarker;
 pub struct SunMarker;
 
 /// TODO
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Component)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Component, Reflect)]
 pub struct SunPosition(Quat);
 
 /// Cycle time of the sun, a simple time that is repeating mode everytime he finished we tick a little bit our server sun position
@@ -64,6 +68,6 @@ pub struct CycleTimer(pub Timer);
 
 impl Default for CycleTimer {
     fn default() -> Self {
-        CycleTimer(Timer::new(Duration::from_secs(3600), TimerMode::Repeating))
+        CycleTimer(Timer::new(Duration::from_secs(2), TimerMode::Repeating))
     }
 }

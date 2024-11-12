@@ -15,6 +15,9 @@ pub struct PhysicalWorldPlugin;
 
 impl Plugin for PhysicalWorldPlugin {
     fn build(&self, app: &mut App) {
+        // Adding replicated resource from server
+        app.insert_resource(CycleTimer::default());
+
         // Set up visual interp plugins for Position and Rotation. This doesn't
         // do anything until you add VisualInterpolationStatus components to
         // entities.

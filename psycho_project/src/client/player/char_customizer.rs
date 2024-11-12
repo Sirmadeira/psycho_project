@@ -8,8 +8,8 @@ use bevy::utils::HashMap;
 use lightyear::client::events::MessageEvent;
 use lightyear::connection::id::ClientId;
 use lightyear::prelude::client::Predicted;
+use lightyear::shared::replication::components::Controlled;
 use std::collections::VecDeque;
-
 pub struct CustomizeCharPlugin;
 
 impl Plugin for CustomizeCharPlugin {
@@ -176,7 +176,13 @@ fn find_child_with_name_containing(
 /// Spawns visuals scenes and parents them to predicted player
 fn formulates_players(
     main_player: Query<
-        (Entity, &PlayerId, &PlayerVisuals, Has<HasVisuals>),
+        (
+            Entity,
+            &PlayerId,
+            &PlayerVisuals,
+            Has<HasVisuals>,
+            Has<Controlled>,
+        ),
         (Added<Predicted>, With<PlayerId>),
     >,
     gltfs: Res<Assets<Gltf>>,
@@ -186,7 +192,7 @@ fn formulates_players(
     mut transfer_anim: EventWriter<TranferAnim>,
     mut commands: Commands,
 ) {
-    for (entity, player_id, player_visuals, has_visual) in main_player.iter() {
+    for (entity, player_id, player_visuals, has_visual, is_controlled) in main_player.iter() {
         info_once!("Found player {}", entity);
         if !has_visual {
             let client_id = player_id.0;
@@ -195,12 +201,23 @@ fn formulates_players(
                 "Inserting additonal info  component in clientplayer {}",
                 client_id
             );
-            commands
-                .entity(entity)
-                .insert(InheritedVisibility::default())
-                .insert(GlobalTransform::default())
-                .insert(HasVisuals)
-                .insert(CharacterAction::default_input_map());
+
+            if is_controlled {
+                info!("Inserting input map into main player and adding clientsided components");
+                commands
+                    .entity(entity)
+                    .insert(InheritedVisibility::default())
+                    .insert(GlobalTransform::default())
+                    .insert(HasVisuals)
+                    .insert(CharacterAction::default_input_map());
+            } else {
+                info!("Insert additional components in side player");
+                commands
+                    .entity(entity)
+                    .insert(InheritedVisibility::default())
+                    .insert(GlobalTransform::default())
+                    .insert(HasVisuals);
+            }
 
             for file_path in player_visuals.iter_visuals() {
                 if file_path.contains("skeleton") {

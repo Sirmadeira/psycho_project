@@ -176,20 +176,13 @@ fn insert_gltf_animations(
 
 /// Since it already passes this information no need in input channel I dont need to set it
 fn state_machine(
-    query: Query<
-        (
-            Entity,
-            &ActionState<CharacterAction>,
-            &PointerAnimatedEntities,
-        ),
-        With<Predicted>,
-    >,
+    query: Query<(&ActionState<CharacterAction>, &PointerAnimatedEntities), With<Predicted>>,
     mut animation_components: Query<(&mut AnimationPlayer, &mut AnimationTransitions)>,
     animations: Res<Animations>,
 ) {
     let named_animations = animations.named_nodes.clone();
 
-    for (entity, action_state, pointer_animated) in query.iter() {
+    for (action_state, pointer_animated) in query.iter() {
         for animated_entity in pointer_animated.0.iter() {
             if let Ok((mut animation_player, mut animation_transition)) =
                 animation_components.get_mut(*animated_entity)
