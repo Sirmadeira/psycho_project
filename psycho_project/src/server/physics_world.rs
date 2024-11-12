@@ -16,7 +16,7 @@ impl Plugin for PhysicsWorldPlugin {
         app.add_systems(Startup, replicate_resource);
         app.add_systems(Startup, spawn_floor_collider);
         app.add_systems(Startup, spawn_server_sun);
-        app.add_systems(Update, tick_sun_cycle);
+        app.add_systems(FixedUpdate, tick_sun_cycle);
     }
 }
 

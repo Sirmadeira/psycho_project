@@ -12,6 +12,10 @@ impl Plugin for SharedWorldStructsPlugin {
         // Shared debuggin
         app.register_type::<CycleTimer>();
         app.register_type::<SunPosition>();
+
+        // Resources
+        app.register_resource::<CycleTimer>(ChannelDirection::ServerToClient);
+
         // Physics
         app.register_component::<LinearVelocity>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full);
@@ -62,8 +66,8 @@ pub struct SunMarker;
 pub struct SunPosition(Quat);
 
 /// Cycle time of the sun, a simple time that is repeating mode everytime he finished we tick a little bit our server sun position
-#[derive(Resource, Reflect)]
-#[reflect(Resource)]
+#[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
+#[reflect(Resource, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct CycleTimer(pub Timer);
 
 impl Default for CycleTimer {
