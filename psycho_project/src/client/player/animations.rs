@@ -174,22 +174,6 @@ fn insert_gltf_animations(
     }
 }
 
-// /// Reset animations after transfering animation targets as to avoid desync
-// fn play_animation(
-//     mut animation_entities: Query<
-//         (&mut AnimationTransitions, &mut AnimationPlayer),
-//         Added<AnimationPlayer>,
-//     >,
-//     animations: Res<Animations>,
-// ) {
-//     let named_animations = animations.named_nodes.clone();
-//     for (mut animation_transitions, mut animation_player) in animation_entities.iter_mut() {
-//         let node = named_animations.get("Walk").unwrap();
-//         animation_transitions
-//             .play(&mut animation_player, *node, Duration::ZERO)
-//             .repeat();
-//     }
-// }
 
 /// Since it already passes this information no need in input channel I dont need to set it
 fn state_machine(

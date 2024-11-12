@@ -1,8 +1,7 @@
 use crate::shared::protocol::ComponentSyncMode;
 use bevy::prelude::*;
 use bevy::{reflect::Reflect, utils::HashMap};
-use leafwing_input_manager::prelude::ActionState;
-use leafwing_input_manager::*;
+use leafwing_input_manager::prelude::*;
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::vec;
@@ -11,6 +10,8 @@ pub struct PlayerStructPlugin;
 
 impl Plugin for PlayerStructPlugin {
     fn build(&self, app: &mut App) {
+        // Leafwing input plugin handles the whole leafwing shenanigans
+        app.add_plugins(LeafwingInputPlugin::<CharacterAction>::default());
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
 
@@ -41,8 +42,6 @@ pub struct PlayerBundle {
     pub id: PlayerId,
     pub visuals: PlayerVisuals,
     pub position: PlayerPosition,
-    //TODO - SEPARATE SAVE BUNDLE
-    pub action_state: ActionState<CharacterAction>,
 }
 
 impl PlayerBundle {
@@ -51,7 +50,6 @@ impl PlayerBundle {
             id: PlayerId(id),
             visuals: visuals,
             position: position,
-            action_state: ActionState::<CharacterAction>::default(),
         }
     }
 }
@@ -114,6 +112,15 @@ impl Actionlike for CharacterAction {
             Self::Move => InputControlKind::DualAxis,
             Self::Jump => InputControlKind::Button,
         }
+    }
+}
+
+impl CharacterAction {
+    pub fn default_input_map() -> InputMap<Self> {
+        let input_map = InputMap::new([(Self::Jump, KeyCode::Space)])
+            .with_dual_axis(Self::Move, KeyboardVirtualDPad::WASD)
+            .with_dual_axis(Self::Move, KeyboardVirtualDPad::ARROW_KEYS);
+        return input_map;
     }
 }
 

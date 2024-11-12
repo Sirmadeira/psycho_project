@@ -160,6 +160,7 @@ pub(crate) fn spawn_server_player(
             .insert(online_state)
             .insert(name)
             .insert(replicate)
+            .insert(CharacterAction::default_input_map())
             .id();
         player_entity_map.0.insert(client_id, id);
         return old_player_bun;

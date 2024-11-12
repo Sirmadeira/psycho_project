@@ -9,7 +9,6 @@ use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
 use lightyear::prelude::ReplicationGroup;
-use lightyear::shared::input::leafwing::LeafwingInputPlugin;
 
 /// Here lies all the shared setup needed to make physics work in our game
 /// Warning: This game is solely based on running an independent server and clients any other mode will break it
@@ -17,9 +16,6 @@ pub struct SharedPhysicsPlugin;
 
 impl Plugin for SharedPhysicsPlugin {
     fn build(&self, app: &mut App) {
-        // Leafwing input plugin handles the whole leafwing shenanigans
-        app.add_plugins(LeafwingInputPlugin::<CharacterAction>::default());
-
         // SETUP FOR MAKING OUR PHYSICS WORK
         app.add_plugins(
             PhysicsPlugins::new(FixedUpdate)

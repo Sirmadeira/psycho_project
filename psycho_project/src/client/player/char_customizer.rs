@@ -33,7 +33,7 @@ impl Plugin for CustomizeCharPlugin {
         // Creates player - RC because he should only run in game, not before and such
         app.add_systems(
             Update,
-            add_cosmetics_player.run_if(in_state(MyAppState::Game)),
+            formulates_players.run_if(in_state(MyAppState::Game)),
         );
 
         // System to customize character correctly
@@ -174,7 +174,7 @@ fn find_child_with_name_containing(
 }
 
 /// Spawns visuals scenes and parents them to predicted player
-fn add_cosmetics_player(
+fn formulates_players(
     main_player: Query<
         (Entity, &PlayerId, &PlayerVisuals, Has<HasVisuals>),
         (Added<Predicted>, With<PlayerId>),
@@ -199,7 +199,8 @@ fn add_cosmetics_player(
                 .entity(entity)
                 .insert(InheritedVisibility::default())
                 .insert(GlobalTransform::default())
-                .insert(HasVisuals);
+                .insert(HasVisuals)
+                .insert(CharacterAction::default_input_map());
 
             for file_path in player_visuals.iter_visuals() {
                 if file_path.contains("skeleton") {
