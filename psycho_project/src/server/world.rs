@@ -31,7 +31,7 @@ fn spawn_floor_collider(mut commands: Commands) {
         .insert(FloorMarker)
         .insert(Replicate::default())
         .insert(Name::new("PhysicalFloor"))
-        .insert(Position(Vec3::new(0.0, -1.25, 0.0)));
+        .insert(Position(Vec3::new(0.0, 0.0, 0.0)));
 }
 
 fn tick_sun_cycle(mut cycle_time: ResMut<CycleTimer>, time: Res<Time>) {

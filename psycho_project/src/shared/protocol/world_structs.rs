@@ -59,7 +59,7 @@ impl Default for CycleTimer {
     fn default() -> Self {
         CycleTimer(Timer::new(
             // Default cycle duration is 24 hours (in seconds), but this can be changed
-            Duration::from_secs(12),
+            Duration::from_secs(24),
             TimerMode::Repeating,
         ))
     }

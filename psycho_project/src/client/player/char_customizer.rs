@@ -2,6 +2,7 @@
 use crate::client::load_assets::CharCollection;
 use crate::client::MyAppState;
 use crate::shared::protocol::player_structs::*;
+use avian3d::prelude::Position;
 use bevy::animation::AnimationTarget;
 use bevy::prelude::*;
 use bevy::utils::HashMap;

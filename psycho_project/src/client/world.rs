@@ -38,9 +38,13 @@ impl Plugin for PhysicalWorldPlugin {
 struct SunMarker;
 
 /// Orbit around what
-const SUN_ORBIT: Vec3 = Vec3::ZERO;
+const SUN_ORBIT_AROUND: Vec3 = Vec3::ZERO;
 /// Radius of orbit
-const SUN_RADIUS: f32 = 5.0;
+const SUN_RADIUS: f32 = 15.0;
+
+const MIN_ILUMINANCE: f32 = 400.0;
+
+const MAX_ILUMINANCE: f32 = 10000.0;
 
 /// This guy will add visual interpolation component to anyone that is not confirmed. or predicted
 /// Basically made to avoid stuttering
@@ -108,7 +112,6 @@ fn spawn_sun(
                 shadows_enabled: true,
                 ..default()
             },
-            transform: Transform::from_xyz(0.0, 4.0, 0.0),
             cascade_shadow_config: CascadeShadowConfigBuilder {
                 first_cascade_far_bound: 2.0,
                 maximum_distance: 20.0,
@@ -118,6 +121,7 @@ fn spawn_sun(
             ..default()
         })
         .insert(Name::new("Sun"))
+        .insert(Transform::default())
         .insert(PbrBundle {
             mesh: meshes.add(Cuboid::default()),
             material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
@@ -129,20 +133,20 @@ fn spawn_sun(
 
 /// Orbits sun
 fn orbit_around_point(
-    mut query: Query<&mut Transform, With<SunMarker>>,
+    mut query: Query<(&mut Transform, &mut DirectionalLight), With<SunMarker>>,
     // time: Res<Time>,
     cycle_time: Res<CycleTimer>,
 ) {
-    for mut transform in query.iter_mut() {
+    for (mut transform, mut directional_light) in query.iter_mut() {
         let cycle_fraction = cycle_time.0.elapsed_secs() / cycle_time.0.duration().as_secs_f32();
 
-        // Calculate the angle (2π radians)
-        let angle = cycle_fraction * 2.0 * std::f32::consts::PI;
+        // Calculate the max angle
+        let angle = cycle_fraction * std::f32::consts::PI * 2.0;
 
         // Calculate the new target position using trigonometric functions
         let target_position = Vec3::new(
-            SUN_ORBIT.x + SUN_RADIUS * angle.sin(),
-            SUN_ORBIT.y + SUN_RADIUS * angle.cos(),
+            -SUN_ORBIT_AROUND.x + SUN_RADIUS * angle.sin(),
+            SUN_ORBIT_AROUND.y + SUN_RADIUS * angle.cos(),
             0.0,
         );
 
@@ -150,9 +154,13 @@ fn orbit_around_point(
         transform.translation = transform.translation.lerp(target_position, 0.1);
 
         transform.look_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y);
-    }
-}
 
-fn adjust_lightining(light_entity: Query<(Entity, &DirectionalLight), With<DirectionalLight>>) {
-    for (entity, directional_light) in light_entity.iter() {}
+        if angle.cos() >= 0.0 {
+            // As it moves adjusts illuminations
+            directional_light.illuminance =
+                MIN_ILUMINANCE + (MAX_ILUMINANCE - MIN_ILUMINANCE) * angle.cos()
+        } else {
+            directional_light.illuminance = 0.02;
+        }
+    }
 }
