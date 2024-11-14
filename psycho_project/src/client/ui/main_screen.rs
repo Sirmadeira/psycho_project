@@ -1,4 +1,4 @@
-use crate::shared::protocol::player_structs::CommonChannel;
+use crate::shared::protocol::CommonChannel;
 use crate::{client::MyAppState, shared::protocol::lobby_structs::EnterLobby};
 use bevy::prelude::*;
 use lightyear::client::connection::ConnectionManager;

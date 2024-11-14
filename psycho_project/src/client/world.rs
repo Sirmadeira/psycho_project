@@ -1,10 +1,9 @@
 use crate::shared::{
-    protocol::world_structs::{CycleTimer, FloorMarker, SunMarker},
+    protocol::world_structs::{CycleTimer, FloorMarker},
     shared_physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
 };
 use avian3d::prelude::*;
 use bevy::pbr::CascadeShadowConfigBuilder;
-use bevy::prelude::light_consts::lux::OVERCAST_DAY;
 use bevy::prelude::*;
 use lightyear::client::interpolation::*;
 use lightyear::shared::replication::components::Replicated;
@@ -15,25 +14,36 @@ pub struct PhysicalWorldPlugin;
 
 impl Plugin for PhysicalWorldPlugin {
     fn build(&self, app: &mut App) {
-        // Adding replicated resource from server
+        // Adding replicated resource from server that defines my sun position
         app.insert_resource(CycleTimer::default());
 
         // Set up visual interp plugins for Position and Rotation. This doesn't
         // do anything until you add VisualInterpolationStatus components to
         // entities.
+        // Systems related to physical world
         app.add_plugins(VisualInterpolationPlugin::<Position>::default());
         app.add_plugins(VisualInterpolationPlugin::<Rotation>::default());
         app.observe(add_visual_interpolation_components::<Position>);
         app.observe(add_visual_interpolation_components::<Rotation>);
 
+        // Systems related to non physical world
+        app.add_systems(Startup, spawn_sun);
         app.add_systems(Update, add_cosmetic_physics_floor);
-        app.add_systems(Update, add_cosmetic_sun);
-        app.add_systems(Update, daylight_cycle);
+        app.add_systems(Update, orbit_around_point);
     }
 }
 
+/// A simple marker component that tells me who is the sun
+#[derive(Component)]
+struct SunMarker;
+
+/// Orbit around what
+const SUN_ORBIT: Vec3 = Vec3::ZERO;
+/// Radius of orbit
+const SUN_RADIUS: f32 = 5.0;
+
 /// This guy will add visual interpolation component to anyone that is not confirmed. or predicted
-/// Basically also made to avoid stuttering
+/// Basically made to avoid stuttering
 fn add_visual_interpolation_components<T: Component>(
     trigger: Trigger<OnAdd, T>,
     query: Query<
@@ -85,23 +95,20 @@ fn add_cosmetic_physics_floor(
     }
 }
 
-/// Will add lighting to the sun
-fn add_cosmetic_sun(
-    suns: Query<Entity, (Added<SunMarker>, With<SunMarker>)>,
+/// Forms sun
+fn spawn_sun(
     mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    for sun in suns.iter() {
-        let sun_light = DirectionalLightBundle {
+    commands
+        .spawn(DirectionalLightBundle {
             directional_light: DirectionalLight {
                 illuminance: light_consts::lux::OVERCAST_DAY,
                 shadows_enabled: true,
                 ..default()
             },
-            transform: Transform {
-                translation: Vec3::new(0.0, 2.0, 0.0),
-                rotation: Quat::from_rotation_x(-std::f32::consts::PI / 4.),
-                ..default()
-            },
+            transform: Transform::from_xyz(0.0, 4.0, 0.0),
             cascade_shadow_config: CascadeShadowConfigBuilder {
                 first_cascade_far_bound: 4.0,
                 maximum_distance: 10.0,
@@ -109,22 +116,40 @@ fn add_cosmetic_sun(
             }
             .into(),
             ..default()
-        };
-        commands.entity(sun).insert(sun_light);
-    }
+        })
+        .insert(PbrBundle {
+            mesh: meshes.add(Cuboid::default()),
+            material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
+            ..default()
+        })
+        .insert(Name::new("Sun"))
+        .insert(SunMarker);
 }
 
-fn daylight_cycle(
-    mut query: Query<&mut DirectionalLight, With<SunMarker>>,
-    timer: Res<CycleTimer>,
-    time: Res<Time>,
+/// Orbits sun
+fn orbit_around_point(
+    mut query: Query<&mut Transform, With<SunMarker>>,
+    // time: Res<Time>,
+    cycle_time: Res<CycleTimer>,
 ) {
-    if timer.0.finished() {
-        let t = time.elapsed_seconds_wrapped() / 2.0;
-        info!("Sun should move");
-        if let Some(mut directional) = query.single_mut().into() {
-            // light_trans.rotation = Quat::from_rotation_x(-t);
-            directional.illuminance = t.sin().max(0.0).powf(2.0) * OVERCAST_DAY;
-        }
+    for mut transform in query.iter_mut() {
+        let cycle_fraction = cycle_time.0.elapsed_secs() / cycle_time.0.duration().as_secs_f32();
+
+        // Calculate the angle (2π radians) * cycle_fraction, moving 1/24 of the orbit each hour
+        let angle = cycle_fraction * 2.0 * std::f32::consts::PI;
+
+        // Calculate the new target position using trigonometric functions
+        let target_position = Vec3::new(
+            transform.translation.x,
+            SUN_ORBIT.y + SUN_RADIUS * angle.cos(),
+            SUN_ORBIT.z + SUN_RADIUS * angle.sin(),
+        );
+
+        // Smoothly interpolate between the current position and the target position
+        transform.translation = transform.translation.lerp(target_position, 0.1);
+
+        transform.rotation = transform
+            .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y)
+            .rotation;
     }
 }

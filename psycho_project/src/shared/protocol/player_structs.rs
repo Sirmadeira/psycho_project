@@ -124,10 +124,6 @@ impl CharacterAction {
     }
 }
 
-// Channels
-#[derive(Channel)]
-pub struct CommonChannel;
-
 // Messages
 // An event message sent by server to give a recently loaded client it is bundle
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

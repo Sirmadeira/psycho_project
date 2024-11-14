@@ -1,7 +1,7 @@
 //! Basically all the events associated to lobby logic
 use crate::server::player::*;
 use crate::shared::protocol::lobby_structs::*;
-use crate::shared::protocol::player_structs::*;
+use crate::shared::protocol::CommonChannel;
 
 use crate::shared::shared_physics::PhysicsBundle;
 use bevy::prelude::*;

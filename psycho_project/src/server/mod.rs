@@ -2,14 +2,14 @@ use crate::shared::protocol::player_structs::PlayerBundleMap;
 use bevy::prelude::*;
 use bincode::serialize_into;
 use lobby::LobbyPlugin;
-use physics_world::PhysicsWorldPlugin;
+use world::PhysicsWorldPlugin;
 use player::PlayerPlugin;
 use std::fs::File;
 use std::io::BufWriter;
 
 mod essentials;
 mod lobby;
-mod physics_world;
+mod world;
 mod player;
 
 use self::essentials::*;

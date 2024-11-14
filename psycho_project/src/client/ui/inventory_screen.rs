@@ -1,5 +1,5 @@
 //! Responsible for displaying in little squares the current items available to client
-use crate::shared::protocol::player_structs::CommonChannel;
+use crate::shared::protocol::CommonChannel;
 use bevy::prelude::*;
 use lightyear::client::connection::ConnectionManager;
 

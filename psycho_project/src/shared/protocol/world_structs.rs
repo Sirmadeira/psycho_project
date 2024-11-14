@@ -11,7 +11,6 @@ impl Plugin for SharedWorldStructsPlugin {
     fn build(&self, app: &mut App) {
         // Shared debuggin
         app.register_type::<CycleTimer>();
-        app.register_type::<SunPosition>();
 
         // Resources
         app.register_resource::<CycleTimer>(ChannelDirection::ServerToClient);
@@ -44,26 +43,12 @@ impl Plugin for SharedWorldStructsPlugin {
         // World components
         app.register_component::<FloorMarker>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
-
-        app.register_component::<SunMarker>(ChannelDirection::ServerToClient)
-            .add_prediction(ComponentSyncMode::Once);
-
-        app.register_component::<SunPosition>(ChannelDirection::ServerToClient)
-            .add_custom_interpolation(ComponentSyncMode::Full);
     }
 }
 
 /// Marker component utilized in sync to know which entity from server I should replicated
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Component)]
 pub struct FloorMarker;
-
-/// Markes our sun
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Component)]
-pub struct SunMarker;
-
-/// TODO
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Component, Reflect)]
-pub struct SunPosition(Quat);
 
 /// Cycle time of the sun, a simple time that is repeating mode everytime he finished we tick a little bit our server sun position
 #[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
@@ -72,6 +57,10 @@ pub struct CycleTimer(pub Timer);
 
 impl Default for CycleTimer {
     fn default() -> Self {
-        CycleTimer(Timer::new(Duration::from_secs(2), TimerMode::Repeating))
+        CycleTimer(Timer::new(
+            // Default cycle duration is 24 hours (in seconds), but this can be changed
+            Duration::from_secs(12),
+            TimerMode::Repeating,
+        ))
     }
 }

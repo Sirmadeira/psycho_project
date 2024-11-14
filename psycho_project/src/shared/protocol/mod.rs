@@ -24,12 +24,24 @@ impl Plugin for ProtocolPlugin {
             mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
             ..default()
         });
+        app.add_channel::<ConstantOrderedChannel>(ChannelSettings {
+            mode: ChannelMode::OrderedReliable(ReliableSettings::default()),
+            ..default()
+        });
         app.add_channel::<UnorderedChannel>(ChannelSettings {
             mode: ChannelMode::UnorderedReliable(ReliableSettings::default()),
             ..default()
         });
     }
 }
+
+// Channels
+#[derive(Channel)]
+pub struct CommonChannel;
+
+/// Channel utilized for constant sending of updates like sun cycle time
+#[derive(Channel)]
+pub struct ConstantOrderedChannel;
 
 #[derive(Channel)]
 pub struct UnorderedChannel;
