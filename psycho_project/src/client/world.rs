@@ -3,8 +3,8 @@ use crate::shared::{
     shared_physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
 };
 use avian3d::prelude::*;
-use bevy::pbr::CascadeShadowConfigBuilder;
-use bevy::prelude::*;
+use bevy::{ecs::entity, pbr::CascadeShadowConfigBuilder};
+use bevy::{prelude::*, render::view::NoFrustumCulling};
 use lightyear::client::interpolation::*;
 use lightyear::shared::replication::components::Replicated;
 use lightyear::{client::components::Confirmed, prelude::client::Predicted};
@@ -104,25 +104,26 @@ fn spawn_sun(
     commands
         .spawn(DirectionalLightBundle {
             directional_light: DirectionalLight {
-                illuminance: light_consts::lux::OVERCAST_DAY,
+                illuminance: light_consts::lux::AMBIENT_DAYLIGHT,
                 shadows_enabled: true,
                 ..default()
             },
             transform: Transform::from_xyz(0.0, 4.0, 0.0),
             cascade_shadow_config: CascadeShadowConfigBuilder {
-                first_cascade_far_bound: 4.0,
-                maximum_distance: 10.0,
+                first_cascade_far_bound: 2.0,
+                maximum_distance: 20.0,
                 ..default()
             }
             .into(),
             ..default()
         })
+        .insert(Name::new("Sun"))
         .insert(PbrBundle {
             mesh: meshes.add(Cuboid::default()),
             material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
             ..default()
         })
-        .insert(Name::new("Sun"))
+        .insert(NoFrustumCulling)
         .insert(SunMarker);
 }
 
@@ -135,21 +136,23 @@ fn orbit_around_point(
     for mut transform in query.iter_mut() {
         let cycle_fraction = cycle_time.0.elapsed_secs() / cycle_time.0.duration().as_secs_f32();
 
-        // Calculate the angle (2π radians) * cycle_fraction, moving 1/24 of the orbit each hour
+        // Calculate the angle (2π radians)
         let angle = cycle_fraction * 2.0 * std::f32::consts::PI;
 
         // Calculate the new target position using trigonometric functions
         let target_position = Vec3::new(
-            transform.translation.x,
+            SUN_ORBIT.x + SUN_RADIUS * angle.sin(),
             SUN_ORBIT.y + SUN_RADIUS * angle.cos(),
-            SUN_ORBIT.z + SUN_RADIUS * angle.sin(),
+            0.0,
         );
 
         // Smoothly interpolate between the current position and the target position
         transform.translation = transform.translation.lerp(target_position, 0.1);
 
-        transform.rotation = transform
-            .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y)
-            .rotation;
+        transform.look_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y);
     }
+}
+
+fn adjust_lightining(light_entity: Query<(Entity, &DirectionalLight), With<DirectionalLight>>) {
+    for (entity, directional_light) in light_entity.iter() {}
 }
