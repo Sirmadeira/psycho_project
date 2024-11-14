@@ -3,7 +3,7 @@ use crate::shared::{
     shared_physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
 };
 use avian3d::prelude::*;
-use bevy::{ecs::entity, pbr::CascadeShadowConfigBuilder};
+use bevy::pbr::CascadeShadowConfigBuilder;
 use bevy::{prelude::*, render::view::NoFrustumCulling};
 use lightyear::client::interpolation::*;
 use lightyear::shared::replication::components::Replicated;
