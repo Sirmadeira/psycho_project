@@ -3,7 +3,6 @@ use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
-use lightyear::client::prediction::plugin::is_in_rollback;
 use lightyear::client::prediction::rollback::Rollback;
 use lightyear::client::prediction::Predicted;
 use lightyear::inputs::leafwing::input_buffer::InputBuffer;
@@ -20,13 +19,6 @@ impl Plugin for PlayerPhysicsPlugin {
         app.add_systems(
             FixedUpdate,
             handle_character_actions.in_set(InputPhysicsSet::Input),
-        );
-        // Done so it avoid double bullet spawn else server spawns it
-        app.add_systems(
-            FixedUpdate,
-            shared_spawn_bullet
-                .run_if(not(is_in_rollback))
-                .in_set(InputPhysicsSet::Input),
         );
     }
 }

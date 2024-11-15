@@ -29,8 +29,6 @@ impl Plugin for LobbyPlugin {
         app.add_systems(Update, listener_join_lobby);
         app.add_systems(Update, listener_exit_lobby);
         app.add_systems(Update, listener_disconnect_event);
-
-        app.add_systems(FixedUpdate, insert_physics_server_player);
     }
 }
 
@@ -75,32 +73,6 @@ fn update_replication_targets(
             "Player {} is missing ReplicationTarget or SyncTarget component",
             player
         );
-    }
-}
-
-fn insert_physics_server_player(
-    mut events: EventReader<MessageEvent<EnterLobby>>,
-    player_entity_map: Res<PlayerEntityMap>,
-    mut online_state: Query<&mut PlayerStateConnection>,
-    mut commands: Commands,
-) {
-    for event in events.read() {
-        let client_id = event.context();
-        if let Some(player) = player_entity_map.0.get(client_id) {
-            if let Ok(mut on_state) = online_state.get_mut(*player) {
-                *on_state = PlayerStateConnection {
-                    online: true,
-                    in_game: true,
-                };
-                // Insert required components for physics and action state.
-                commands.entity(*player).insert(PhysicsBundle::player());
-            } else {
-                warn!(
-                    "Player {} is missing PlayerStateConnection component",
-                    player
-                );
-            }
-        };
     }
 }
 

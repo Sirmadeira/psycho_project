@@ -75,12 +75,15 @@ pub const CHARACTER_CAPSULE_HEIGHT: f32 = 0.5;
 pub const FLOOR_WIDTH: f32 = 100.0;
 pub const FLOOR_HEIGHT: f32 = 0.5;
 
+/// Collision layers
 #[derive(PhysicsLayer)]
 enum GameLayer {
     Player, // Layer 0
     Ground, // Layer 2
 }
 
+/// Physics bundle, subdivided according to necessity. IMPORTANT - This shouldnt be in protocol but it is shared
+/// We dont want to use bandwith to sync things like colliders and such when we can only sync velocity and such
 #[derive(Bundle)]
 pub struct PhysicsBundle {
     pub collider: Collider,

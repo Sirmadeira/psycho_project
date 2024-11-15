@@ -2,6 +2,7 @@
 use crate::server::save_file;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
+use crate::shared::protocol::weapon_structs::Weapon;
 use crate::shared::protocol::CommonChannel;
 use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
@@ -44,6 +45,8 @@ impl Plugin for PlayerPlugin {
 
         // What happens when you disconnect from server
         app.add_systems(Update, handle_disconnections);
+
+        app.add_systems(FixedUpdate, insert_physics_server_player);
 
         // It is essential that input based systems occur in fixedupdate
         app.add_systems(
@@ -129,7 +132,7 @@ fn listener_save_visuals(
 }
 
 /// Helper function spawns the player that is gonna be replicated
-pub(crate) fn spawn_server_player(
+fn spawn_server_player(
     client_id: ClientId,
     commands: &mut Commands,
     player_bundle: Option<PlayerBundle>,
@@ -167,6 +170,7 @@ pub(crate) fn spawn_server_player(
             .insert(name)
             .insert(replicate)
             .insert(CharacterAction::default_input_map())
+            .insert(Weapon::default())
             .id();
         player_entity_map.0.insert(client_id, id);
         return old_player_bun;
@@ -182,6 +186,7 @@ pub(crate) fn spawn_server_player(
             .insert(name)
             .insert(replicate)
             .insert(CharacterAction::default_input_map())
+            .insert(Weapon::default())
             .id();
 
         player_entity_map.0.insert(client_id, id);
@@ -190,7 +195,7 @@ pub(crate) fn spawn_server_player(
 }
 
 /// Spawns a server player everytime someone connects
-pub(crate) fn handle_connections(
+fn handle_connections(
     mut current_players: ResMut<PlayerAmount>,
     mut connections: EventReader<ConnectEvent>,
     mut player_map: ResMut<PlayerBundleMap>,
@@ -232,7 +237,7 @@ pub(crate) fn handle_connections(
 }
 
 /// Spawns a player everytime someone disconnects
-pub(crate) fn handle_disconnections(
+fn handle_disconnections(
     mut disconnections: EventReader<DisconnectEvent>,
     mut current_players: ResMut<PlayerAmount>,
     mut player_entity_map: ResMut<PlayerEntityMap>,
@@ -277,5 +282,31 @@ fn handle_character_actions(
 ) {
     for (action_state, mut character) in &mut query {
         apply_character_action(&time, &spatial_query, action_state, &mut character);
+    }
+}
+
+fn insert_physics_server_player(
+    mut events: EventReader<MessageEvent<EnterLobby>>,
+    player_entity_map: Res<PlayerEntityMap>,
+    mut online_state: Query<&mut PlayerStateConnection>,
+    mut commands: Commands,
+) {
+    for event in events.read() {
+        let client_id = event.context();
+        if let Some(player) = player_entity_map.0.get(client_id) {
+            if let Ok(mut on_state) = online_state.get_mut(*player) {
+                *on_state = PlayerStateConnection {
+                    online: true,
+                    in_game: true,
+                };
+                // Insert required components for physics and action state.
+                commands.entity(*player).insert(PhysicsBundle::player());
+            } else {
+                warn!(
+                    "Player {} is missing PlayerStateConnection component",
+                    player
+                );
+            }
+        };
     }
 }
