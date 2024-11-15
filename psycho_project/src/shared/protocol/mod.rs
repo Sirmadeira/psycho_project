@@ -6,6 +6,7 @@ use lightyear::utils::avian3d::*;
 
 pub mod lobby_structs;
 pub mod player_structs;
+pub mod weapon_structs;
 pub mod world_structs;
 
 use self::{lobby_structs::*, player_structs::*, world_structs::*};

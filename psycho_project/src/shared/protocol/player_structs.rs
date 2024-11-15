@@ -104,6 +104,7 @@ pub struct PlayerPosition(pub Vec3);
 pub enum CharacterAction {
     Move,
     Jump,
+    Shoot,
 }
 
 impl Actionlike for CharacterAction {
@@ -111,13 +112,16 @@ impl Actionlike for CharacterAction {
         match self {
             Self::Move => InputControlKind::DualAxis,
             Self::Jump => InputControlKind::Button,
+            Self::Shoot => InputControlKind::Button,
         }
     }
 }
 
 impl CharacterAction {
     pub fn default_input_map() -> InputMap<Self> {
-        let input_map = InputMap::new([(Self::Jump, KeyCode::Space)])
+        let input_map = InputMap::default()
+            .with(Self::Jump, KeyCode::Space)
+            .with(Self::Shoot, MouseButton::Left)
             .with_dual_axis(Self::Move, KeyboardVirtualDPad::WASD)
             .with_dual_axis(Self::Move, KeyboardVirtualDPad::ARROW_KEYS);
         return input_map;
