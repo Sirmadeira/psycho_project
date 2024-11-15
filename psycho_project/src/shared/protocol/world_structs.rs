@@ -5,9 +5,9 @@ use bevy::utils::Duration;
 use serde::{Deserialize, Serialize};
 
 /// Anything that is general and need to be synced is here
-pub struct SharedWorldStructsPlugin;
+pub struct WorldStructsPlugin;
 
-impl Plugin for SharedWorldStructsPlugin {
+impl Plugin for WorldStructsPlugin {
     fn build(&self, app: &mut App) {
         // Shared debuggin
         app.register_type::<CycleTimer>();

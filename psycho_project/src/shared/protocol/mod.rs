@@ -9,16 +9,17 @@ pub mod player_structs;
 pub mod weapon_structs;
 pub mod world_structs;
 
-use self::{lobby_structs::*, player_structs::*, world_structs::*};
+use self::{lobby_structs::*, player_structs::*, weapon_structs::*, world_structs::*};
 
 // Protocol
 pub(crate) struct ProtocolPlugin;
 
 impl Plugin for ProtocolPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(SharedWorldStructsPlugin);
+        app.add_plugins(WorldStructsPlugin);
         app.add_plugins(LobbyStructsPlugin);
         app.add_plugins(PlayerStructPlugin);
+        app.add_plugins(WeaponStructPlugin);
 
         // Channels
         app.add_channel::<CommonChannel>(ChannelSettings {

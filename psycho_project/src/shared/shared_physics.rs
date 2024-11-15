@@ -2,6 +2,7 @@
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
 use crate::shared::protocol::player_structs::CharacterAction;
+use crate::shared::protocol::weapon_structs::Weapon;
 use avian3d::prelude::*;
 use avian3d::sync::SyncConfig;
 use bevy::ecs::query::QueryData;
@@ -10,7 +11,7 @@ use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
 use lightyear::prelude::client::Predicted;
 use lightyear::prelude::{ReplicationGroup, ReplicationTarget};
-
+use lightyear::shared::tick_manager::TickManager;
 /// Here lies all the shared setup needed to make physics work in our game
 /// Warning: This game is solely based on running an independent server and clients any other mode will break it
 pub struct SharedPhysicsPlugin;
@@ -222,16 +223,37 @@ pub fn apply_character_action(
 // Warning - This function needs to be importable, because although client can spawn a prespawned object he should never do that in rollback
 // Or else we spawn two bulletse
 pub fn shared_spawn_bullet(
-    query: Query<&ActionState<CharacterAction>, Or<(With<Predicted>, With<ReplicationTarget>)>>,
+    mut query: Query<
+        (&ActionState<CharacterAction>, &mut Weapon),
+        Or<(With<Predicted>, With<ReplicationTarget>)>,
+    >,
+    tick_manager: Res<TickManager>,
 ) {
     // If there is no entity no need for this system to be enabled
     if query.is_empty() {
         return;
     }
+    // Current tick
+    let current_tick = tick_manager.tick();
 
-    for action_state in query.iter() {
-        if action_state.just_pressed(&CharacterAction::Shoot) {
-            info!("You just shoot a bullet")
+    for (action_state, mut weapon) in query.iter_mut() {
+        if !action_state.just_pressed(&CharacterAction::Shoot) {
+            continue;
         }
+
+        // Tick difference between weapon and current tick
+        let tick_diff = weapon.last_fire_tick - current_tick;
+
+        // Checking if weapon
+        if tick_diff.abs() <= weapon.cooldown as i16 {
+            // Here he cant technically fire for now as he is in cooldown
+            if weapon.last_fire_tick == current_tick {
+                info!("Player cant fire for now, as he is firing in same tick")
+            }
+            continue;
+        }
+
+        let prev_last_fire_tick = weapon.last_fire_tick;
+        weapon.last_fire_tick = current_tick;
     }
 }

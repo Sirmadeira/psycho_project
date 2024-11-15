@@ -3,7 +3,6 @@ use crate::server::player::*;
 use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::CommonChannel;
 
-use crate::shared::shared_physics::PhysicsBundle;
 use bevy::prelude::*;
 use lightyear::prelude::server::*;
 use lightyear::prelude::*;

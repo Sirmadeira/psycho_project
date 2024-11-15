@@ -12,6 +12,7 @@ impl Plugin for PlayerStructPlugin {
     fn build(&self, app: &mut App) {
         // Leafwing input plugin handles the whole leafwing shenanigans - WARNING FOR NOW DONT USE THE RESOURCE NOT SUPPORTED
         app.add_plugins(LeafwingInputPlugin::<CharacterAction>::default());
+
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
 
