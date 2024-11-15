@@ -1,17 +1,24 @@
 //! Here lies every single function that should occur both to server and client.
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
-use crate::shared::protocol::player_structs::CharacterAction;
-use crate::shared::protocol::weapon_structs::Weapon;
+use crate::shared::protocol::player_structs::*;
+use crate::shared::protocol::weapon_structs::*;
 use avian3d::prelude::*;
 use avian3d::sync::SyncConfig;
 use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
+use lightyear::client::prediction::prespawn::PreSpawnedPlayerObject;
 use lightyear::prelude::client::Predicted;
+use lightyear::prelude::server::Replicate;
+use lightyear::prelude::server::SyncTarget;
 use lightyear::prelude::{ReplicationGroup, ReplicationTarget};
+use lightyear::shared::plugin::NetworkIdentity;
+use lightyear::shared::replication::network_target::NetworkTarget;
 use lightyear::shared::tick_manager::TickManager;
+
+use super::protocol::lobby_structs::Lobbies;
 /// Here lies all the shared setup needed to make physics work in our game
 /// Warning: This game is solely based on running an independent server and clients any other mode will break it
 pub struct SharedPhysicsPlugin;
@@ -76,15 +83,18 @@ pub const CHARACTER_CAPSULE_HEIGHT: f32 = 0.5;
 pub const FLOOR_WIDTH: f32 = 100.0;
 pub const FLOOR_HEIGHT: f32 = 0.5;
 
+pub const BULLET_RADIUS: f32 = 0.5;
+pub const BULLET_HEIGHT: f32 = 0.5;
+
 /// Collision layers
 #[derive(PhysicsLayer)]
 enum GameLayer {
-    Player, // Layer 0
-    Ground, // Layer 2
+    Player,
+    Ground,
+    Bullet,
 }
 
-/// Physics bundle, subdivided according to necessity. IMPORTANT - This shouldnt be in protocol but it is shared
-/// We dont want to use bandwith to sync things like colliders and such when we can only sync velocity and such
+/// Physics bundle, subdivided according to necessity
 #[derive(Bundle)]
 pub struct PhysicsBundle {
     pub collider: Collider,
@@ -94,7 +104,6 @@ pub struct PhysicsBundle {
     pub locked_axes: LockedAxes,
     pub collison_layer: CollisionLayers,
     pub friction: Friction,
-    pub position: Position,
 }
 
 impl PhysicsBundle {
@@ -111,7 +120,6 @@ impl PhysicsBundle {
             external_force: ExternalForce::ZERO.with_persistence(false),
             collison_layer: CollisionLayers::new(GameLayer::Player, [GameLayer::Ground]),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
-            position: Position(Vec3::new(0.0, 2.0, 0.0)),
         }
     }
     pub fn floor() -> Self {
@@ -126,7 +134,18 @@ impl PhysicsBundle {
                 [GameLayer::Ground, GameLayer::Player],
             ),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
-            position: Position(Vec3::new(0.0, 0.0, 0.0)),
+        }
+    }
+
+    pub(crate) fn bullet() -> Self {
+        Self {
+            collider: Collider::cylinder(BULLET_RADIUS, BULLET_HEIGHT),
+            collider_density: ColliderDensity(1.0),
+            rigid_body: RigidBody::Dynamic,
+            external_force: ExternalForce::default(),
+            locked_axes: LockedAxes::default(),
+            collison_layer: CollisionLayers::new(GameLayer::Bullet, [GameLayer::Player]),
+            friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
     }
 }
@@ -224,10 +243,20 @@ pub fn apply_character_action(
 // Or else we spawn two bulletse
 pub fn shared_spawn_bullet(
     mut query: Query<
-        (&ActionState<CharacterAction>, &mut Weapon),
+        (
+            &Position,
+            &Rotation,
+            &LinearVelocity,
+            &PlayerId,
+            &ActionState<CharacterAction>,
+            &mut Weapon,
+        ),
         Or<(With<Predicted>, With<ReplicationTarget>)>,
     >,
     tick_manager: Res<TickManager>,
+    lobbies: Res<Lobbies>,
+    mut commands: Commands,
+    identity: NetworkIdentity,
 ) {
     // If there is no entity no need for this system to be enabled
     if query.is_empty() {
@@ -236,11 +265,14 @@ pub fn shared_spawn_bullet(
     // Current tick
     let current_tick = tick_manager.tick();
 
-    for (action_state, mut weapon) in query.iter_mut() {
+    for (player_position, player_rotation, player_velocity, player_id, action_state, mut weapon) in
+        query.iter_mut()
+    {
         if !action_state.just_pressed(&CharacterAction::Shoot) {
             continue;
         }
 
+        info!("Fired bullet");
         // Tick difference between weapon and current tick
         let tick_diff = weapon.last_fire_tick - current_tick;
 
@@ -255,5 +287,37 @@ pub fn shared_spawn_bullet(
 
         let prev_last_fire_tick = weapon.last_fire_tick;
         weapon.last_fire_tick = current_tick;
+
+        let bullet_spawn_offset = Vec3::new(0.0, 1.0, 0.0);
+        let bullet_origin = player_position.0 + bullet_spawn_offset;
+        let bullet_linvel = player_rotation * (Vec3::Z * weapon.bullet_speed) + player_velocity.0;
+
+        // We do this to avo
+        let prespawned = PreSpawnedPlayerObject::default_with_salt(player_id.0.to_bits());
+
+        let bullet_entity = commands
+            .spawn((
+                BulletBundle::new(player_id.0, bullet_origin, bullet_linvel, current_tick),
+                PhysicsBundle::bullet(),
+                prespawned,
+            ))
+            .id();
+        info!(
+            "spawned bullet for ActionState, bullet={bullet_entity:?} ({}, {}). prev last_fire tick: {prev_last_fire_tick:?}",
+            weapon.last_fire_tick.0, player_id.0
+        );
+        if identity.is_server() {
+            info!("Replicating bullet for others in lobbies");
+            let replicate = Replicate {
+                sync: SyncTarget {
+                    prediction: NetworkTarget::Only(lobbies.lobbies[0].players.clone()),
+                    ..Default::default()
+                },
+                // make sure that all entities that are predicted are part of the same replication group
+                group: REPLICATION_GROUP,
+                ..default()
+            };
+            commands.entity(bullet_entity).insert(replicate);
+        }
     }
 }
