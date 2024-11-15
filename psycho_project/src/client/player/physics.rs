@@ -3,23 +3,30 @@ use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
+use lightyear::client::prediction::plugin::is_in_rollback;
 use lightyear::client::prediction::rollback::Rollback;
 use lightyear::client::prediction::Predicted;
 use lightyear::inputs::leafwing::input_buffer::InputBuffer;
 use lightyear::shared::replication::components::Controlled;
 use lightyear::shared::tick_manager::TickManager;
-
 pub struct PlayerPhysicsPlugin;
 
 impl Plugin for PlayerPhysicsPlugin {
     fn build(&self, app: &mut App) {
         // Add physical components to predicted players
-        app.add_systems(FixedUpdate, add_physics_to_players);
+        app.add_systems(Update, add_physics_to_players);
 
         // It is essential that input bases systems occur in fixedupdate
         app.add_systems(
             FixedUpdate,
             handle_character_actions.in_set(InputPhysicsSet::Input),
+        );
+        // Done so it avoid double bullet spawn else server spawns it
+        app.add_systems(
+            FixedUpdate,
+            shared_spawn_bullet
+                .run_if(not(is_in_rollback))
+                .in_set(InputPhysicsSet::Input),
         );
     }
 }

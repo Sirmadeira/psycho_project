@@ -50,6 +50,11 @@ impl Plugin for PlayerPlugin {
             FixedUpdate,
             handle_character_actions.in_set(InputPhysicsSet::Input),
         );
+
+        app.add_systems(
+            FixedUpdate,
+            shared_spawn_bullet.in_set(InputPhysicsSet::Input),
+        );
     }
 }
 
@@ -256,15 +261,13 @@ fn replicate_inputs(
     lobby: Res<Lobbies>,
 ) {
     for mut event in input_events.drain() {
-        // FIND A HYPER OPTIMAL WAY OF MAKIN ONLY LOBBY
+        // Optional here you can validate input
         connection
             .send_message_to_target::<InputChannel, _>(
                 &mut event.message,
                 NetworkTarget::Only(lobby.lobbies[0].players.clone()),
             )
             .unwrap()
-        //     }
-        // }
     }
 }
 fn handle_character_actions(

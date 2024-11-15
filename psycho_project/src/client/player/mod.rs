@@ -23,6 +23,7 @@ impl Plugin for CreateCharPlugin {
 
         // Debugging RTT
         app.add_systems(Update, disable_culling);
+        
     }
 }
 

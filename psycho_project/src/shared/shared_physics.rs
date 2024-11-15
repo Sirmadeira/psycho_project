@@ -1,4 +1,4 @@
-//! Here lies every single function that should occur both to server and client. And structs for no
+//! Here lies every single function that should occur both to server and client.
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
 use crate::shared::protocol::player_structs::CharacterAction;
@@ -8,7 +8,8 @@ use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
-use lightyear::prelude::ReplicationGroup;
+use lightyear::prelude::client::Predicted;
+use lightyear::prelude::{ReplicationGroup, ReplicationTarget};
 
 /// Here lies all the shared setup needed to make physics work in our game
 /// Warning: This game is solely based on running an independent server and clients any other mode will break it
@@ -42,7 +43,6 @@ impl Plugin for SharedPhysicsPlugin {
         app.insert_resource(Gravity(Vec3::new(0.0, -2.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
-        // SystemSet (i.e. where we apply user's actions).
         app.configure_sets(
             FixedUpdate,
             (
@@ -61,7 +61,7 @@ impl Plugin for SharedPhysicsPlugin {
 /// Super important set ensures that our input systems occur before the physics, if not followed get ready for stuttering
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum InputPhysicsSet {
-    // Main fixed update systems (i.e. handle inputs).
+    // Input system sets
     Input,
     // Apply physics steps.
     Physics,
@@ -214,4 +214,21 @@ pub fn apply_character_action(
     character
         .external_force
         .apply_force(required_acceleration * character.mass.0);
+}
+
+// Warning - This function needs to be importable, because although client can spawn a prespawned object he should never do that in rollback
+// Or else we spawn two bulletse
+pub fn shared_spawn_bullet(
+    query: Query<&ActionState<CharacterAction>, Or<(With<Predicted>, With<ReplicationTarget>)>>,
+) {
+    // If there is no entity no need for this system to be enabled
+    if query.is_empty() {
+        return;
+    }
+
+    for action_state in query.iter() {
+        if action_state.just_pressed(&CharacterAction::Shoot) {
+            info!("You just shoot a bullet")
+        }
+    }
 }
