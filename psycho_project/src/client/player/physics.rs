@@ -36,7 +36,10 @@ fn add_physics_to_players(
                     .with_dual_axis(CharacterAction::Move, KeyboardVirtualDPad::WASD),
             );
         }
-        commands.entity(player).insert(PhysicsBundle::player());
+        // Inserted position here to avoid inside spawning
+        commands
+            .entity(player)
+            .insert(PhysicsBundle::player());
     }
 }
 

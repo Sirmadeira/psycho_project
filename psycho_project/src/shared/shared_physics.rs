@@ -86,6 +86,7 @@ pub const FLOOR_HEIGHT: f32 = 0.5;
 pub const BULLET_RADIUS: f32 = 0.5;
 pub const BULLET_HEIGHT: f32 = 0.5;
 
+
 /// Collision layers
 #[derive(PhysicsLayer)]
 enum GameLayer {
@@ -94,7 +95,7 @@ enum GameLayer {
     Bullet,
 }
 
-/// Physics bundle, subdivided according to necessity
+/// Physics bundle, stores anything that is physically related but not bandwithded
 #[derive(Bundle)]
 pub struct PhysicsBundle {
     pub collider: Collider,

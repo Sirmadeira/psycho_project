@@ -171,6 +171,7 @@ fn spawn_server_player(
             .insert(replicate)
             .insert(CharacterAction::default_input_map())
             .insert(Weapon::default())
+            .insert(Position(Vec3::new(0.0, 2.0, 0.0)))
             .id();
         player_entity_map.0.insert(client_id, id);
         return old_player_bun;
@@ -187,6 +188,7 @@ fn spawn_server_player(
             .insert(replicate)
             .insert(CharacterAction::default_input_map())
             .insert(Weapon::default())
+            .insert(Position(Vec3::new(0.0, 2.0, 0.0)))
             .id();
 
         player_entity_map.0.insert(client_id, id);
