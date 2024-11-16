@@ -1,6 +1,7 @@
 //! Here lies every single function that should occur both to server and client.
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
+use super::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::protocol::weapon_structs::*;
 use avian3d::prelude::*;
@@ -15,10 +16,9 @@ use lightyear::prelude::server::Replicate;
 use lightyear::prelude::server::SyncTarget;
 use lightyear::prelude::{ReplicationGroup, ReplicationTarget};
 use lightyear::shared::plugin::NetworkIdentity;
+use lightyear::shared::replication::components::Controlled;
 use lightyear::shared::replication::network_target::NetworkTarget;
 use lightyear::shared::tick_manager::TickManager;
-
-use super::protocol::lobby_structs::Lobbies;
 /// Here lies all the shared setup needed to make physics work in our game
 /// Warning: This game is solely based on running an independent server and clients any other mode will break it
 pub struct SharedPhysicsPlugin;
@@ -33,7 +33,7 @@ impl Plugin for SharedPhysicsPlugin {
         );
         // We change SyncPlugin to PostUpdate, because we want the visually
         // interpreted values synced to transform every time, not just when
-        // Fixed schedule runs.
+        // Fixed schedule runs. It avoid stupid interpolation everywhere
         app.add_plugins(SyncPlugin::new(PostUpdate));
         // Position and Rotation are the primary source of truth so no need to
         // sync changes from Transform to Position.
@@ -63,6 +63,11 @@ impl Plugin for SharedPhysicsPlugin {
                 (InputPhysicsSet::Input, InputPhysicsSet::Physics).chain(),
             ),
         );
+
+        app.add_systems(
+            FixedUpdate,
+            lifetime_despawner.in_set(InputPhysicsSet::Input),
+        );
     }
 }
 
@@ -85,7 +90,6 @@ pub const FLOOR_HEIGHT: f32 = 0.5;
 
 pub const BULLET_RADIUS: f32 = 0.5;
 pub const BULLET_HEIGHT: f32 = 0.5;
-
 
 /// Collision layers
 #[derive(PhysicsLayer)]
@@ -163,6 +167,7 @@ pub struct CharacterQuery {
 }
 
 /// Apply the character actions `action_state` to the character entity `character`.
+/// TODO - FIX THIS SO IT FILTER OUT ALL OTHER CHARACTERS
 pub fn apply_character_action(
     time: &Res<Time>,
     spatial_query: &SpatialQuery,
@@ -175,7 +180,7 @@ pub fn apply_character_action(
     let max_velocity_delta_per_tick = MAX_ACCELERATION * time.delta_seconds();
 
     // Handle jumping.
-    if action_state.pressed(&CharacterAction::Jump) {
+    if action_state.just_pressed(&CharacterAction::Jump) {
         let ray_cast_origin = character.position.0
             + Vec3::new(
                 0.0,
@@ -241,7 +246,7 @@ pub fn apply_character_action(
 }
 
 // Warning - This function needs to be importable, because although client can spawn a prespawned object he should never do that in rollback
-// Or else we spawn two bulletse
+// Or else we spawn two bullets so
 pub fn shared_spawn_bullet(
     mut query: Query<
         (
@@ -255,7 +260,6 @@ pub fn shared_spawn_bullet(
         Or<(With<Predicted>, With<ReplicationTarget>)>,
     >,
     tick_manager: Res<TickManager>,
-    lobbies: Res<Lobbies>,
     mut commands: Commands,
     identity: NetworkIdentity,
 ) {
@@ -272,8 +276,6 @@ pub fn shared_spawn_bullet(
         if !action_state.just_pressed(&CharacterAction::Shoot) {
             continue;
         }
-
-        info!("Fired bullet");
         // Tick difference between weapon and current tick
         let tick_diff = weapon.last_fire_tick - current_tick;
 
@@ -304,14 +306,14 @@ pub fn shared_spawn_bullet(
             ))
             .id();
         info!(
-            "spawned bullet for ActionState, bullet={bullet_entity:?} ({}, {}). prev last_fire tick: {prev_last_fire_tick:?}",
+            "Spawned bullet for ActionState, bullet={bullet_entity:?} ({}, {}). prev last_fire tick: {prev_last_fire_tick:?}",
             weapon.last_fire_tick.0, player_id.0
         );
         if identity.is_server() {
             info!("Replicating bullet for others in lobbies");
             let replicate = Replicate {
                 sync: SyncTarget {
-                    prediction: NetworkTarget::Only(lobbies.lobbies[0].players.clone()),
+                    prediction: NetworkTarget::All,
                     ..Default::default()
                 },
                 // make sure that all entities that are predicted are part of the same replication group
@@ -322,3 +324,26 @@ pub fn shared_spawn_bullet(
         }
     }
 }
+
+/// THE EXTERMINATOR OF BULLETS
+pub fn lifetime_despawner(
+    q: Query<(Entity, &Lifetime)>,
+    tick_manager: Res<TickManager>,
+    identity: NetworkIdentity,
+    mut commands: Commands,
+) {
+    for (entity, lifetime) in q.iter() {
+        // Evaluates if tick is way further that lifetime available
+        if (tick_manager.tick() - lifetime.origin_tick) > lifetime.lifetime {
+            if identity.is_server() {
+                // Stop replicating and despawn it if server
+                commands.entity(entity).remove::<Replicate>().despawn();
+            } else {
+                // Despanw every child entity in client
+                commands.entity(entity).despawn_recursive();
+            }
+        }
+    }
+}
+
+pub fn process_collisions(mut collision_event_reader: EventReader<Collision>) {}
