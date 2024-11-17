@@ -6,6 +6,8 @@ use leafwing_input_manager::prelude::*;
 use lightyear::client::prediction::rollback::Rollback;
 use lightyear::client::prediction::Predicted;
 use lightyear::inputs::leafwing::input_buffer::InputBuffer;
+use lightyear::prelude::client::Confirmed;
+use lightyear::shared::replication::components::Controlled;
 use lightyear::shared::tick_manager::TickManager;
 pub struct PlayerPhysicsPlugin;
 
@@ -23,10 +25,15 @@ impl Plugin for PlayerPhysicsPlugin {
 }
 
 /// Will add physics to predicted entities
-fn add_physics_to_players(players: Query<Entity, With<PlayerId>>, mut commands: Commands) {
+fn add_physics_to_players(
+    players: Query<Entity, (With<PlayerId>, With<Predicted>)>,
+    mut commands: Commands,
+) {
     for player in players.iter() {
         // Inserted position here to avoid inside spawning
+
         commands.entity(player).insert(PhysicsBundle::player());
+        
     }
 }
 

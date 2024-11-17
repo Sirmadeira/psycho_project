@@ -1,8 +1,10 @@
 use bevy::prelude::*;
+use shared_gun::SharedGunPlugin;
 use shared_physics::SharedPhysicsPlugin;
 
 pub mod diagnostics;
 pub mod protocol;
+pub mod shared_gun;
 pub mod shared_physics;
 
 use self::diagnostics::CentralDiagnosticsPlugin;
@@ -19,6 +21,7 @@ impl Plugin for SharedPlugin {
         // Self made plugins
         app.add_plugins(ProtocolPlugin);
         app.add_plugins(SharedPhysicsPlugin);
+        app.add_plugins(SharedGunPlugin);
         app.add_plugins(CentralDiagnosticsPlugin);
     }
 }

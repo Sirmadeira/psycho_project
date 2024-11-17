@@ -4,6 +4,7 @@ use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::protocol::weapon_structs::Weapon;
 use crate::shared::protocol::CommonChannel;
+use crate::shared::shared_gun::shared_spawn_bullet;
 use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;

@@ -1,4 +1,4 @@
-use crate::shared::shared_physics::shared_spawn_bullet;
+use crate::shared::shared_gun::shared_spawn_bullet;
 use crate::shared::shared_physics::InputPhysicsSet;
 use bevy::prelude::*;
 use lightyear::client::prediction::plugin::is_in_rollback;

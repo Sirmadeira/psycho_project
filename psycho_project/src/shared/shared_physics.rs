@@ -1,24 +1,14 @@
 //! Here lies every single function that should occur both to server and client.
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
-use super::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::*;
-use crate::shared::protocol::weapon_structs::*;
 use avian3d::prelude::*;
 use avian3d::sync::SyncConfig;
 use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
-use lightyear::client::prediction::prespawn::PreSpawnedPlayerObject;
-use lightyear::prelude::client::Predicted;
-use lightyear::prelude::server::Replicate;
-use lightyear::prelude::server::SyncTarget;
-use lightyear::prelude::{ReplicationGroup, ReplicationTarget};
-use lightyear::shared::plugin::NetworkIdentity;
-use lightyear::shared::replication::components::Controlled;
-use lightyear::shared::replication::network_target::NetworkTarget;
-use lightyear::shared::tick_manager::TickManager;
+use lightyear::prelude::ReplicationGroup;
 /// Here lies all the shared setup needed to make physics work in our game
 /// Warning: This game is solely based on running an independent server and clients any other mode will break it
 pub struct SharedPhysicsPlugin;
@@ -33,7 +23,7 @@ impl Plugin for SharedPhysicsPlugin {
         );
         // We change SyncPlugin to PostUpdate, because we want the visually
         // interpreted values synced to transform every time, not just when
-        // Fixed schedule runs. It avoid stupid interpolation everywhere
+        // Fixed schedule runs.
         app.add_plugins(SyncPlugin::new(PostUpdate));
         // Position and Rotation are the primary source of truth so no need to
         // sync changes from Transform to Position.
@@ -62,11 +52,6 @@ impl Plugin for SharedPhysicsPlugin {
                     .in_set(InputPhysicsSet::Physics),
                 (InputPhysicsSet::Input, InputPhysicsSet::Physics).chain(),
             ),
-        );
-
-        app.add_systems(
-            FixedUpdate,
-            lifetime_despawner.in_set(InputPhysicsSet::Input),
         );
     }
 }
@@ -123,7 +108,10 @@ impl PhysicsBundle {
                 .lock_rotation_z(),
             rigid_body: RigidBody::Dynamic,
             external_force: ExternalForce::ZERO.with_persistence(false),
-            collison_layer: CollisionLayers::new(GameLayer::Player, [GameLayer::Ground]),
+            collison_layer: CollisionLayers::new(
+                GameLayer::Player,
+                [GameLayer::Ground, GameLayer::Bullet],
+            ),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
     }
@@ -136,7 +124,7 @@ impl PhysicsBundle {
             locked_axes: LockedAxes::default(),
             collison_layer: CollisionLayers::new(
                 GameLayer::Ground,
-                [GameLayer::Ground, GameLayer::Player],
+                [GameLayer::Ground, GameLayer::Player, GameLayer::Bullet],
             ),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
@@ -149,7 +137,10 @@ impl PhysicsBundle {
             rigid_body: RigidBody::Dynamic,
             external_force: ExternalForce::default(),
             locked_axes: LockedAxes::default(),
-            collison_layer: CollisionLayers::new(GameLayer::Bullet, [GameLayer::Player]),
+            collison_layer: CollisionLayers::new(
+                GameLayer::Bullet,
+                [GameLayer::Player, GameLayer::Ground],
+            ),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
     }
@@ -226,17 +217,6 @@ pub fn apply_character_action(
     let new_ground_linear_velocity = ground_linear_velocity
         .move_towards(desired_ground_linear_velocity, max_velocity_delta_per_tick);
 
-    // Acceleration required to change the linear velocity from
-    // `ground_linear_velocity` to `new_ground_linear_velocity` in the duration
-    // of a single tick.
-    //
-    // There is no need to clamp the acceleration's length to
-    // `MAX_ACCELERATION`. The difference between `ground_linear_velocity` and
-    // `new_ground_linear_velocity` is never great enough to require more than
-    // `MAX_ACCELERATION` in a single tick, This is because
-    // `new_ground_linear_velocity` is calculated using
-    // `max_velocity_delta_per_tick` which restricts how much the velocity can
-    // change in a single tick based on `MAX_ACCELERATION`.
     let required_acceleration =
         (new_ground_linear_velocity - ground_linear_velocity) / time.delta_seconds();
 
@@ -244,106 +224,3 @@ pub fn apply_character_action(
         .external_force
         .apply_force(required_acceleration * character.mass.0);
 }
-
-// Warning - This function needs to be importable, because although client can spawn a prespawned object he should never do that in rollback
-// Or else we spawn two bullets so
-pub fn shared_spawn_bullet(
-    mut query: Query<
-        (
-            &Position,
-            &Rotation,
-            &LinearVelocity,
-            &PlayerId,
-            &ActionState<CharacterAction>,
-            &mut Weapon,
-        ),
-        Or<(With<Predicted>, With<ReplicationTarget>)>,
-    >,
-    tick_manager: Res<TickManager>,
-    mut commands: Commands,
-    identity: NetworkIdentity,
-) {
-    // If there is no entity no need for this system to be enabled
-    if query.is_empty() {
-        return;
-    }
-    // Current tick
-    let current_tick = tick_manager.tick();
-
-    for (player_position, player_rotation, player_velocity, player_id, action_state, mut weapon) in
-        query.iter_mut()
-    {
-        if !action_state.just_pressed(&CharacterAction::Shoot) {
-            continue;
-        }
-        // Tick difference between weapon and current tick
-        let tick_diff = weapon.last_fire_tick - current_tick;
-
-        // Checking if weapon
-        if tick_diff.abs() <= weapon.cooldown as i16 {
-            // Here he cant technically fire for now as he is in cooldown
-            if weapon.last_fire_tick == current_tick {
-                info!("Player cant fire for now, as he is firing in same tick")
-            }
-            continue;
-        }
-
-        let prev_last_fire_tick = weapon.last_fire_tick;
-        weapon.last_fire_tick = current_tick;
-
-        let bullet_spawn_offset = Vec3::new(0.0, 1.0, 0.0);
-        let bullet_origin = player_position.0 + bullet_spawn_offset;
-        let bullet_linvel = player_rotation * (Vec3::Z * weapon.bullet_speed) + player_velocity.0;
-
-        // We do this to avo
-        let prespawned = PreSpawnedPlayerObject::default_with_salt(player_id.0.to_bits());
-
-        let bullet_entity = commands
-            .spawn((
-                BulletBundle::new(player_id.0, bullet_origin, bullet_linvel, current_tick),
-                PhysicsBundle::bullet(),
-                prespawned,
-            ))
-            .id();
-        info!(
-            "Spawned bullet for ActionState, bullet={bullet_entity:?} ({}, {}). prev last_fire tick: {prev_last_fire_tick:?}",
-            weapon.last_fire_tick.0, player_id.0
-        );
-        if identity.is_server() {
-            info!("Replicating bullet for others in lobbies");
-            let replicate = Replicate {
-                sync: SyncTarget {
-                    prediction: NetworkTarget::All,
-                    ..Default::default()
-                },
-                // make sure that all entities that are predicted are part of the same replication group
-                group: REPLICATION_GROUP,
-                ..default()
-            };
-            commands.entity(bullet_entity).insert(replicate);
-        }
-    }
-}
-
-/// THE EXTERMINATOR OF BULLETS
-pub fn lifetime_despawner(
-    q: Query<(Entity, &Lifetime)>,
-    tick_manager: Res<TickManager>,
-    identity: NetworkIdentity,
-    mut commands: Commands,
-) {
-    for (entity, lifetime) in q.iter() {
-        // Evaluates if tick is way further that lifetime available
-        if (tick_manager.tick() - lifetime.origin_tick) > lifetime.lifetime {
-            if identity.is_server() {
-                // Stop replicating and despawn it if server
-                commands.entity(entity).remove::<Replicate>().despawn();
-            } else {
-                // Despanw every child entity in client
-                commands.entity(entity).despawn_recursive();
-            }
-        }
-    }
-}
-
-pub fn process_collisions(mut collision_event_reader: EventReader<Collision>) {}
