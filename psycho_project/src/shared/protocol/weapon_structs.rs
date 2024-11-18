@@ -10,11 +10,11 @@ pub struct WeaponStructPlugin;
 
 impl Plugin for WeaponStructPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<Weapon>();
         app.register_component::<Weapon>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full);
         app.register_component::<BulletMarker>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
+        app.register_type::<Weapon>();
     }
 }
 

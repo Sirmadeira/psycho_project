@@ -29,6 +29,8 @@ impl Plugin for PlayerStructPlugin {
         // Messages related to visuals
         app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
         app.register_message::<ChangeChar>(ChannelDirection::Bidirectional);
+
+        app.register_type::<PlayerHealth>();
     }
 }
 

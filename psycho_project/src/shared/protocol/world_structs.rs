@@ -9,9 +9,6 @@ pub struct WorldStructsPlugin;
 
 impl Plugin for WorldStructsPlugin {
     fn build(&self, app: &mut App) {
-        // Shared debuggin
-        app.register_type::<CycleTimer>();
-
         // Resources
         app.register_resource::<CycleTimer>(ChannelDirection::ServerToClient);
 
@@ -43,6 +40,9 @@ impl Plugin for WorldStructsPlugin {
         // World components
         app.register_component::<FloorMarker>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
+
+        // Shared debuggin
+        app.register_type::<CycleTimer>();
     }
 }
 
