@@ -157,7 +157,6 @@ pub fn process_collisions(
     for collision in collision_event_reader.read() {
         let contact = &collision.0;
         if let Ok((bullet, bullet_pos)) = bullet_q.get(contact.entity1) {
-            info!("COLLISION BULLET WITH SOMETHING OCCURED");
             // despawn the bullet
             if identity.is_server() {
                 commands
@@ -178,11 +177,9 @@ pub fn process_collisions(
                 position: bullet_pos.0,
             };
             hit_ev_writer.send(ev);
-            info!("Sent bullet hit event");
         }
         // Twice because collisions are vice versa sometimes
         if let Ok((bullet, bullet_pos)) = bullet_q.get(contact.entity2) {
-            info!("COLLISION BULLET WITH SOMETHING OCCURED");
             // despawn the bullet
             if identity.is_server() {
                 commands
@@ -203,7 +200,6 @@ pub fn process_collisions(
                 position: bullet_pos.0,
             };
             hit_ev_writer.send(ev);
-            info!("Sent bullet hit event");
         }
     }
 }

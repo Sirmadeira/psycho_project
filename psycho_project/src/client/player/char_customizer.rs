@@ -10,6 +10,7 @@ use lightyear::connection::id::ClientId;
 use lightyear::prelude::client::Predicted;
 use lightyear::shared::replication::components::Controlled;
 use std::collections::VecDeque;
+
 pub struct CustomizeCharPlugin;
 
 impl Plugin for CustomizeCharPlugin {

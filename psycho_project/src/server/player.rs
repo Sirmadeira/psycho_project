@@ -4,7 +4,9 @@ use crate::shared::protocol::lobby_structs::*;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::protocol::weapon_structs::Weapon;
 use crate::shared::protocol::CommonChannel;
+use crate::shared::shared_gun::process_collisions;
 use crate::shared::shared_gun::shared_spawn_bullet;
+use crate::shared::shared_gun::BulletHitEvent;
 use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
@@ -58,6 +60,12 @@ impl Plugin for PlayerPlugin {
         app.add_systems(
             FixedUpdate,
             shared_spawn_bullet.in_set(InputPhysicsSet::Input),
+        );
+        app.add_systems(
+            FixedUpdate,
+            handle_bullet_hit
+                .run_if(on_event::<BulletHitEvent>())
+                .after(process_collisions),
         );
     }
 }
@@ -173,6 +181,7 @@ fn spawn_server_player(
             .insert(CharacterAction::default_input_map())
             .insert(Weapon::default())
             .insert(Position(Vec3::new(0.0, 2.0, 0.0)))
+            .insert(PlayerHealth::default())
             .id();
         player_entity_map.0.insert(client_id, id);
         return old_player_bun;
@@ -190,6 +199,7 @@ fn spawn_server_player(
             .insert(CharacterAction::default_input_map())
             .insert(Weapon::default())
             .insert(Position(Vec3::new(0.0, 2.0, 0.0)))
+            .insert(PlayerHealth::default())
             .id();
 
         player_entity_map.0.insert(client_id, id);
@@ -311,5 +321,34 @@ fn insert_physics_server_player(
                 );
             }
         };
+    }
+}
+
+/// Responsible for encapsulating the bullet hit event and changing player health when occurs
+fn handle_bullet_hit(
+    mut bullet_hit_event: EventReader<BulletHitEvent>,
+    mut player_health: Query<&mut PlayerHealth>,
+    entity_map: Res<PlayerEntityMap>,
+) {
+    for bullet_hit in bullet_hit_event.read() {
+        if let Some(_) = entity_map.0.get(&bullet_hit.bullet_owner) {
+            if let Some(victim_id) = bullet_hit.victim_client_id {
+                if let Some(victim) = entity_map.0.get(&victim_id) {
+                    if let Ok(mut player_health) = player_health.get_mut(*victim) {
+                        info!(
+                            "Shooter id {} just shoot {} diminishing his health",
+                            bullet_hit.bullet_owner, victim_id
+                        );
+                        player_health.0 -= 2;
+                    }
+                } else {
+                    warn!("Couldnt grab victim entity in entity map somethin went terribly wrong")
+                }
+            } else {
+                //TODO HANDLE MISSING - PERHAPS TELL HIM HE IS SHIT?
+            }
+        } else {
+            warn!("Couldnt grab bullet owner something is terribly wrong")
+        }
     }
 }

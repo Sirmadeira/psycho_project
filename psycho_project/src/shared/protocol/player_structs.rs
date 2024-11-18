@@ -19,6 +19,9 @@ impl Plugin for PlayerStructPlugin {
         app.register_component::<PlayerVisuals>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
 
+        app.register_component::<PlayerHealth>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Simple);
+
         app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
 
         // Messages when starting game and just connection
@@ -91,6 +94,16 @@ impl PlayerVisuals {
     // Returns an iterator over the visual components. Inclu
     pub fn iter_visuals(&self) -> impl Iterator<Item = &String> {
         vec![&self.head, &self.torso, &self.legs, &self.skeleton].into_iter()
+    }
+}
+
+//// Responsible for health display
+#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
+pub struct PlayerHealth(pub u32);
+
+impl Default for PlayerHealth {
+    fn default() -> Self {
+        Self(10)
     }
 }
 
