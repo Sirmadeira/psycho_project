@@ -101,7 +101,7 @@ impl PlayerVisuals {
 
 //// Responsible for health display
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
-pub struct PlayerHealth(pub u32);
+pub struct PlayerHealth(pub i32);
 
 impl Default for PlayerHealth {
     fn default() -> Self {

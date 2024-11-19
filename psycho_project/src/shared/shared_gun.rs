@@ -167,16 +167,24 @@ pub fn process_collisions(
                 commands.entity(contact.entity1).despawn_recursive();
             }
 
-            let victim_client_id = player_q
-                .get(contact.entity2)
-                .map_or(None, |victim_player| Some(victim_player.0));
+            if let Ok(victim_client_id) = player_q.get(contact.entity2) {
+                info!("There was a victime {}", victim_client_id.0);
+                let ev = BulletHitEvent {
+                    bullet_owner: bullet.owner,
+                    victim_client_id: Some(victim_client_id.0),
+                    position: bullet_pos.0,
+                };
+                hit_ev_writer.send(ev);
+            } else {
+                info!("No victim");
 
-            let ev = BulletHitEvent {
-                bullet_owner: bullet.owner,
-                victim_client_id,
-                position: bullet_pos.0,
-            };
-            hit_ev_writer.send(ev);
+                let ev = BulletHitEvent {
+                    bullet_owner: bullet.owner,
+                    victim_client_id: None,
+                    position: bullet_pos.0,
+                };
+                hit_ev_writer.send(ev);
+            }
         }
         // Twice because collisions are vice versa sometimes
         if let Ok((bullet, bullet_pos)) = bullet_q.get(contact.entity2) {
@@ -190,16 +198,23 @@ pub fn process_collisions(
                 commands.entity(contact.entity2).despawn_recursive();
             }
 
-            let victim_client_id = player_q
-                .get(contact.entity2)
-                .map_or(None, |victim_player| Some(victim_player.0));
-
-            let ev = BulletHitEvent {
-                bullet_owner: bullet.owner,
-                victim_client_id,
-                position: bullet_pos.0,
+            if let Ok(victim_client_id) = player_q.get(contact.entity1) {
+                info!("There was a victim {}", victim_client_id.0);
+                let ev = BulletHitEvent {
+                    bullet_owner: bullet.owner,
+                    victim_client_id: Some(victim_client_id.0),
+                    position: bullet_pos.0,
+                };
+                hit_ev_writer.send(ev);
+            } else {
+                info!("No victim");
+                let ev = BulletHitEvent {
+                    bullet_owner: bullet.owner,
+                    victim_client_id: None,
+                    position: bullet_pos.0,
+                };
+                hit_ev_writer.send(ev);
             };
-            hit_ev_writer.send(ev);
         }
     }
 }
