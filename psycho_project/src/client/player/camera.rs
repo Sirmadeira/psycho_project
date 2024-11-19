@@ -79,6 +79,8 @@ pub struct CamInfo {
     pub zoom_sens: f32,
     pub cursor_lock_activation_key: KeyCode,
     pub cursor_lock_active: bool,
+    pub yaw_limit: Option<(f32, f32)>,
+    pub pitch_limit: Option<(f32, f32)>,
 }
 
 /// Sets the zoom bounds (min & max)
@@ -103,6 +105,7 @@ fn spawn_begin_camera(mut commands: Commands) {
     commands
         .spawn(Camera3dBundle::default())
         .insert(MainCamera)
+        .insert(Name::new("MainCamera"))
         .insert(CamInfo {
             mouse_sens: 0.75,
             zoom_enabled: true,
@@ -110,6 +113,8 @@ fn spawn_begin_camera(mut commands: Commands) {
             zoom_sens: 2.0,
             cursor_lock_activation_key: KeyCode::KeyR,
             cursor_lock_active: false,
+            yaw_limit: None,
+            pitch_limit: Some((-PI / 2.0, PI / 20.0)),
         });
 }
 
@@ -143,40 +148,43 @@ fn orbit_mouse(
     mut cam_q: Query<(&CamInfo, &mut Transform), With<CamInfo>>,
     mut mouse_evr: EventReader<MouseMotion>,
 ) {
-    // Basing the rotation according to the mouve motion
-    let mut rotation = Vec2::ZERO;
-    for ev in mouse_evr.read() {
-        rotation += ev.delta;
-    }
+    // Accumulate mouse motion into a rotation vector
+    let rotation_delta: Vec2 = mouse_evr.read().map(|ev| ev.delta).sum();
 
-    let (cam_info, mut cam_transform) = cam_q.get_single_mut().unwrap();
+    if rotation_delta.length_squared() > 0.0 {
+        if let (Ok(window), Ok((cam_info, mut cam_transform))) =
+            (window_q.get_single(), cam_q.get_single_mut())
+        {
+            // Calculate normalized rotation deltas
+            let delta_x = (rotation_delta.x / window.width()) * PI * cam_info.mouse_sens;
+            let delta_y = (rotation_delta.y / window.height()) * PI * cam_info.mouse_sens;
 
-    if rotation.length_squared() > 0.0 {
-        let window = window_q.get_single().unwrap();
-        let delta_x = {
-            let delta = rotation.x / window.width() * std::f32::consts::PI * cam_info.mouse_sens;
-            delta
-        };
+            // Retrieve current yaw and pitch
+            let (yaw, pitch, _) = cam_transform.rotation.to_euler(EulerRot::YXZ);
 
-        let delta_y = rotation.y / window.height() * PI * cam_info.mouse_sens;
+            // Apply yaw limit if set
+            let new_yaw = if let Some((min_yaw, max_yaw)) = cam_info.yaw_limit {
+                (yaw - delta_x).clamp(min_yaw, max_yaw)
+            } else {
+                yaw - delta_x
+            };
 
-        let yaw = Quat::from_rotation_y(-delta_x);
-        let pitch = Quat::from_rotation_x(-delta_y);
+            // Apply pitch limit if set
+            let new_pitch = if let Some((min_pitch, max_pitch)) = cam_info.pitch_limit {
+                (pitch - delta_y).clamp(min_pitch, max_pitch)
+            } else {
+                pitch - delta_y
+            };
 
-        cam_transform.rotation = yaw * cam_transform.rotation; // rotate around global y axis
+            // Apply rotation after limit set
+            cam_transform.rotation = Quat::from_euler(EulerRot::YXZ, new_yaw, new_pitch, 0.0);
 
-        // Calculate the new rotation without applying it to the camera yet
-        let new_rotation = cam_transform.rotation * pitch;
-
-        // check if new rotation will cause camera to go beyond the 180 degree vertical boundse
-        let up_vector = new_rotation * Vec3::Y;
-        if up_vector.y > 0.0 {
-            cam_transform.rotation = new_rotation;
+            // Update camera translation based on zoom radius
+            let rot_matrix = Mat3::from_quat(cam_transform.rotation);
+            cam_transform.translation =
+                rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam_info.zoom.radius));
         }
     }
-
-    let rot_matrix = Mat3::from_quat(cam_transform.rotation);
-    cam_transform.translation = rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, cam_info.zoom.radius));
 }
 
 /// Zooms in the camera
@@ -194,8 +202,9 @@ fn zoom_mouse(mut scroll_evr: EventReader<MouseWheel>, mut cam_q: Query<&mut Cam
     }
 }
 
-pub fn sync_player_camera(
+fn sync_player_camera(
     player_q: Query<&Transform, (With<Predicted>, With<Controlled>)>,
+    // Godammit bevy
     mut cam_q: Query<(&mut CamInfo, &mut Transform), Without<Predicted>>,
 ) {
     if let Ok(player_transform) = player_q.get_single() {
@@ -225,4 +234,10 @@ fn sync_rtt_to_player(
             pan_orbit.force_update = true;
         }
     }
+}
+
+fn spine_look_at_camera(mut mouse_evr: EventReader<MouseMotion>) {
+    // Accumulate mouse motion into a rotation vector
+    let rotation_delta: Vec2 = mouse_evr.read().map(|ev| ev.delta).sum();
+    if rotation_delta.length_squared() > 0.0 {}
 }
