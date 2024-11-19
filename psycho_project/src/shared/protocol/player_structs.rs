@@ -10,7 +10,7 @@ pub struct PlayerStructPlugin;
 
 impl Plugin for PlayerStructPlugin {
     fn build(&self, app: &mut App) {
-        // Leafwing input plugin handles the whole leafwing shenanigans - WARNING FOR NOW DONT USE THE RESOURCE NOT SUPPORTED
+        // // Leafwing input plugin handles the whole leafwing shenanigans - WARNING FOR NOW DONT USE THE RESOURCE NOT SUPPORTED
         app.add_plugins(LeafwingInputPlugin::<CharacterAction>::default());
 
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
@@ -121,6 +121,9 @@ pub enum CharacterAction {
     Move,
     Jump,
     Shoot,
+    Zoom,
+    PanPitch,
+    PanYaw,
 }
 
 impl Actionlike for CharacterAction {
@@ -129,6 +132,9 @@ impl Actionlike for CharacterAction {
             Self::Move => InputControlKind::DualAxis,
             Self::Jump => InputControlKind::Button,
             Self::Shoot => InputControlKind::Button,
+            Self::Zoom => InputControlKind::Axis,
+            Self::PanPitch => InputControlKind::Axis,
+            Self::PanYaw => InputControlKind::Axis,
         }
     }
 }
@@ -138,6 +144,9 @@ impl CharacterAction {
         let input_map = InputMap::default()
             .with(Self::Jump, KeyCode::Space)
             .with(Self::Shoot, MouseButton::Left)
+            .with_axis(Self::Zoom, MouseScrollAxis::Y)
+            .with_axis(Self::PanPitch, MouseMoveAxis::Y)
+            .with_axis(Self::PanYaw, MouseMoveAxis::X)
             .with_dual_axis(Self::Move, KeyboardVirtualDPad::WASD)
             .with_dual_axis(Self::Move, KeyboardVirtualDPad::ARROW_KEYS);
         return input_map;

@@ -11,6 +11,8 @@ use lightyear::shared::replication::components::Controlled;
 
 use avian3d::prelude::PhysicsSet;
 use bevy_panorbit_camera::PanOrbitCamera;
+use leafwing_input_manager::prelude::*;
+use leafwing_input_manager::Actionlike;
 
 pub struct PlayerCameraPlugin;
 
@@ -99,6 +101,16 @@ impl Zoom {
             radius: (min + max) / 2.0,
         }
     }
+}
+
+#[derive(Actionlike, Clone, Debug, Copy, PartialEq, Eq, Hash, Reflect)]
+enum CameraMovement {
+    #[actionlike(Axis)]
+    Zoom,
+    #[actionlike(Axis)]
+    PanPitch,
+    #[actionlike(Axis)]
+    PanYaw,
 }
 
 fn spawn_begin_camera(mut commands: Commands) {
