@@ -102,10 +102,7 @@ impl PhysicsBundle {
         Self {
             collider,
             collider_density: ColliderDensity(1.0),
-            locked_axes: LockedAxes::default()
-                .lock_rotation_x()
-                .lock_rotation_y()
-                .lock_rotation_z(),
+            locked_axes: LockedAxes::default().lock_rotation_x().lock_rotation_z(),
             rigid_body: RigidBody::Dynamic,
             external_force: ExternalForce::ZERO.with_persistence(false),
             collison_layer: CollisionLayers::new(
@@ -152,6 +149,7 @@ pub struct CharacterQuery {
     pub external_force: &'static mut ExternalForce,
     pub external_impulse: &'static mut ExternalImpulse,
     pub linear_velocity: &'static LinearVelocity,
+    pub angular_velocity: &'static mut AngularVelocity,
     pub mass: &'static Mass,
     pub position: &'static Position,
     pub entity: Entity,
@@ -223,4 +221,12 @@ pub fn apply_character_action(
     character
         .external_force
         .apply_force(required_acceleration * character.mass.0);
+
+    // Handle looking at mouse
+
+    // let delta_x = action_state.axis_pair(&CharacterAction::Pan).x;
+
+    // let angular_velocity_y = delta_x * 0.1;
+
+    // character.angular_velocity.0 = Vec3::new(0.0, -angular_velocity_y, 0.0);
 }

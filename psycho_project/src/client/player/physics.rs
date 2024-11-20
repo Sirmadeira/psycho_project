@@ -31,7 +31,6 @@ fn add_physics_to_players(
         // Inserted position here to avoid inside spawning
 
         commands.entity(player).insert(PhysicsBundle::player());
-        
     }
 }
 

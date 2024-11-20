@@ -1,18 +1,17 @@
 //! Super camera is gonna have orbit mode and some following shit like my old one
 //! YEAH
 use crate::client::MyAppState;
-use bevy::input::mouse::MouseMotion;
+use avian3d::prelude::PhysicsSet;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
-use core::f32::consts::PI;
-use lightyear::client::prediction::Predicted;
-use lightyear::shared::replication::components::Controlled;
-
-use avian3d::prelude::PhysicsSet;
 use bevy_panorbit_camera::PanOrbitCamera;
+use core::f32::consts::PI;
 use leafwing_input_manager::prelude::*;
 use leafwing_input_manager::Actionlike;
+use lightyear::client::prediction::Predicted;
+use lightyear::shared::replication::components::Controlled;
+use serde::{Deserialize, Serialize};
 
 pub struct PlayerCameraPlugin;
 
@@ -21,6 +20,9 @@ impl Plugin for PlayerCameraPlugin {
         // Debugging
         app.register_type::<Zoom>();
         app.register_type::<CamInfo>();
+
+        // This might cause issue later
+        app.add_plugins(InputManagerPlugin::<CameraMovement>::default());
 
         app.add_systems(Startup, spawn_begin_camera);
 
@@ -70,7 +72,7 @@ fn zoom_condition(cam_q: Query<&CamInfo, With<CamInfo>>) -> bool {
 
 /// Marker component tells me who is my main camera - A lot of mechanic in the future gonna be based on it
 #[derive(Component)]
-pub struct MainCamera;
+pub struct MarkerMainCamera;
 
 /// Info for camera mechanics
 #[derive(Reflect, Component, Debug)]
@@ -107,16 +109,18 @@ impl Zoom {
 enum CameraMovement {
     #[actionlike(Axis)]
     Zoom,
-    #[actionlike(Axis)]
-    PanPitch,
-    #[actionlike(Axis)]
-    PanYaw,
+    #[actionlike(DualAxis)]
+    Pan,
 }
 
 fn spawn_begin_camera(mut commands: Commands) {
+    let input_map = InputMap::default()
+        .with_dual_axis(CameraMovement::Pan, MouseMove::default())
+        .with_axis(CameraMovement::Zoom, MouseScrollAxis::Y);
+
     commands
         .spawn(Camera3dBundle::default())
-        .insert(MainCamera)
+        .insert(MarkerMainCamera)
         .insert(Name::new("MainCamera"))
         .insert(CamInfo {
             mouse_sens: 0.75,
@@ -127,7 +131,8 @@ fn spawn_begin_camera(mut commands: Commands) {
             cursor_lock_active: false,
             yaw_limit: None,
             pitch_limit: Some((-PI / 2.0, PI / 20.0)),
-        });
+        })
+        .insert(InputManagerBundle::with_map(input_map));
 }
 
 /// Turns on the ability to control the camera
@@ -157,16 +162,18 @@ fn toggle_cursor(
 /// Adds the possibility to adjust camera angle and position
 fn orbit_mouse(
     window_q: Query<&Window, With<PrimaryWindow>>,
-    mut cam_q: Query<(&CamInfo, &mut Transform), With<CamInfo>>,
-    mut mouse_evr: EventReader<MouseMotion>,
+    mut cam_q: Query<
+        (&CamInfo, &ActionState<CameraMovement>, &mut Transform),
+        With<MarkerMainCamera>,
+    >,
 ) {
-    // Accumulate mouse motion into a rotation vector
-    let rotation_delta: Vec2 = mouse_evr.read().map(|ev| ev.delta).sum();
+    if let (Ok(window), Ok((cam_info, camera_movement, mut cam_transform))) =
+        (window_q.get_single(), cam_q.get_single_mut())
+    {
+        // Accumulate mouse motion into a rotation vector
+        let rotation_delta: Vec2 = camera_movement.axis_pair(&CameraMovement::Pan);
 
-    if rotation_delta.length_squared() > 0.0 {
-        if let (Ok(window), Ok((cam_info, mut cam_transform))) =
-            (window_q.get_single(), cam_q.get_single_mut())
-        {
+        if rotation_delta.length_squared() > 0.0 {
             // Calculate normalized rotation deltas
             let delta_x = (rotation_delta.x / window.width()) * PI * cam_info.mouse_sens;
             let delta_y = (rotation_delta.y / window.height()) * PI * cam_info.mouse_sens;
@@ -200,13 +207,11 @@ fn orbit_mouse(
 }
 
 /// Zooms in the camera
-fn zoom_mouse(mut scroll_evr: EventReader<MouseWheel>, mut cam_q: Query<&mut CamInfo>) {
-    let mut scroll = 0.0;
-    for ev in scroll_evr.read() {
-        scroll += ev.y;
-    }
-
-    if let Ok(mut cam) = cam_q.get_single_mut() {
+fn zoom_mouse(
+    mut cam_q: Query<(&mut CamInfo, &ActionState<CameraMovement>), With<MarkerMainCamera>>,
+) {
+    if let Ok((mut cam, camera_movement)) = cam_q.get_single_mut() {
+        let scroll = camera_movement.value(&CameraMovement::Zoom);
         if scroll.abs() > 0.0 {
             let new_radius = cam.zoom.radius - scroll * cam.zoom.radius * 0.1 * cam.zoom_sens;
             cam.zoom.radius = new_radius.clamp(cam.zoom.min, cam.zoom.max);
@@ -216,7 +221,6 @@ fn zoom_mouse(mut scroll_evr: EventReader<MouseWheel>, mut cam_q: Query<&mut Cam
 
 fn sync_player_camera(
     player_q: Query<&Transform, (With<Predicted>, With<Controlled>)>,
-    // Godammit bevy
     mut cam_q: Query<(&mut CamInfo, &mut Transform), Without<Predicted>>,
 ) {
     if let Ok(player_transform) = player_q.get_single() {
@@ -246,10 +250,4 @@ fn sync_rtt_to_player(
             pan_orbit.force_update = true;
         }
     }
-}
-
-fn spine_look_at_camera(mut mouse_evr: EventReader<MouseMotion>) {
-    // Accumulate mouse motion into a rotation vector
-    let rotation_delta: Vec2 = mouse_evr.read().map(|ev| ev.delta).sum();
-    if rotation_delta.length_squared() > 0.0 {}
 }

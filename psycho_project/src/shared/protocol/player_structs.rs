@@ -121,9 +121,7 @@ pub enum CharacterAction {
     Move,
     Jump,
     Shoot,
-    Zoom,
-    PanPitch,
-    PanYaw,
+    // Pan,
 }
 
 impl Actionlike for CharacterAction {
@@ -132,9 +130,7 @@ impl Actionlike for CharacterAction {
             Self::Move => InputControlKind::DualAxis,
             Self::Jump => InputControlKind::Button,
             Self::Shoot => InputControlKind::Button,
-            Self::Zoom => InputControlKind::Axis,
-            Self::PanPitch => InputControlKind::Axis,
-            Self::PanYaw => InputControlKind::Axis,
+            // Self::Pan => InputControlKind::DualAxis,
         }
     }
 }
@@ -144,11 +140,9 @@ impl CharacterAction {
         let input_map = InputMap::default()
             .with(Self::Jump, KeyCode::Space)
             .with(Self::Shoot, MouseButton::Left)
-            .with_axis(Self::Zoom, MouseScrollAxis::Y)
-            .with_axis(Self::PanPitch, MouseMoveAxis::Y)
-            .with_axis(Self::PanYaw, MouseMoveAxis::X)
             .with_dual_axis(Self::Move, KeyboardVirtualDPad::WASD)
             .with_dual_axis(Self::Move, KeyboardVirtualDPad::ARROW_KEYS);
+        // .with_dual_axis(Self::Pan, MouseMove::default());
         return input_map;
     }
 }
