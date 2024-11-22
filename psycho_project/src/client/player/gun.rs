@@ -18,6 +18,7 @@ impl Plugin for PlayerGunPlugin {
                 .run_if(not(is_in_rollback))
                 .in_set(InputPhysicsSet::Input),
         );
+        app.add_systems(Update, add_bullet_physics);
     }
 }
 

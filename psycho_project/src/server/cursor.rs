@@ -12,7 +12,9 @@ use lightyear::prelude::server::Replicate;
 pub struct CursorPlugin;
 
 impl Plugin for CursorPlugin {
-    fn build(&self, app: &mut App) {}
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, handle_connection);
+    }
 }
 
 /// When player connects spawn a cursor in server with feature associated to him
