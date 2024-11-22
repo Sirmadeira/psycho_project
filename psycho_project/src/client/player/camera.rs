@@ -2,7 +2,6 @@
 //! YEAH
 use crate::client::MyAppState;
 use avian3d::prelude::PhysicsSet;
-use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
 use bevy_panorbit_camera::PanOrbitCamera;
@@ -11,7 +10,6 @@ use leafwing_input_manager::prelude::*;
 use leafwing_input_manager::Actionlike;
 use lightyear::client::prediction::Predicted;
 use lightyear::shared::replication::components::Controlled;
-use serde::{Deserialize, Serialize};
 
 pub struct PlayerCameraPlugin;
 
