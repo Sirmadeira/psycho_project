@@ -22,18 +22,23 @@ impl Plugin for PlayerStructPlugin {
         app.register_component::<PlayerHealth>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Simple);
 
+        app.register_component::<PlayerLookAt>(ChannelDirection::Bidirectional)
+            .add_prediction(ComponentSyncMode::Full);
+
         app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
 
         // Messages when starting game and just connection
         app.register_message::<SendBundle>(ChannelDirection::ServerToClient);
         // Messages related to visuals
         app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
+
         app.register_message::<ChangeChar>(ChannelDirection::Bidirectional);
 
         app.register_component::<CursorPosition>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full);
 
         app.register_type::<PlayerHealth>();
+        app.register_type::<PlayerLookAt>();
     }
 }
 
@@ -111,6 +116,10 @@ impl Default for PlayerHealth {
         Self(10)
     }
 }
+
+/// Tells me player camera direction forward. Usefull to avoid extra code in server
+#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect, Default)]
+pub struct PlayerLookAt(pub Vec3);
 
 /// Give mes my player position, used for when player is gonna respawn he respawns at the same place
 /// TODO

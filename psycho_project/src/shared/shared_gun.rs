@@ -92,7 +92,7 @@ pub fn shared_spawn_bullet(
         let bullet_origin = player_position.0 + bullet_spawn_offset;
         let bullet_linvel = player_rotation * (Vec3::Z * weapon.bullet_speed) + player_velocity.0;
 
-        // We do this to avo
+        // We do this to avoid interlapse among bullets fired in same tick
         let prespawned = PreSpawnedPlayerObject::default_with_salt(player_id.0.to_bits());
 
         let bullet_entity = commands

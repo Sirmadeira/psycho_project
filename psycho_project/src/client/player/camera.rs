@@ -1,6 +1,7 @@
 //! Super camera is gonna have orbit mode and some following shit like my old one
 //! YEAH
 use crate::client::MyAppState;
+use crate::shared::protocol::player_structs::PlayerLookAt;
 use avian3d::prelude::PhysicsSet;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
@@ -23,6 +24,8 @@ impl Plugin for PlayerCameraPlugin {
         app.add_plugins(InputManagerPlugin::<CameraMovement>::default());
 
         app.add_systems(Startup, spawn_begin_camera);
+
+        app.add_systems(FixedUpdate, change_look_at);
 
         app.add_systems(
             Update,
@@ -246,6 +249,18 @@ fn sync_rtt_to_player(
             // PanOrbitCamera to update this frame (by default it only updates when there are
             // input events).
             pan_orbit.force_update = true;
+        }
+    }
+}
+
+/// Gonna make it so player looks at camera
+fn change_look_at(
+    mut player: Query<&mut PlayerLookAt, (With<Controlled>, With<Predicted>)>,
+    cam_q: Query<&Transform, With<CamInfo>>,
+) {
+    if let Ok(mut player_look_at) = player.get_single_mut() {
+        if let Ok(cam_transform) = cam_q.get_single() {
+            player_look_at.0 = cam_transform.forward().into();
         }
     }
 }
