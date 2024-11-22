@@ -276,17 +276,20 @@ fn handle_disconnections(
 fn replicate_inputs(
     mut connection: ResMut<ConnectionManager>,
     mut input_events: ResMut<Events<MessageEvent<InputMessage<CharacterAction>>>>,
-    lobby: Res<Lobbies>,
+    lobby_position_map: Res<LobbyPositionMap>,
 ) {
     for mut event in input_events.drain() {
         let client_id = *event.context();
-        // Optional here you can validate input
-        connection
-            .send_message_to_target::<InputChannel, _>(
-                &mut event.message,
-                NetworkTarget::AllExceptSingle(client_id),
-            )
-            .unwrap()
+        if let Some(client_info) = lobby_position_map.0.get(&client_id) {
+            let client_info = &client_info.lobby_without_me;
+            // Optional here you can validate input
+            connection
+                .send_message_to_target::<InputChannel, _>(
+                    &mut event.message,
+                    NetworkTarget::Only(client_info.to_vec()),
+                )
+                .unwrap()
+        }
     }
 }
 fn handle_character_actions(
