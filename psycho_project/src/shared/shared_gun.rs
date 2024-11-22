@@ -85,7 +85,7 @@ pub fn shared_spawn_bullet(
             continue;
         }
 
-        let prev_last_fire_tick = weapon.last_fire_tick;
+        let _prev_last_fire_tick = weapon.last_fire_tick;
         weapon.last_fire_tick = current_tick;
 
         let bullet_spawn_offset = Vec3::new(0.0, 0.5, 2.0);

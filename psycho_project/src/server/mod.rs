@@ -9,6 +9,7 @@ use world::PhysicsWorldPlugin;
 
 mod essentials;
 
+mod cursor;
 mod lobby;
 mod player;
 mod world;

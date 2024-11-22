@@ -279,11 +279,12 @@ fn replicate_inputs(
     lobby: Res<Lobbies>,
 ) {
     for mut event in input_events.drain() {
+        let client_id = *event.context();
         // Optional here you can validate input
         connection
             .send_message_to_target::<InputChannel, _>(
                 &mut event.message,
-                NetworkTarget::Only(lobby.lobbies[0].players.clone()),
+                NetworkTarget::AllExceptSingle(client_id),
             )
             .unwrap()
     }
