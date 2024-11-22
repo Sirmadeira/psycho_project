@@ -1,6 +1,7 @@
 use crate::shared::protocol::player_structs::PlayerBundleMap;
 use bevy::prelude::*;
 use bincode::serialize_into;
+use client_info::ClientInfoPlugin;
 use lobby::LobbyPlugin;
 use player::PlayerPlugin;
 use std::fs::File;
@@ -9,7 +10,7 @@ use world::PhysicsWorldPlugin;
 
 mod essentials;
 
-mod cursor;
+mod client_info;
 mod lobby;
 mod player;
 mod world;
@@ -29,6 +30,7 @@ impl Plugin for ExampleServerPlugin {
         app.add_plugins(EssentialsPlugin);
         app.add_plugins(LobbyPlugin);
         app.add_plugins(PlayerPlugin);
+        app.add_plugins(ClientInfoPlugin);
     }
 }
 

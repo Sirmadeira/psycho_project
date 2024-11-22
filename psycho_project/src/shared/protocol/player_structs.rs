@@ -5,6 +5,8 @@ use leafwing_input_manager::prelude::*;
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::vec;
+
+use lightyear::prelude::client::Replicate;
 /// Plugin related to all player structs
 pub struct PlayerStructPlugin;
 
@@ -33,9 +35,6 @@ impl Plugin for PlayerStructPlugin {
         app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
 
         app.register_message::<ChangeChar>(ChannelDirection::Bidirectional);
-
-        app.register_component::<CursorPosition>(ChannelDirection::Bidirectional)
-            .add_prediction(ComponentSyncMode::Full);
 
         app.register_type::<PlayerHealth>();
         app.register_type::<PlayerLookAt>();
@@ -117,6 +116,22 @@ impl Default for PlayerHealth {
     }
 }
 
+#[derive(Bundle)]
+pub struct ClientInfoBundle {
+    id: PlayerId,
+    look_at: PlayerLookAt,
+    replicate: Replicate,
+}
+impl ClientInfoBundle {
+    pub(crate) fn new(id: ClientId, look_at: Vec3) -> Self {
+        Self {
+            id: PlayerId(id),
+            look_at: PlayerLookAt(look_at),
+            replicate: Replicate::default(),
+        }
+    }
+}
+
 /// Tells me player camera direction forward. Usefull to avoid extra code in server
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect, Default)]
 pub struct PlayerLookAt(pub Vec3);
@@ -177,6 +192,3 @@ pub struct PartToChange {
     // File Path to new part
     pub new_part: String,
 }
-
-#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut)]
-pub struct CursorPosition(pub Vec2);
