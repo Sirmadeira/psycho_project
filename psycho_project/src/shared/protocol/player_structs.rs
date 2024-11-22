@@ -30,6 +30,9 @@ impl Plugin for PlayerStructPlugin {
         app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
         app.register_message::<ChangeChar>(ChannelDirection::Bidirectional);
 
+        app.register_component::<CursorPosition>(ChannelDirection::Bidirectional)
+            .add_prediction(ComponentSyncMode::Full);
+
         app.register_type::<PlayerHealth>();
     }
 }
@@ -165,3 +168,6 @@ pub struct PartToChange {
     // File Path to new part
     pub new_part: String,
 }
+
+#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut)]
+pub struct CursorPosition(pub Vec2);

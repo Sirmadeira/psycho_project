@@ -27,7 +27,7 @@ impl Plugin for WorldStructsPlugin {
         //
         // They also set `interpolation_fn` which is used by the VisualInterpolationPlugin to smooth
         // out rendering between fixedupdate ticks.
-        app.register_component::<Position>(ChannelDirection::Bidirectional)
+        app.register_component::<Position>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Full)
             .add_interpolation_fn(position::lerp)
             .add_correction_fn(position::lerp);
@@ -59,7 +59,7 @@ impl Default for CycleTimer {
     fn default() -> Self {
         CycleTimer(Timer::new(
             // Default cycle duration is 24 hours (in seconds), but this can be changed
-            Duration::from_secs(24),
+            Duration::from_secs(24 * 60 * 60),
             TimerMode::Repeating,
         ))
     }

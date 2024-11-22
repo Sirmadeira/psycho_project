@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use lightyear::server::events::ConnectEvent;
 
 pub struct CursorPlugin;
 
@@ -7,4 +8,6 @@ impl Plugin for CursorPlugin {
 }
 
 /// When player connects spawn a cursor in server with feature associated to him
-fn handle_connection() {}
+fn handle_connection(mut connections: EventReader<ConnectEvent>) {
+    
+}
