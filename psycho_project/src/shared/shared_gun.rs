@@ -28,6 +28,8 @@ impl Plugin for SharedGunPlugin {
             FixedUpdate,
             (process_collisions, lifetime_despawner).in_set(InputPhysicsSet::Input),
         );
+
+        app.add_systems(PostProcessCollisions, filter_own_bullet_collisions);
     }
 }
 
@@ -50,7 +52,7 @@ pub fn shared_spawn_bullet(
             &Rotation,
             &LinearVelocity,
             &PlayerId,
-            &ActionState<CharacterAction>,
+            &ActionState<PlayerAction>,
             &mut Weapon,
         ),
         Or<(With<Predicted>, With<ReplicationTarget>)>,
@@ -70,7 +72,7 @@ pub fn shared_spawn_bullet(
     for (player_position, player_rotation, player_velocity, player_id, action_state, mut weapon) in
         query.iter_mut()
     {
-        if !action_state.just_pressed(&CharacterAction::Shoot) {
+        if !action_state.just_pressed(&PlayerAction::Shoot) {
             continue;
         }
         // Tick difference between weapon and current tick
@@ -217,4 +219,31 @@ pub fn process_collisions(
             };
         }
     }
+}
+
+// Players can't collide with their own bullets.
+// this is especially helpful if you are accelerating forwards while shooting, as otherwise you
+// might overtake / collide on spawn with your own bullets that spawn in front of you.
+fn filter_own_bullet_collisions(
+    mut collisions: ResMut<Collisions>,
+    q_bullets: Query<&BulletMarker>,
+    q_players: Query<&PlayerId>,
+) {
+    collisions.retain(|contacts| {
+        if let Ok(bullet) = q_bullets.get(contacts.entity1) {
+            if let Ok(player) = q_players.get(contacts.entity2) {
+                if bullet.owner == player.0 {
+                    return false;
+                }
+            }
+        }
+        if let Ok(bullet) = q_bullets.get(contacts.entity2) {
+            if let Ok(player) = q_players.get(contacts.entity1) {
+                if bullet.owner == player.0 {
+                    return false;
+                }
+            }
+        }
+        true
+    });
 }

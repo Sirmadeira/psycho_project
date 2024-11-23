@@ -13,7 +13,7 @@ pub struct PlayerStructPlugin;
 impl Plugin for PlayerStructPlugin {
     fn build(&self, app: &mut App) {
         // // Leafwing input plugin handles the whole leafwing shenanigans - WARNING FOR NOW DONT USE THE RESOURCE NOT SUPPORTED
-        app.add_plugins(LeafwingInputPlugin::<CharacterAction>::default());
+        app.add_plugins(LeafwingInputPlugin::<PlayerAction>::default());
 
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
@@ -118,14 +118,12 @@ impl Default for PlayerHealth {
 
 #[derive(Bundle)]
 pub struct ClientInfoBundle {
-    id: PlayerId,
     look_at: PlayerLookAt,
     replicate: Replicate,
 }
 impl ClientInfoBundle {
-    pub(crate) fn new(id: ClientId, look_at: Vec3) -> Self {
+    pub(crate) fn new(look_at: Vec3) -> Self {
         Self {
-            id: PlayerId(id),
             look_at: PlayerLookAt(look_at),
             replicate: Replicate::default(),
         }
@@ -144,13 +142,13 @@ pub struct PlayerLookAt(pub Vec3);
 pub struct PlayerPosition(pub Vec3);
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Reflect, Serialize, Deserialize)]
-pub enum CharacterAction {
+pub enum PlayerAction {
     Move,
     Jump,
     Shoot,
 }
 
-impl Actionlike for CharacterAction {
+impl Actionlike for PlayerAction {
     fn input_control_kind(&self) -> InputControlKind {
         match self {
             Self::Move => InputControlKind::DualAxis,
@@ -160,7 +158,7 @@ impl Actionlike for CharacterAction {
     }
 }
 
-impl CharacterAction {
+impl PlayerAction {
     pub fn default_input_map() -> InputMap<Self> {
         let input_map = InputMap::default()
             .with(Self::Jump, KeyCode::Space)

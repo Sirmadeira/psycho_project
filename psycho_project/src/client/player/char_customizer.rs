@@ -210,7 +210,7 @@ fn formulates_players(
                     .insert(InheritedVisibility::default())
                     .insert(GlobalTransform::default())
                     .insert(HasVisuals)
-                    .insert(CharacterAction::default_input_map());
+                    .insert(PlayerAction::default_input_map());
             } else {
                 info!("Insert additional components in side player");
                 commands

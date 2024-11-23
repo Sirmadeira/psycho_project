@@ -176,7 +176,7 @@ fn insert_gltf_animations(
 
 /// Since it already passes this information no need in input channel I dont need to set it
 fn state_machine(
-    query: Query<(&ActionState<CharacterAction>, &PointerAnimatedEntities), With<Predicted>>,
+    query: Query<(&ActionState<PlayerAction>, &PointerAnimatedEntities), With<Predicted>>,
     mut animation_components: Query<(&mut AnimationPlayer, &mut AnimationTransitions)>,
     animations: Res<Animations>,
 ) {
@@ -187,7 +187,7 @@ fn state_machine(
             if let Ok((mut animation_player, mut animation_transition)) =
                 animation_components.get_mut(*animated_entity)
             {
-                if action_state.just_pressed(&CharacterAction::Jump) {
+                if action_state.just_pressed(&PlayerAction::Jump) {
                     let node = named_animations.get("Sword_Slash").unwrap();
                     animation_transition.play(&mut animation_player, *node, Duration::ZERO);
                 }

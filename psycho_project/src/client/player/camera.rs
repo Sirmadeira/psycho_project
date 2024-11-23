@@ -260,13 +260,14 @@ fn sync_rtt_to_player(
 fn spawn_client_info(mut commands: Commands, mut connection_event: EventReader<ConnectEvent>) {
     for event in connection_event.read() {
         let client_id = event.client_id();
-        commands.spawn(ClientInfoBundle::new(client_id, Vec3::ZERO));
+        commands.spawn(ClientInfoBundle::new(Vec3::ZERO));
+        info!("Spawning client side replicated info for {}", client_id);
     }
 }
 
 /// Gonna make it so player looks at camera
 fn change_look_at(
-    mut player: Query<&mut PlayerLookAt, (With<PlayerId>, With<Replicating>)>,
+    mut player: Query<&mut PlayerLookAt, With<Replicating>>,
     cam_q: Query<&Transform, With<CamInfo>>,
 ) {
     if let Ok(mut player_look_at) = player.get_single_mut() {

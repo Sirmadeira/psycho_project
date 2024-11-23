@@ -99,7 +99,7 @@ fn read_save_files(mut commands: Commands) {
         File::open("./psycho_project/src/server/save_files/player_info.bar").unwrap(),
     );
     let player_bundle_map: PlayerBundleMap = deserialize_from(f).unwrap();
-    info!("Read from save file: {:?}", player_bundle_map);
+    // info!("Read from save file: {:?}", player_bundle_map);
 
     commands.insert_resource(player_bundle_map);
 }
@@ -178,7 +178,7 @@ fn spawn_server_player(
             .insert(online_state)
             .insert(name)
             .insert(replicate)
-            .insert(CharacterAction::default_input_map())
+            .insert(PlayerAction::default_input_map())
             .insert(Weapon::default())
             .insert(Position(Vec3::new(0.0, 2.0, 0.0)))
             .insert(PlayerHealth::default())
@@ -196,7 +196,7 @@ fn spawn_server_player(
             .insert(online_state)
             .insert(name)
             .insert(replicate)
-            .insert(CharacterAction::default_input_map())
+            .insert(PlayerAction::default_input_map())
             .insert(Weapon::default())
             .insert(Position(Vec3::new(0.0, 2.0, 0.0)))
             .insert(PlayerHealth::default())
@@ -275,7 +275,7 @@ fn handle_disconnections(
 
 fn replicate_inputs(
     mut connection: ResMut<ConnectionManager>,
-    mut input_events: ResMut<Events<MessageEvent<InputMessage<CharacterAction>>>>,
+    mut input_events: ResMut<Events<MessageEvent<InputMessage<PlayerAction>>>>,
     lobby_position_map: Res<LobbyPositionMap>,
 ) {
     for mut event in input_events.drain() {
@@ -295,7 +295,7 @@ fn replicate_inputs(
 fn handle_character_actions(
     time: Res<Time>,
     spatial_query: SpatialQuery,
-    mut query: Query<(&ActionState<CharacterAction>, CharacterQuery)>,
+    mut query: Query<(&ActionState<PlayerAction>, CharacterQuery)>,
 ) {
     for (action_state, mut character) in &mut query {
         apply_character_action(&time, &spatial_query, action_state, &mut character);

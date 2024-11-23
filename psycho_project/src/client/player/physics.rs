@@ -28,6 +28,7 @@ fn add_physics_to_players(
     mut commands: Commands,
 ) {
     for player in players.iter() {
+        info!("Adding physics to player");
         commands.entity(player).insert(PhysicsBundle::player());
     }
 }
@@ -39,8 +40,8 @@ fn handle_character_actions(
     spatial_query: SpatialQuery,
     mut query: Query<
         (
-            &ActionState<CharacterAction>,
-            &InputBuffer<CharacterAction>,
+            &ActionState<PlayerAction>,
+            &InputBuffer<PlayerAction>,
             CharacterQuery,
         ),
         With<Predicted>,

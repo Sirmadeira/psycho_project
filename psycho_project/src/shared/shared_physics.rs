@@ -35,7 +35,7 @@ impl Plugin for SharedPhysicsPlugin {
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
 
         // See your colliders
-        app.add_plugins(PhysicsDebugPlugin::default());
+        // app.add_plugins(PhysicsDebugPlugin::default());
 
         // Setting up gravity - NEED TO BE ZERO, OR ELSE jiter
         app.insert_resource(Gravity(Vec3::new(0.0, -2.0, 0.0)));
@@ -102,7 +102,10 @@ impl PhysicsBundle {
         Self {
             collider,
             collider_density: ColliderDensity(1.0),
-            locked_axes: LockedAxes::default().lock_rotation_x().lock_rotation_z(),
+            locked_axes: LockedAxes::default()
+                .lock_rotation_x()
+                .lock_rotation_y()
+                .lock_rotation_z(),
             rigid_body: RigidBody::Dynamic,
             external_force: ExternalForce::ZERO.with_persistence(false),
             collison_layer: CollisionLayers::new(
@@ -160,7 +163,7 @@ pub struct CharacterQuery {
 pub fn apply_character_action(
     time: &Res<Time>,
     spatial_query: &SpatialQuery,
-    action_state: &ActionState<CharacterAction>,
+    action_state: &ActionState<PlayerAction>,
     character: &mut CharacterQueryItem,
 ) {
     const MAX_SPEED: f32 = 5.0;
@@ -169,7 +172,7 @@ pub fn apply_character_action(
     let max_velocity_delta_per_tick = MAX_ACCELERATION * time.delta_seconds();
 
     // Handle jumping.
-    if action_state.just_pressed(&CharacterAction::Jump) {
+    if action_state.just_pressed(&PlayerAction::Jump) {
         let ray_cast_origin = character.position.0
             + Vec3::new(
                 0.0,
@@ -199,7 +202,7 @@ pub fn apply_character_action(
 
     // Handle moving.
     let move_dir = action_state
-        .axis_pair(&CharacterAction::Move)
+        .axis_pair(&PlayerAction::Move)
         .clamp_length_max(1.0);
     let move_dir = Vec3::new(-move_dir.x, 0.0, move_dir.y);
 
@@ -224,7 +227,7 @@ pub fn apply_character_action(
 
     // Handle looking at mouse
 
-    // let delta_x = action_state.axis_pair(&CharacterAction::Pan).x;
+    // let delta_x = action_state.axis_pair(&PlayerAction::Pan).x;
 
     // let angular_velocity_y = delta_x * 0.1;
 
