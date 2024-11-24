@@ -4,6 +4,7 @@ use lightyear::prelude::{server::*, NetworkTarget};
 use crate::shared::shared_physics::REPLICATION_GROUP;
 use lightyear::prelude::server::Replicate;
 use lightyear::shared::replication::components::Replicated;
+
 pub struct ClientInfoPlugin;
 
 impl Plugin for ClientInfoPlugin {

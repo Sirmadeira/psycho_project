@@ -1,6 +1,6 @@
 use crate::client::ui::UiPlugin;
 use crate::shared::protocol::lobby_structs::Lobbies;
-use crate::shared::protocol::player_structs::PlayerBundleMap;
+use crate::shared::protocol::player_structs::SavePlayerBundleMap;
 use bevy::prelude::*;
 use bevy_panorbit_camera::PanOrbitCameraPlugin;
 
@@ -8,20 +8,20 @@ mod change_res;
 mod essentials;
 mod load_assets;
 mod manage_game;
-mod world;
 mod player;
 pub mod rtt;
 mod ui;
 mod voxel_gen;
+mod world;
 
 // SElLF MADE IMPORTS
 use self::change_res::ChangeResPlugin;
 use self::essentials::SystemsPlugin;
 use self::load_assets::LoadingAssetsPlugin;
 use self::manage_game::InGamePlugin;
-use self::world::PhysicalWorldPlugin;
 use self::player::CreateCharPlugin;
 use self::rtt::FormRttsPlugin;
+use self::world::PhysicalWorldPlugin;
 
 /// Important plugin centralizes most of our client related logic
 pub struct ExampleClientPlugin;
@@ -30,7 +30,7 @@ impl Plugin for ExampleClientPlugin {
     fn build(&self, app: &mut App) {
         // Inserting resources that must exist first
         app.insert_resource(Lobbies::default());
-        app.insert_resource(PlayerBundleMap::default());
+        app.insert_resource(SavePlayerBundleMap::default());
         // Initializing states that must exist
         app.init_state::<MyAppState>();
 

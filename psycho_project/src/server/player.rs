@@ -25,7 +25,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         // Initializing resources
         app.init_resource::<PlayerAmount>();
-        app.init_resource::<PlayerEntityMap>();
+        app.init_resource::<ServerPlayerEntityMap>();
 
         // Debug registering
         app.register_type::<PlayerStateConnection>();
@@ -79,7 +79,7 @@ pub struct PlayerAmount {
 /// A server side map, that tells me corresponding player entity according to id
 #[derive(Resource, Clone, Default, Reflect)]
 #[reflect(Resource, Default)]
-pub struct PlayerEntityMap(pub HashMap<ClientId, Entity>);
+pub struct ServerPlayerEntityMap(pub HashMap<ClientId, Entity>);
 
 /// State of connection of our player
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
@@ -90,7 +90,7 @@ pub struct PlayerStateConnection {
 }
 
 fn replicate_resource(mut commands: Commands) {
-    commands.replicate_resource::<PlayerBundleMap, CommonChannel>(NetworkTarget::All);
+    commands.replicate_resource::<SavePlayerBundleMap, CommonChannel>(NetworkTarget::All);
 }
 
 /// Reads current save files and fill up the resource playerbundlemap each basically gives me all player info
@@ -98,7 +98,7 @@ fn read_save_files(mut commands: Commands) {
     let f = BufReader::new(
         File::open("./psycho_project/src/server/save_files/player_info.bar").unwrap(),
     );
-    let player_bundle_map: PlayerBundleMap = deserialize_from(f).unwrap();
+    let player_bundle_map: SavePlayerBundleMap = deserialize_from(f).unwrap();
     // info!("Read from save file: {:?}", player_bundle_map);
 
     commands.insert_resource(player_bundle_map);
@@ -107,8 +107,8 @@ fn read_save_files(mut commands: Commands) {
 /// Responsible for saving player info
 fn listener_save_visuals(
     mut events: EventReader<MessageEvent<SaveVisual>>,
-    mut player_map: ResMut<PlayerBundleMap>,
-    player_entity_map: Res<PlayerEntityMap>,
+    mut player_map: ResMut<SavePlayerBundleMap>,
+    player_entity_map: Res<ServerPlayerEntityMap>,
     mut server_player_visuals: Query<&mut PlayerVisuals>,
 ) {
     for event in events.read() {
@@ -144,9 +144,9 @@ fn listener_save_visuals(
 fn spawn_server_player(
     client_id: ClientId,
     commands: &mut Commands,
-    player_bundle: Option<PlayerBundle>,
-    player_entity_map: &mut ResMut<PlayerEntityMap>,
-) -> PlayerBundle {
+    player_bundle: Option<SavePlayerBundle>,
+    player_entity_map: &mut ResMut<ServerPlayerEntityMap>,
+) -> SavePlayerBundle {
     let name = Name::new(format!("Player {:?}", client_id));
 
     info!("Setting their status to online");
@@ -190,7 +190,7 @@ fn spawn_server_player(
         // Setting default visuals
         let player_visual = PlayerVisuals::default();
         let player_position = PlayerPosition::default();
-        let new_player_bundle = PlayerBundle::new(client_id, player_visual, player_position);
+        let new_player_bundle = SavePlayerBundle::new(client_id, player_visual, player_position);
         let id = commands
             .spawn(new_player_bundle.clone())
             .insert(online_state)
@@ -211,8 +211,8 @@ fn spawn_server_player(
 fn handle_connections(
     mut current_players: ResMut<PlayerAmount>,
     mut connections: EventReader<ConnectEvent>,
-    mut player_map: ResMut<PlayerBundleMap>,
-    mut player_entity_map: ResMut<PlayerEntityMap>,
+    mut player_map: ResMut<SavePlayerBundleMap>,
+    mut player_entity_map: ResMut<ServerPlayerEntityMap>,
     mut commands: Commands,
 ) {
     for connection in connections.read() {
@@ -253,7 +253,7 @@ fn handle_connections(
 fn handle_disconnections(
     mut disconnections: EventReader<DisconnectEvent>,
     mut current_players: ResMut<PlayerAmount>,
-    mut player_entity_map: ResMut<PlayerEntityMap>,
+    mut player_entity_map: ResMut<ServerPlayerEntityMap>,
 ) {
     for disconnection in disconnections.read() {
         let client_id = disconnection.client_id;
@@ -281,12 +281,12 @@ fn replicate_inputs(
     for mut event in input_events.drain() {
         let client_id = *event.context();
         if let Some(client_info) = lobby_position_map.0.get(&client_id) {
-            let client_info = &client_info.lobby_without_me;
+            let lobby_without_me = &client_info.lobby_without_me;
             // Optional here you can validate input
             connection
                 .send_message_to_target::<InputChannel, _>(
                     &mut event.message,
-                    NetworkTarget::Only(client_info.to_vec()),
+                    NetworkTarget::Only(lobby_without_me.to_vec()),
                 )
                 .unwrap()
         }
@@ -304,7 +304,7 @@ fn handle_character_actions(
 
 fn insert_physics_server_player(
     mut events: EventReader<MessageEvent<EnterLobby>>,
-    player_entity_map: Res<PlayerEntityMap>,
+    player_entity_map: Res<ServerPlayerEntityMap>,
     mut online_state: Query<&mut PlayerStateConnection>,
     mut commands: Commands,
 ) {
@@ -332,7 +332,7 @@ fn insert_physics_server_player(
 fn handle_bullet_hit(
     mut bullet_hit_event: EventReader<BulletHitEvent>,
     mut player_health: Query<&mut PlayerHealth>,
-    entity_map: Res<PlayerEntityMap>,
+    entity_map: Res<ServerPlayerEntityMap>,
 ) {
     for bullet_hit in bullet_hit_event.read() {
         if let Some(_) = entity_map.0.get(&bullet_hit.bullet_owner) {

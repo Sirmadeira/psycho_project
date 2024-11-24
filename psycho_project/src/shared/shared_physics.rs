@@ -8,7 +8,9 @@ use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
-use lightyear::prelude::ReplicationGroup;
+use lightyear::prelude::client::Predicted;
+use lightyear::prelude::{ReplicationGroup, ReplicationTarget};
+use lightyear::shared::replication::components::Replicated;
 /// Here lies all the shared setup needed to make physics work in our game
 /// Warning: This game is solely based on running an independent server and clients any other mode will break it
 pub struct SharedPhysicsPlugin;
@@ -232,4 +234,15 @@ pub fn apply_character_action(
     // let angular_velocity_y = delta_x * 0.1;
 
     // character.angular_velocity.0 = Vec3::new(0.0, -angular_velocity_y, 0.0);
+}
+
+fn angvel_to_look_at(
+    mut players: Query<&mut AngularVelocity, Or<(With<Predicted>, With<ReplicationTarget>)>>,
+    mut look_at: Query<&PlayerLookAt, Or<(With<MarkerClientBased>, With<Replicated>)>>,
+) {
+    for player in players.iter_mut() {
+        for look_at in look_at.iter() {
+            
+        }
+    }
 }

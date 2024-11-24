@@ -27,7 +27,7 @@ impl Plugin for PlayerStructPlugin {
         app.register_component::<PlayerLookAt>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full);
 
-        app.register_resource::<PlayerBundleMap>(ChannelDirection::ServerToClient);
+        app.register_resource::<SavePlayerBundleMap>(ChannelDirection::ServerToClient);
 
         // Messages when starting game and just connection
         app.register_message::<SendBundle>(ChannelDirection::ServerToClient);
@@ -45,19 +45,19 @@ impl Plugin for PlayerStructPlugin {
 // A map utilized to easily grab player info via it is client id. Avoids iterating through playerid when unecessary
 #[derive(Resource, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect, Default)]
 #[reflect(Resource, PartialEq, Debug, Serialize, Deserialize)]
-pub struct PlayerBundleMap(pub HashMap<ClientId, PlayerBundle>);
+pub struct SavePlayerBundleMap(pub HashMap<ClientId, SavePlayerBundle>);
 
 // Components
 // Player bundle - Shared player related info important to server and client here we add things that need to be saved
 #[derive(Bundle, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 #[reflect(PartialEq, Debug, Serialize, Deserialize)]
-pub struct PlayerBundle {
+pub struct SavePlayerBundle {
     pub id: PlayerId,
     pub visuals: PlayerVisuals,
     pub position: PlayerPosition,
 }
 
-impl PlayerBundle {
+impl SavePlayerBundle {
     pub fn new(id: ClientId, visuals: PlayerVisuals, position: PlayerPosition) -> Self {
         Self {
             id: PlayerId(id),
@@ -66,6 +66,9 @@ impl PlayerBundle {
         }
     }
 }
+
+#[derive(Component, Serialize, Deserialize, Clone, Debug)]
+pub struct MarkerPlayer;
 
 // Easy component that give me an easy way to acess the clientid of that specific player
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
@@ -118,17 +121,27 @@ impl Default for PlayerHealth {
 
 #[derive(Bundle)]
 pub struct ClientInfoBundle {
+    client_base: MarkerClientBased,
+    player_id: PlayerId,
+    name: Name,
     look_at: PlayerLookAt,
     replicate: Replicate,
 }
 impl ClientInfoBundle {
-    pub(crate) fn new(look_at: Vec3) -> Self {
+    pub(crate) fn new(client_id: ClientId, look_at: Vec3) -> Self {
         Self {
+            client_base: MarkerClientBased,
+            player_id: PlayerId(client_id),
+            name: Name::new(format!("ClientInfo {}", client_id)),
             look_at: PlayerLookAt(look_at),
             replicate: Replicate::default(),
         }
     }
 }
+
+/// Marker component used to tell me if it is client based
+#[derive(Component, Default)]
+pub struct MarkerClientBased;
 
 /// Tells me player camera direction forward. Usefull to avoid extra code in server
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect, Default)]
@@ -172,7 +185,7 @@ impl PlayerAction {
 // Messages
 // An event message sent by server to give a recently loaded client it is bundle
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-pub struct SendBundle(pub PlayerBundle);
+pub struct SendBundle(pub SavePlayerBundle);
 
 // An event message sent by client to server that gives the player currently chosen loadout
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

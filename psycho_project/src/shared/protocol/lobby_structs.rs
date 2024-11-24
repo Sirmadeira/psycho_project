@@ -11,6 +11,8 @@ impl Plugin for LobbyStructsPlugin {
         //Resources
         app.register_resource::<Lobbies>(ChannelDirection::ServerToClient);
         app.register_resource::<LobbyPositionMap>(ChannelDirection::ServerToClient);
+
+        //Messages that start start game state
         app.register_message::<StartGame>(ChannelDirection::ServerToClient);
 
         // Message start match related
@@ -40,7 +42,7 @@ pub struct Lobby {
     pub lobby_id: u64,
 }
 
-/// Gives me client precious info for other logics
+/// Gives me client precious info for other logics like how would be looby without that client and what is it is position on index
 #[derive(Resource, Default, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 #[reflect(Resource, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct LobbyPositionMap(pub HashMap<ClientId, ClientInfo>);

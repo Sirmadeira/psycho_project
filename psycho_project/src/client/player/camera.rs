@@ -1,7 +1,6 @@
 //! Super camera is gonna have orbit mode and some following shit like my old one
 //! YEAH
 use crate::client::MyAppState;
-use crate::shared::protocol::player_structs::PlayerId;
 use crate::shared::protocol::player_structs::{ClientInfoBundle, PlayerLookAt};
 use avian3d::prelude::PhysicsSet;
 use bevy::prelude::*;
@@ -14,6 +13,7 @@ use lightyear::client::events::ConnectEvent;
 use lightyear::client::prediction::Predicted;
 use lightyear::shared::replication::components::Controlled;
 use lightyear::shared::replication::components::Replicating;
+
 pub struct PlayerCameraPlugin;
 
 impl Plugin for PlayerCameraPlugin {
@@ -260,7 +260,8 @@ fn sync_rtt_to_player(
 fn spawn_client_info(mut commands: Commands, mut connection_event: EventReader<ConnectEvent>) {
     for event in connection_event.read() {
         let client_id = event.client_id();
-        commands.spawn(ClientInfoBundle::new(Vec3::ZERO));
+        commands.spawn(ClientInfoBundle::new(client_id, Vec3::ZERO));
+
         info!("Spawning client side replicated info for {}", client_id);
     }
 }

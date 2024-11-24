@@ -1,4 +1,3 @@
-use crate::shared::protocol::player_structs::PlayerBundleMap;
 use bevy::prelude::*;
 use bincode::serialize_into;
 use client_info::ClientInfoPlugin;
@@ -16,6 +15,7 @@ mod player;
 mod world;
 
 use self::essentials::*;
+use crate::shared::protocol::player_structs::SavePlayerBundleMap;
 
 /// Important plugin here you should centralize all systems/plugins that are heavily correlated to server
 pub struct ExampleServerPlugin;
@@ -40,12 +40,12 @@ fn create_save_files() {
     let mut f = BufWriter::new(
         File::create("./psycho_project/src/server/save_files/player_info.bar").unwrap(),
     );
-    let player_bundle = PlayerBundleMap::default();
+    let player_bundle = SavePlayerBundleMap::default();
     serialize_into(&mut f, &player_bundle).unwrap();
 }
 
 // Overwrites or create new file that will currently store only the player_bundle_map
-fn save_file(save_info: PlayerBundleMap) {
+fn save_file(save_info: SavePlayerBundleMap) {
     info!("Saving");
     let mut f = BufWriter::new(
         File::create("./psycho_project/src/server/save_files/player_info.bar").unwrap(),

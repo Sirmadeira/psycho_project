@@ -21,7 +21,7 @@ impl Plugin for CustomizeCharPlugin {
 
         // Player debugging
         app.register_type::<PlayerVisuals>();
-        app.register_type::<PlayerBundleMap>();
+        app.register_type::<SavePlayerBundleMap>();
 
         // Starting up base resource
         app.init_resource::<BodyPartMap>();

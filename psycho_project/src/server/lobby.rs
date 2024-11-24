@@ -81,7 +81,7 @@ fn listener_join_lobby(
     mut replication_target: Query<(&mut ReplicationTarget, &mut SyncTarget)>,
     mut lobbies: ResMut<Lobbies>,
     mut lobby_position_map: ResMut<LobbyPositionMap>,
-    player_entity_map: Res<PlayerEntityMap>,
+    player_entity_map: Res<ServerPlayerEntityMap>,
     mut connection_manager: ResMut<ConnectionManager>,
 ) {
     for event in events.read() {
@@ -126,7 +126,7 @@ fn listener_join_lobby(
 fn listener_exit_lobby(
     mut events: EventReader<MessageEvent<ExitLobby>>,
     mut online_state: Query<&mut PlayerStateConnection>,
-    player_entity_map: Res<PlayerEntityMap>,
+    player_entity_map: Res<ServerPlayerEntityMap>,
     mut lobby_position_map: ResMut<LobbyPositionMap>,
     mut lobbies: ResMut<Lobbies>,
 ) {

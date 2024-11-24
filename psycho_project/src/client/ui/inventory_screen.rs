@@ -302,7 +302,7 @@ fn assets_buttons(
         (Changed<Interaction>, With<AssetButton>),
     >,
     client_id: Res<EasyClient>,
-    player_bundle_map: Res<PlayerBundleMap>,
+    player_bundle_map: Res<SavePlayerBundleMap>,
     to_display_visuals: Res<ToDisplayVisuals>,
     mut connection_manager: ResMut<ConnectionManager>,
 ) {
