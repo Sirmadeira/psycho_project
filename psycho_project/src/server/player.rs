@@ -56,10 +56,9 @@ impl Plugin for PlayerPlugin {
             FixedUpdate,
             handle_character_actions.in_set(InputPhysicsSet::Input),
         );
-        // app.add_systems(
-        //     FixedUpdate,
-        //     angvel_to_look_at.in_set(InputPhysicsSet::Input),
-        // );
+
+        app.add_systems(FixedUpdate, handle_look_at.in_set(InputPhysicsSet::Input));
+
         app.add_systems(
             FixedUpdate,
             shared_spawn_bullet.in_set(InputPhysicsSet::Input),
@@ -357,6 +356,24 @@ fn handle_bullet_hit(
             }
         } else {
             warn!("Couldnt grab bullet owner something is terribly wrong")
+        }
+    }
+}
+
+fn handle_look_at(
+    mut players_components: Query<
+        (&mut AngularVelocity, &Position, &Rotation),
+        With<ReplicationTarget>,
+    >,
+    player_look_at: Query<(&PlayerLookAt, &PlayerId)>,
+    client_map: Res<ServerPlayerEntityMap>,
+) {
+    for (look_at, player_id) in player_look_at.iter() {
+        if let Some(player) = client_map.0.get(&player_id.0) {
+            // Shared function with server
+            if let Ok((mut ang_vel, position, rotation)) = players_components.get_mut(*player) {
+                angvel_to_look_at(look_at, &mut ang_vel, position, rotation);
+            }
         }
     }
 }

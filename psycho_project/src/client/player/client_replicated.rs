@@ -2,6 +2,7 @@ use crate::client::player::CamInfo;
 use crate::client::player::ClientPlayerEntityMap;
 use crate::shared::protocol::player_structs::ClientInfoBundle;
 use crate::shared::protocol::player_structs::PlayerLookAt;
+use crate::shared::shared_physics::angvel_to_look_at;
 use crate::shared::shared_physics::InputPhysicsSet;
 use avian3d::prelude::*;
 use bevy::prelude::*;
@@ -20,7 +21,9 @@ impl Plugin for ClientReplicatePlayerPlugin {
 
         app.add_systems(
             FixedUpdate,
-            angvel_to_look_at.in_set(InputPhysicsSet::Input),
+            handle_look_at
+                .in_set(InputPhysicsSet::Input)
+                .after(change_look_at),
         );
     }
 }
@@ -49,14 +52,17 @@ fn change_look_at(
     }
 }
 
-fn angvel_to_look_at(
-    mut players: Query<(&mut AngularVelocity, &Position, &Rotation), With<Predicted>>,
-    player_look_at: Query<(&PlayerLookAt, &PlayerId), With<PlayerLookAt>>,
+fn handle_look_at(
+    mut players_components: Query<(&mut AngularVelocity, &Position, &Rotation), With<Predicted>>,
+    player_look_at: Query<(&PlayerLookAt, &PlayerId)>,
     client_map: Res<ClientPlayerEntityMap>,
 ) {
     for (look_at, player_id) in player_look_at.iter() {
         if let Some(player) = client_map.0.get(&player_id.0) {
             // Shared function with server
+            if let Ok((mut ang_vel, position, rotation)) = players_components.get_mut(*player) {
+                angvel_to_look_at(look_at, &mut ang_vel, position, rotation);
+            }
         }
     }
 }
