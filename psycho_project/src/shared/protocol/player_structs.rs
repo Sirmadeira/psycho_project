@@ -12,8 +12,12 @@ pub struct PlayerStructPlugin;
 
 impl Plugin for PlayerStructPlugin {
     fn build(&self, app: &mut App) {
-        // // Leafwing input plugin handles the whole leafwing shenanigans - WARNING FOR NOW DONT USE THE RESOURCE NOT SUPPORTED
+        // Register  structs
+        // Leafwing input plugin handles the whole leafwing shenanigans - WARNING FOR NOW DONT USE THE RESOURCE NOT SUPPORTED
         app.add_plugins(LeafwingInputPlugin::<PlayerAction>::default());
+
+        app.register_component::<MarkerPlayer>(ChannelDirection::ServerToClient)
+            .add_prediction(ComponentSyncMode::Once);
 
         app.register_component::<PlayerId>(ChannelDirection::ServerToClient)
             .add_prediction(ComponentSyncMode::Once);
@@ -27,13 +31,14 @@ impl Plugin for PlayerStructPlugin {
         app.register_component::<PlayerLookAt>(ChannelDirection::Bidirectional)
             .add_prediction(ComponentSyncMode::Full);
 
+        // Register resources
         app.register_resource::<SavePlayerBundleMap>(ChannelDirection::ServerToClient);
 
         // Messages when starting game and just connection
         app.register_message::<SendBundle>(ChannelDirection::ServerToClient);
+
         // Messages related to visuals
         app.register_message::<SaveVisual>(ChannelDirection::ClientToServer);
-
         app.register_message::<ChangeChar>(ChannelDirection::Bidirectional);
 
         app.register_type::<PlayerHealth>();
@@ -48,7 +53,14 @@ impl Plugin for PlayerStructPlugin {
 pub struct SavePlayerBundleMap(pub HashMap<ClientId, SavePlayerBundle>);
 
 // Components
-// Player bundle - Shared player related info important to server and client here we add things that need to be saved
+/// Things that dont need to be saved
+#[derive(Bundle, Default)]
+pub struct PlayerBundle {
+    player_marker: MarkerPlayer,
+    health: PlayerHealth,
+}
+
+// Save Player bundle - Shared player related info important to server and client here we add things that need to be saved
 #[derive(Bundle, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect)]
 #[reflect(PartialEq, Debug, Serialize, Deserialize)]
 pub struct SavePlayerBundle {
@@ -67,7 +79,7 @@ impl SavePlayerBundle {
     }
 }
 
-#[derive(Component, Serialize, Deserialize, Clone, Debug)]
+#[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct MarkerPlayer;
 
 // Easy component that give me an easy way to acess the clientid of that specific player
@@ -121,7 +133,6 @@ impl Default for PlayerHealth {
 
 #[derive(Bundle)]
 pub struct ClientInfoBundle {
-    client_base: MarkerClientBased,
     player_id: PlayerId,
     name: Name,
     look_at: PlayerLookAt,
@@ -130,7 +141,6 @@ pub struct ClientInfoBundle {
 impl ClientInfoBundle {
     pub(crate) fn new(client_id: ClientId, look_at: Vec3) -> Self {
         Self {
-            client_base: MarkerClientBased,
             player_id: PlayerId(client_id),
             name: Name::new(format!("ClientInfo {}", client_id)),
             look_at: PlayerLookAt(look_at),
@@ -138,10 +148,6 @@ impl ClientInfoBundle {
         }
     }
 }
-
-/// Marker component used to tell me if it is client based
-#[derive(Component, Default)]
-pub struct MarkerClientBased;
 
 /// Tells me player camera direction forward. Usefull to avoid extra code in server
 #[derive(Component, Serialize, Deserialize, Clone, Debug, PartialEq, Reflect, Default)]

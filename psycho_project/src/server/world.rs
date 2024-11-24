@@ -15,10 +15,11 @@ impl Plugin for PhysicsWorldPlugin {
         app.init_resource::<CycleTimer>();
         app.add_systems(Startup, replicate_resource);
         app.add_systems(Startup, spawn_floor_collider);
-        app.add_systems(FixedUpdate, tick_sun_cycle);
+        // app.add_systems(FixedUpdate, tick_sun_cycle);
     }
 }
 
+// This need refactoring make it tick based to avoid excess of bandwith usage
 fn replicate_resource(mut commands: Commands) {
     commands.replicate_resource::<CycleTimer, CommonChannel>(NetworkTarget::All);
 }

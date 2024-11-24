@@ -56,7 +56,10 @@ impl Plugin for PlayerPlugin {
             FixedUpdate,
             handle_character_actions.in_set(InputPhysicsSet::Input),
         );
-
+        // app.add_systems(
+        //     FixedUpdate,
+        //     angvel_to_look_at.in_set(InputPhysicsSet::Input),
+        // );
         app.add_systems(
             FixedUpdate,
             shared_spawn_bullet.in_set(InputPhysicsSet::Input),
@@ -178,10 +181,10 @@ fn spawn_server_player(
             .insert(online_state)
             .insert(name)
             .insert(replicate)
+            .insert(PlayerBundle::default())
             .insert(PlayerAction::default_input_map())
             .insert(Weapon::default())
             .insert(Position(Vec3::new(0.0, 2.0, 0.0)))
-            .insert(PlayerHealth::default())
             .id();
         player_entity_map.0.insert(client_id, id);
         return old_player_bun;
@@ -196,10 +199,10 @@ fn spawn_server_player(
             .insert(online_state)
             .insert(name)
             .insert(replicate)
+            .insert(PlayerBundle::default())
             .insert(PlayerAction::default_input_map())
             .insert(Weapon::default())
             .insert(Position(Vec3::new(0.0, 2.0, 0.0)))
-            .insert(PlayerHealth::default())
             .id();
 
         player_entity_map.0.insert(client_id, id);
@@ -312,6 +315,7 @@ fn insert_physics_server_player(
         let client_id = event.context();
         if let Some(player) = player_entity_map.0.get(client_id) {
             if let Ok(mut on_state) = online_state.get_mut(*player) {
+                info!("Inserting physics in server player");
                 *on_state = PlayerStateConnection {
                     online: true,
                     in_game: true,

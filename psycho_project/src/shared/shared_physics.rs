@@ -1,6 +1,8 @@
 //! Here lies every single function that should occur both to server and client.
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
+use crate::client::player::ClientPlayerEntityMap;
+use crate::server::player::ServerPlayerEntityMap;
 use crate::shared::protocol::player_structs::*;
 use avian3d::prelude::*;
 use avian3d::sync::SyncConfig;
@@ -9,7 +11,7 @@ use bevy::prelude::*;
 use common::shared::FIXED_TIMESTEP_HZ;
 use leafwing_input_manager::prelude::*;
 use lightyear::prelude::client::Predicted;
-use lightyear::prelude::{ReplicationGroup, ReplicationTarget};
+use lightyear::prelude::{NetworkIdentity, ReplicationGroup, ReplicationTarget};
 use lightyear::shared::replication::components::Replicated;
 /// Here lies all the shared setup needed to make physics work in our game
 /// Warning: This game is solely based on running an independent server and clients any other mode will break it
@@ -104,10 +106,7 @@ impl PhysicsBundle {
         Self {
             collider,
             collider_density: ColliderDensity(1.0),
-            locked_axes: LockedAxes::default()
-                .lock_rotation_x()
-                .lock_rotation_y()
-                .lock_rotation_z(),
+            locked_axes: LockedAxes::default().lock_rotation_x().lock_rotation_z(),
             rigid_body: RigidBody::Dynamic,
             external_force: ExternalForce::ZERO.with_persistence(false),
             collison_layer: CollisionLayers::new(
@@ -154,7 +153,6 @@ pub struct CharacterQuery {
     pub external_force: &'static mut ExternalForce,
     pub external_impulse: &'static mut ExternalImpulse,
     pub linear_velocity: &'static LinearVelocity,
-    pub angular_velocity: &'static mut AngularVelocity,
     pub mass: &'static Mass,
     pub position: &'static Position,
     pub entity: Entity,
@@ -226,23 +224,47 @@ pub fn apply_character_action(
     character
         .external_force
         .apply_force(required_acceleration * character.mass.0);
-
-    // Handle looking at mouse
-
-    // let delta_x = action_state.axis_pair(&PlayerAction::Pan).x;
-
-    // let angular_velocity_y = delta_x * 0.1;
-
-    // character.angular_velocity.0 = Vec3::new(0.0, -angular_velocity_y, 0.0);
 }
 
-fn angvel_to_look_at(
-    mut players: Query<&mut AngularVelocity, Or<(With<Predicted>, With<ReplicationTarget>)>>,
-    mut look_at: Query<&PlayerLookAt, Or<(With<MarkerClientBased>, With<Replicated>)>>,
-) {
-    for player in players.iter_mut() {
-        for look_at in look_at.iter() {
-            
-        }
-    }
-}
+// pub fn angvel_to_look_at(
+//     mut players: Query<
+//         (&mut AngularVelocity, &Position, &Rotation),
+//         Or<(With<Predicted>, With<ReplicationTarget>)>,
+//     >,
+//     player_look_at: Query<
+//         (&PlayerLookAt, &PlayerId),
+//         Or<(With<MarkerClientBased>, With<Replicated>)>,
+//     >,
+//     network_identity: NetworkIdentity,
+//     client_map: Option<Res<ClientPlayerEntityMap>>,
+//     server_map: Option<Res<ServerPlayerEntityMap>>,
+// ) {
+//     for (look_at, player_id) in player_look_at.iter() {
+//         let entity = if network_identity.is_server() {
+//             // Server: Map PlayerId to Entity
+//             server_map.as_ref().and_then(|map| map.0.get(&player_id.0))
+//         } else if network_identity.is_client() {
+//             // Client: Map PlayerId to Entity
+//             client_map.as_ref().and_then(|map| map.0.get(&player_id.0))
+//         } else {
+//             // Failed to grab client map
+//             None
+//         };
+//         if let Some(&entity) = entity {
+//             if let Ok((mut ang_vel, position, rotation)) = players.get_mut(entity) {
+//                 let current_position = position.0;
+//                 let target_position = look_at.0;
+
+//                 let target_direction = (target_position - current_position).normalize();
+//                 let current_forward = rotation.0 * Vec3::Z;
+
+//                 if current_forward.dot(target_direction) > 0.999 {
+//                     ang_vel.0 = Vec3::ZERO;
+//                 } else {
+//                     let rotation = Quat::from_rotation_arc(current_forward, target_direction);
+//                     let (axis, angle) = rotation.to_axis_angle();
+//                 }
+//             }
+//         }
+//     }
+// }

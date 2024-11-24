@@ -32,7 +32,7 @@ fn replicate_client_info(
             let server_replicate = Replicate {
                 authority: AuthorityPeer::Client(client_id),
                 sync: SyncTarget {
-                    prediction: NetworkTarget::All,
+                    prediction: NetworkTarget::AllExceptSingle(client_id),
                     ..default()
                 },
                 controlled_by: ControlledBy {

@@ -62,7 +62,7 @@ fn get_top_parent(mut curr_entity: Entity, entities_with_parent: &Query<&Parent>
 
 /// Essential components to have when player gets predicted
 fn add_anim_components_to_player(
-    query: Query<Entity, (Added<Predicted>, With<PlayerId>)>,
+    query: Query<Entity, (Added<Predicted>, With<MarkerPlayer>)>,
     mut commands: Commands,
 ) {
     for predicted in query.iter() {

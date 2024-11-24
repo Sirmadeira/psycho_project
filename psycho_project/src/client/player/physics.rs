@@ -24,7 +24,7 @@ impl Plugin for PlayerPhysicsPlugin {
 
 /// Will add physics to predicted entities
 fn add_physics_to_players(
-    players: Query<Entity, (With<PlayerId>, Added<Predicted>)>,
+    players: Query<Entity, (With<MarkerPlayer>, Added<Predicted>)>,
     mut commands: Commands,
 ) {
     for player in players.iter() {

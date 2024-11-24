@@ -1,7 +1,6 @@
 //! Super camera is gonna have orbit mode and some following shit like my old one
 //! YEAH
 use crate::client::MyAppState;
-use crate::shared::protocol::player_structs::{ClientInfoBundle, PlayerLookAt};
 use avian3d::prelude::PhysicsSet;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
@@ -9,10 +8,8 @@ use bevy_panorbit_camera::PanOrbitCamera;
 use core::f32::consts::PI;
 use leafwing_input_manager::prelude::*;
 use leafwing_input_manager::Actionlike;
-use lightyear::client::events::ConnectEvent;
 use lightyear::client::prediction::Predicted;
 use lightyear::shared::replication::components::Controlled;
-use lightyear::shared::replication::components::Replicating;
 
 pub struct PlayerCameraPlugin;
 
@@ -26,10 +23,6 @@ impl Plugin for PlayerCameraPlugin {
         app.add_plugins(InputManagerPlugin::<CameraMovement>::default());
 
         app.add_systems(Startup, spawn_begin_camera);
-
-        app.add_systems(Update, spawn_client_info);
-
-        app.add_systems(FixedUpdate, change_look_at);
 
         app.add_systems(
             Update,
@@ -253,27 +246,6 @@ fn sync_rtt_to_player(
             // PanOrbitCamera to update this frame (by default it only updates when there are
             // input events).
             pan_orbit.force_update = true;
-        }
-    }
-}
-
-fn spawn_client_info(mut commands: Commands, mut connection_event: EventReader<ConnectEvent>) {
-    for event in connection_event.read() {
-        let client_id = event.client_id();
-        commands.spawn(ClientInfoBundle::new(client_id, Vec3::ZERO));
-
-        info!("Spawning client side replicated info for {}", client_id);
-    }
-}
-
-/// Gonna make it so player looks at camera
-fn change_look_at(
-    mut player: Query<&mut PlayerLookAt, With<Replicating>>,
-    cam_q: Query<&Transform, With<CamInfo>>,
-) {
-    if let Ok(mut player_look_at) = player.get_single_mut() {
-        if let Ok(cam_transform) = cam_q.get_single() {
-            player_look_at.0 = cam_transform.forward().into();
         }
     }
 }

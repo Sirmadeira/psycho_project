@@ -184,7 +184,7 @@ fn formulates_players(
             Has<HasVisuals>,
             Has<Controlled>,
         ),
-        (Added<Predicted>, With<PlayerId>),
+        (Added<Predicted>, With<MarkerPlayer>),
     >,
     gltfs: Res<Assets<Gltf>>,
     client_collection: Res<CharCollection>,

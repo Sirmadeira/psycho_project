@@ -10,13 +10,14 @@ use physics::PlayerPhysicsPlugin;
 mod animations;
 mod camera;
 mod char_customizer;
+mod client_replicated;
 mod gun;
 mod physics;
+
 use lightyear::connection::id::ClientId;
 
-use crate::shared::protocol::player_structs::PlayerId;
-
-use self::{animations::*, camera::*, char_customizer::*};
+use self::{animations::*, camera::*, char_customizer::*, client_replicated::*};
+use crate::shared::protocol::player_structs::*;
 
 pub struct CreateCharPlugin;
 
@@ -26,6 +27,7 @@ impl Plugin for CreateCharPlugin {
 
         // Self made plugins
         app.add_plugins(PlayerCameraPlugin);
+        app.add_plugins(ClientReplicatePlayerPlugin);
         app.add_plugins(CustomizeCharPlugin);
         app.add_plugins(AnimPlayerPlugin);
         app.add_plugins(PlayerPhysicsPlugin);
@@ -42,7 +44,7 @@ impl Plugin for CreateCharPlugin {
 pub struct ClientPlayerEntityMap(pub HashMap<ClientId, Entity>);
 
 fn fill_player_map(
-    player_entities: Query<(Entity, &PlayerId), (With<PlayerId>, Added<Predicted>)>,
+    player_entities: Query<(Entity, &PlayerId), (With<MarkerPlayer>, Added<Predicted>)>,
     mut player_map: ResMut<ClientPlayerEntityMap>,
 ) {
     for (entity, player_id) in player_entities.iter() {

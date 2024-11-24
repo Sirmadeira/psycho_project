@@ -8,7 +8,7 @@ mod change_res;
 mod essentials;
 mod load_assets;
 mod manage_game;
-mod player;
+pub mod player;
 pub mod rtt;
 mod ui;
 mod voxel_gen;

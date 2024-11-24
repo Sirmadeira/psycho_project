@@ -11,7 +11,7 @@ mod essentials;
 
 mod client_info;
 mod lobby;
-mod player;
+pub mod player;
 mod world;
 
 use self::essentials::*;
