@@ -296,11 +296,10 @@ fn replicate_inputs(
 }
 fn handle_character_actions(
     time: Res<Time>,
-    spatial_query: SpatialQuery,
     mut query: Query<(&ActionState<PlayerAction>, CharacterQuery)>,
 ) {
     for (action_state, mut character) in &mut query {
-        apply_character_action(&time, &spatial_query, action_state, &mut character);
+        apply_character_action(&time, action_state, &mut character);
     }
 }
 

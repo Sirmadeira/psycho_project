@@ -16,7 +16,7 @@ mod physics;
 
 use lightyear::connection::id::ClientId;
 
-use self::{animations::*, camera::*, char_customizer::*, client_replicated::*};
+use self::{animations::*, camera::*, char_customizer::*};
 use crate::shared::protocol::player_structs::*;
 
 pub struct CreateCharPlugin;

@@ -149,8 +149,10 @@ pub struct CharacterQuery {
     pub external_force: &'static mut ExternalForce,
     pub external_impulse: &'static mut ExternalImpulse,
     pub linear_velocity: &'static LinearVelocity,
+    pub angular_velocity: &'static AngularVelocity,
     pub mass: &'static Mass,
     pub position: &'static Position,
+    pub rotation: &'static mut Rotation,
     pub entity: Entity,
 }
 
@@ -158,7 +160,6 @@ pub struct CharacterQuery {
 /// TODO - FIX THIS SO IT FILTER OUT ALL OTHER CHARACTERS
 pub fn apply_character_action(
     time: &Res<Time>,
-    spatial_query: &SpatialQuery,
     action_state: &ActionState<PlayerAction>,
     character: &mut CharacterQueryItem,
 ) {
@@ -169,31 +170,13 @@ pub fn apply_character_action(
 
     // Handle jumping.
     if action_state.just_pressed(&PlayerAction::Jump) {
+        // Make jump better
         let ray_cast_origin = character.position.0
             + Vec3::new(
                 0.0,
                 -CHARACTER_CAPSULE_HEIGHT / 2.0 - CHARACTER_CAPSULE_RADIUS,
                 0.0,
             );
-
-        // Only jump if the character is on the ground.
-        //
-        // Check if we are touching the ground by sending a ray from the bottom
-        // of the character downwards.
-        if spatial_query
-            .cast_ray(
-                ray_cast_origin,
-                Dir3::NEG_Y,
-                0.01,
-                true,
-                SpatialQueryFilter::from_excluded_entities([character.entity]),
-            )
-            .is_some()
-        {
-            character
-                .external_impulse
-                .apply_impulse(Vec3::new(0.0, 5.0, 0.0));
-        }
     }
 
     // Handle moving.
@@ -220,4 +203,12 @@ pub fn apply_character_action(
     character
         .external_force
         .apply_force(required_acceleration * character.mass.0);
+
+    // Handle looking at
+
+    let camera_rotation = action_state.axis_pair(&PlayerAction::RotateToCamera);
+
+    let quat_rotation = Quat::from_euler(EulerRot::YXZ, camera_rotation.y, 0.0, 0.0);
+
+    character.rotation.0 = quat_rotation;
 }

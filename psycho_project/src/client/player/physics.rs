@@ -1,14 +1,12 @@
 use super::MarkerMainCamera;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::shared_physics::*;
-use avian3d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use lightyear::client::input::leafwing::InputSystemSet;
 use lightyear::client::prediction::rollback::Rollback;
 use lightyear::client::prediction::Predicted;
 use lightyear::inputs::leafwing::input_buffer::InputBuffer;
-use lightyear::shared::replication::components::Controlled;
 use lightyear::shared::tick_manager::TickManager;
 
 use lightyear::client::prediction::plugin::is_in_rollback;
@@ -23,7 +21,7 @@ impl Plugin for PlayerPhysicsPlugin {
         // Ensures we update the ActionState before buffering them
         app.add_systems(
             FixedPreUpdate,
-            capture_mouse_input
+            camera_rotate_to
                 .before(InputSystemSet::BufferClientInputs)
                 .run_if(not(is_in_rollback)),
         );
@@ -46,28 +44,55 @@ fn add_physics_to_players(
     }
 }
 
-fn capture_mouse_input(
-    q_window: Query<&Window>,
-    mut q_action_state: Query<
-        (&Position, &mut ActionState<PlayerAction>),
-        (With<Predicted>, With<Controlled>),
-    >,
-    q_camera: Query<(&Camera, &Transform, &GlobalTransform), With<MarkerMainCamera>>,
+// fn draw_cursor(
+//     camera_query: Query<(Entity, &Camera), With<MarkerMainCamera>>,
+//     ground_query: Query<Entity, With<FloorMarker>>,
+//     global_transforms: Query<&GlobalTransform>,
+//     windows: Query<&Window>,
+//     mut gizmos: Gizmos,
+// ) {
+//     if let Ok(ground_entity) = ground_query.get_single() {
+//         if let Ok(ground_global_transform) = global_transforms.get(ground_entity) {
+//             let (cam_entity, camera) = camera_query.single();
+//             if let Ok(camera_global_transform) = global_transforms.get(cam_entity) {
+//                 let Some(cursor_position) = windows.single().cursor_position() else {
+//                     return;
+//                 };
+//                 // Calculate a ray pointing from the camera into the world based on the cursor's position.
+//                 let Some(ray) = camera.viewport_to_world(camera_global_transform, cursor_position)
+//                 else {
+//                     return;
+//                 };
+
+//                 // Calculate if and where the ray is hitting the ground plane.
+//                 let Some(distance) = ray.intersect_plane(
+//                     ground_global_transform.translation(),
+//                     InfinitePlane3d::new(ground_global_transform.up()),
+//                 ) else {
+//                     return;
+//                 };
+//                 let point = ray.get_point(distance);
+
+//                 // Draw a circle just above the ground plane at that position.
+//                 gizmos.circle(
+//                     point + ground_global_transform.up() * 0.5,
+//                     ground_global_transform.up(),
+//                     1.0,
+//                     Color::WHITE,
+//                 );
+//             }
+//         }
+//     }
+// }
+
+fn camera_rotate_to(
+    q_transform: Query<&Transform, With<MarkerMainCamera>>,
+    mut player_action_state: Query<&mut ActionState<PlayerAction>, With<Predicted>>,
 ) {
-    if let Ok((camera, camera_transform, camera_global_transform)) = q_camera.get_single() {
-        if let Ok((player_pos, mut action_state)) = q_action_state.get_single_mut() {
-            let window = q_window.single();
-            // This will cast a ray from camera
-            if let Some(world_position) = window
-                .cursor_position()
-                .and_then(|cursor| camera.viewport_to_world(camera_global_transform, cursor))
-                .map(|ray| ray.origin.truncate())
-            {
-                let mouse_position_relative = world_position - player_pos.0.truncate();
-                let camera_scale = camera_transform.scale.x;
-                let pair = mouse_position_relative * camera_scale;
-                action_state.set_axis_pair(&PlayerAction::MousePositionRelative, pair);
-            }
+    if let Ok(cam_transform) = q_transform.get_single() {
+        let (yaw, pitch, _) = cam_transform.rotation.to_euler(EulerRot::YXZ);
+        if let Ok(mut action_state) = player_action_state.get_single_mut() {
+            action_state.set_axis_pair(&PlayerAction::RotateToCamera, Vec2::new(pitch, yaw));
         }
     }
 }
@@ -76,7 +101,6 @@ fn capture_mouse_input(
 /// entity.
 fn handle_character_actions(
     time: Res<Time>,
-    spatial_query: SpatialQuery,
     mut query: Query<
         (
             &ActionState<PlayerAction>,
@@ -97,18 +121,18 @@ fn handle_character_actions(
     for (action_state, input_buffer, mut character) in &mut query {
         // Use the current character action if it is.
         if input_buffer.get(tick).is_some() {
-            apply_character_action(&time, &spatial_query, action_state, &mut character);
+            apply_character_action(&time, action_state, &mut character);
             continue;
         }
 
         // If the current character action is not real then use the last real
         // character action.
         if let Some((_, prev_action_state)) = input_buffer.get_last_with_tick() {
-            apply_character_action(&time, &spatial_query, prev_action_state, &mut character);
+            apply_character_action(&time, prev_action_state, &mut character);
         } else {
             // No inputs are in the buffer yet. This can happen during initial
             // connection. Apply the default input (i.e. nothing pressed).
-            apply_character_action(&time, &spatial_query, action_state, &mut character);
+            apply_character_action(&time, action_state, &mut character);
         }
     }
 }

@@ -93,7 +93,7 @@ fn add_cosmetic_physics_floor(
             .insert(PhysicsBundle::floor())
             .insert(PbrBundle {
                 mesh: meshes.add(Cuboid::new(FLOOR_WIDTH, FLOOR_HEIGHT, FLOOR_WIDTH)),
-                material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
+                material: materials.add(Color::srgb(0.0, 0.0, 0.0)),
                 ..default()
             });
     }

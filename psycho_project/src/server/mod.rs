@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bincode::serialize_into;
-use client_info::ClientInfoPlugin;
 use lobby::LobbyPlugin;
 use player::PlayerPlugin;
 use std::fs::File;
