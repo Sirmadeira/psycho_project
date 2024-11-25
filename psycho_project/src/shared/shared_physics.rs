@@ -221,37 +221,3 @@ pub fn apply_character_action(
         .external_force
         .apply_force(required_acceleration * character.mass.0);
 }
-
-pub fn angvel_to_look_at(
-    look_at: &PlayerLookAt,
-    ang_vel: &mut AngularVelocity,
-    position: &Position,
-    rotation: &Rotation,
-) {
-    let current_position = position.0;
-    let target_position = look_at.0;
-
-    // Handle zero vector case
-    let diff = target_position - current_position;
-    if diff.length_squared() == 0.0 {
-        ang_vel.0 = Vec3::ZERO;
-        return;
-    }
-
-    let target_direction = diff.normalize();
-    let current_forward = rotation.0 * Vec3::Z;
-
-    // Check alignment threshold
-    if current_forward.dot(target_direction) > 0.995 {
-        ang_vel.0 = Vec3::ZERO;
-        return;
-    }
-
-    // Calculate rotation
-    let rotation = Quat::from_rotation_arc(current_forward, target_direction);
-    let (mut axis, angle) = rotation.to_axis_angle();
-    axis = axis.normalize_or_zero();
-
-    // Set angular velocity
-    ang_vel.0 = Vec3::new(0.0, (axis * angle).y, 0.0 * 5.0) * 20.0;
-}

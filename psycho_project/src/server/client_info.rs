@@ -4,6 +4,7 @@ use lightyear::prelude::{server::*, NetworkTarget};
 use crate::shared::shared_physics::REPLICATION_GROUP;
 use lightyear::prelude::server::Replicate;
 use lightyear::shared::replication::components::Replicated;
+use lightyear::shared::replication::components::ReplicationTarget;
 
 pub struct ClientInfoPlugin;
 
@@ -30,6 +31,10 @@ fn replicate_client_info(
                 client_id
             );
             let server_replicate = Replicate {
+                target: ReplicationTarget {
+                    // do not replicate back to the client that owns the cursor!
+                    target: NetworkTarget::AllExceptSingle(client_id),
+                },
                 authority: AuthorityPeer::Client(client_id),
                 sync: SyncTarget {
                     prediction: NetworkTarget::AllExceptSingle(client_id),

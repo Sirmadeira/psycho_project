@@ -1,12 +1,18 @@
+use super::MarkerMainCamera;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::shared_physics::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
+use lightyear::client::input::leafwing::InputSystemSet;
 use lightyear::client::prediction::rollback::Rollback;
 use lightyear::client::prediction::Predicted;
 use lightyear::inputs::leafwing::input_buffer::InputBuffer;
+use lightyear::shared::replication::components::Controlled;
 use lightyear::shared::tick_manager::TickManager;
+
+use lightyear::client::prediction::plugin::is_in_rollback;
+
 pub struct PlayerPhysicsPlugin;
 
 impl Plugin for PlayerPhysicsPlugin {
@@ -14,6 +20,13 @@ impl Plugin for PlayerPhysicsPlugin {
         // Add physical components to predicted players
         app.add_systems(Update, add_physics_to_players);
 
+        // Ensures we update the ActionState before buffering them
+        app.add_systems(
+            FixedPreUpdate,
+            capture_mouse_input
+                .before(InputSystemSet::BufferClientInputs)
+                .run_if(not(is_in_rollback)),
+        );
         // It is essential that input bases systems occur in fixedupdate
         app.add_systems(
             FixedUpdate,
@@ -30,6 +43,32 @@ fn add_physics_to_players(
     for player in players.iter() {
         info!("Adding physics to player");
         commands.entity(player).insert(PhysicsBundle::player());
+    }
+}
+
+fn capture_mouse_input(
+    q_window: Query<&Window>,
+    mut q_action_state: Query<
+        (&Position, &mut ActionState<PlayerAction>),
+        (With<Predicted>, With<Controlled>),
+    >,
+    q_camera: Query<(&Camera, &Transform, &GlobalTransform), With<MarkerMainCamera>>,
+) {
+    if let Ok((camera, camera_transform, camera_global_transform)) = q_camera.get_single() {
+        if let Ok((player_pos, mut action_state)) = q_action_state.get_single_mut() {
+            let window = q_window.single();
+            // This will cast a ray from camera
+            if let Some(world_position) = window
+                .cursor_position()
+                .and_then(|cursor| camera.viewport_to_world(camera_global_transform, cursor))
+                .map(|ray| ray.origin.truncate())
+            {
+                let mouse_position_relative = world_position - player_pos.0.truncate();
+                let camera_scale = camera_transform.scale.x;
+                let pair = mouse_position_relative * camera_scale;
+                action_state.set_axis_pair(&PlayerAction::MousePositionRelative, pair);
+            }
+        }
     }
 }
 

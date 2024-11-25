@@ -30,7 +30,7 @@ impl Plugin for ExampleServerPlugin {
         app.add_plugins(EssentialsPlugin);
         app.add_plugins(LobbyPlugin);
         app.add_plugins(PlayerPlugin);
-        app.add_plugins(ClientInfoPlugin);
+        // app.add_plugins(ClientInfoPlugin);
     }
 }
 

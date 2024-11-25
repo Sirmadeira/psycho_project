@@ -165,6 +165,7 @@ pub enum PlayerAction {
     Move,
     Jump,
     Shoot,
+    MousePositionRelative,
 }
 
 impl Actionlike for PlayerAction {
@@ -173,6 +174,7 @@ impl Actionlike for PlayerAction {
             Self::Move => InputControlKind::DualAxis,
             Self::Jump => InputControlKind::Button,
             Self::Shoot => InputControlKind::Button,
+            Self::MousePositionRelative => InputControlKind::DualAxis,
         }
     }
 }

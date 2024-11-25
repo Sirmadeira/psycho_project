@@ -15,7 +15,8 @@ impl Plugin for PhysicsWorldPlugin {
         app.init_resource::<CycleTimer>();
         app.add_systems(Startup, replicate_resource);
         app.add_systems(Startup, spawn_floor_collider);
-        // app.add_systems(FixedUpdate, tick_sun_cycle);
+        //This needs refacotring make it tick based TODO
+        app.add_systems(FixedUpdate, tick_sun_cycle);
     }
 }
 
