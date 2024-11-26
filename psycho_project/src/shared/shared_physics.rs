@@ -200,10 +200,11 @@ pub fn apply_character_action(
     let required_acceleration =
         (new_ground_linear_velocity - ground_linear_velocity) / time.delta_seconds();
 
-    character
-        .external_force
-        .apply_force(required_acceleration * character.mass.0);
-
+    if required_acceleration != Vec3::ZERO {
+        character
+            .external_force
+            .apply_force(required_acceleration * character.mass.0);
+    }
     // Handle looking at
 
     let camera_rotation = action_state.axis_pair(&PlayerAction::RotateToCamera);
