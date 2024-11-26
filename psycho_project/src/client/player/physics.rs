@@ -40,7 +40,7 @@ fn add_physics_to_players(
 ) {
     for player in players.iter() {
         info!("Adding physics to player");
-        commands.entity(player).insert(PhysicsBundle::player());
+        commands.entity(player).insert(PlayerPhysics::default());
     }
 }
 

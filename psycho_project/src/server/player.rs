@@ -319,7 +319,7 @@ fn insert_physics_server_player(
                     in_game: true,
                 };
                 // Insert required components for physics and action state.
-                commands.entity(*player).insert(PhysicsBundle::player());
+                commands.entity(*player).insert(PlayerPhysics::default());
             } else {
                 warn!(
                     "Player {} is missing PlayerStateConnection component",

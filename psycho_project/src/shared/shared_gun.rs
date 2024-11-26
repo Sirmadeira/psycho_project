@@ -1,8 +1,8 @@
 use super::protocol::lobby_structs::Lobbies;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::protocol::weapon_structs::*;
+use crate::shared::shared_physics::BulletPhysics;
 use crate::shared::shared_physics::InputPhysicsSet;
-use crate::shared::shared_physics::PhysicsBundle;
 use crate::shared::shared_physics::REPLICATION_GROUP;
 use avian3d::prelude::*;
 use bevy::prelude::*;
@@ -100,7 +100,7 @@ pub fn shared_spawn_bullet(
         let bullet_entity = commands
             .spawn((
                 BulletBundle::new(player_id.0, bullet_origin, bullet_linvel, current_tick),
-                PhysicsBundle::bullet(),
+                BulletPhysics::default(),
                 prespawned,
             ))
             .id();

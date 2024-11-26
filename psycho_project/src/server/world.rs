@@ -1,6 +1,6 @@
 use crate::shared::protocol::world_structs::*;
 use crate::shared::protocol::CommonChannel;
-use crate::shared::shared_physics::PhysicsBundle;
+use crate::shared::shared_physics::FloorPhysics;
 use avian3d::prelude::Position;
 use bevy::prelude::*;
 use lightyear::prelude::server::Replicate;
@@ -29,7 +29,7 @@ fn replicate_resource(mut commands: Commands) {
 fn spawn_floor_collider(mut commands: Commands) {
     info!("Spawning server floor and replicating to client");
     commands
-        .spawn(PhysicsBundle::floor())
+        .spawn(FloorPhysics::default())
         .insert(FloorMarker)
         .insert(Replicate::default())
         .insert(Name::new("PhysicalFloor"))

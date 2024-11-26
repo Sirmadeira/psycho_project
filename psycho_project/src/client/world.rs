@@ -1,6 +1,6 @@
 use crate::shared::{
     protocol::world_structs::{CycleTimer, FloorMarker},
-    shared_physics::{PhysicsBundle, FLOOR_HEIGHT, FLOOR_WIDTH},
+    shared_physics::{FloorPhysics, FLOOR_HEIGHT, FLOOR_WIDTH},
 };
 use avian3d::prelude::*;
 use bevy::pbr::CascadeShadowConfigBuilder;
@@ -90,7 +90,7 @@ fn add_cosmetic_physics_floor(
         info!("Spawning physical floor and adding it is cosmetic");
         commands
             .entity(floor)
-            .insert(PhysicsBundle::floor())
+            .insert(FloorPhysics::default())
             .insert(PbrBundle {
                 mesh: meshes.add(Cuboid::new(FLOOR_WIDTH, FLOOR_HEIGHT, FLOOR_WIDTH)),
                 material: materials.add(Color::srgb(0.0, 0.0, 0.0)),

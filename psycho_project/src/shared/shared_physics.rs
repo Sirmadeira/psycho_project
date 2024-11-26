@@ -84,9 +84,8 @@ enum GameLayer {
     Bullet,
 }
 
-/// Physics bundle, stores anything that is physically related but not bandwithded
 #[derive(Bundle)]
-pub struct PhysicsBundle {
+pub struct PlayerPhysics {
     pub collider: Collider,
     pub collider_density: ColliderDensity,
     pub rigid_body: RigidBody,
@@ -96,8 +95,8 @@ pub struct PhysicsBundle {
     pub friction: Friction,
 }
 
-impl PhysicsBundle {
-    pub fn player() -> Self {
+impl Default for PlayerPhysics {
+    fn default() -> Self {
         let collider = Collider::capsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT);
         Self {
             collider,
@@ -112,33 +111,43 @@ impl PhysicsBundle {
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
     }
-    pub fn floor() -> Self {
+}
+
+#[derive(Bundle)]
+pub struct FloorPhysics {
+    pub collider: Collider,
+    pub rigid_body: RigidBody,
+}
+
+impl Default for FloorPhysics {
+    fn default() -> Self {
         Self {
             collider: Collider::cuboid(FLOOR_WIDTH, FLOOR_HEIGHT, FLOOR_WIDTH),
-            collider_density: ColliderDensity(1.0),
             rigid_body: RigidBody::Static,
-            external_force: ExternalForce::ZERO.with_persistence(false),
-            locked_axes: LockedAxes::default(),
-            collison_layer: CollisionLayers::new(
-                GameLayer::Ground,
-                [GameLayer::Ground, GameLayer::Player, GameLayer::Bullet],
-            ),
-            friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
     }
+}
 
-    pub(crate) fn bullet() -> Self {
+#[derive(Bundle)]
+pub struct BulletPhysics {
+    pub collider: Collider,
+    pub collider_density: ColliderDensity,
+    pub rigid_body: RigidBody,
+    pub external_force: ExternalForce,
+    pub collison_layer: CollisionLayers,
+}
+
+impl Default for BulletPhysics {
+    fn default() -> Self {
         Self {
             collider: Collider::cylinder(BULLET_RADIUS, BULLET_HEIGHT),
             collider_density: ColliderDensity(1.0),
             rigid_body: RigidBody::Dynamic,
             external_force: ExternalForce::default(),
-            locked_axes: LockedAxes::default(),
             collison_layer: CollisionLayers::new(
                 GameLayer::Bullet,
                 [GameLayer::Player, GameLayer::Ground],
             ),
-            friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
         }
     }
 }
