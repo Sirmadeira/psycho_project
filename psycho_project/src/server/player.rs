@@ -296,10 +296,10 @@ fn replicate_inputs(
 }
 fn handle_character_actions(
     time: Res<Time>,
-    mut query: Query<(&ActionState<PlayerAction>, CharacterQuery)>,
+    mut query: Query<(&ActionState<PlayerAction>, &RayHits, CharacterQuery)>,
 ) {
-    for (action_state, mut character) in &mut query {
-        apply_character_action(&time, action_state, &mut character);
+    for (action_state, ray_hits, mut character) in &mut query {
+        apply_character_action(&time, action_state, ray_hits, &mut character);
     }
 }
 

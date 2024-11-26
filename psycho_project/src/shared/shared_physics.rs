@@ -2,6 +2,7 @@
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
 use crate::shared::protocol::player_structs::*;
+use avian3d::math::Vector;
 use avian3d::prelude::*;
 use avian3d::sync::SyncConfig;
 use bevy::ecs::query::QueryData;
@@ -93,6 +94,7 @@ pub struct PlayerPhysics {
     pub locked_axes: LockedAxes,
     pub collison_layer: CollisionLayers,
     pub friction: Friction,
+    pub grounded_caster: RayCaster,
 }
 
 impl Default for PlayerPhysics {
@@ -109,6 +111,15 @@ impl Default for PlayerPhysics {
                 [GameLayer::Ground, GameLayer::Bullet],
             ),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
+            grounded_caster: RayCaster::new(
+                Vec3::new(
+                    0.0,
+                    -CHARACTER_CAPSULE_HEIGHT / 2.0 - CHARACTER_CAPSULE_RADIUS,
+                    0.0,
+                ),
+                Dir3::NEG_Y,
+            )
+            .with_max_time_of_impact(0.2),
         }
     }
 }
@@ -170,6 +181,7 @@ pub struct CharacterQuery {
 pub fn apply_character_action(
     time: &Res<Time>,
     action_state: &ActionState<PlayerAction>,
+    ray_hits: &RayHits,
     character: &mut CharacterQueryItem,
 ) {
     const MAX_SPEED: f32 = 5.0;
@@ -179,13 +191,11 @@ pub fn apply_character_action(
 
     // Handle jumping.
     if action_state.just_pressed(&PlayerAction::Jump) {
-        // Make jump better
-        let ray_cast_origin = character.position.0
-            + Vec3::new(
-                0.0,
-                -CHARACTER_CAPSULE_HEIGHT / 2.0 - CHARACTER_CAPSULE_RADIUS,
-                0.0,
-            );
+        if !ray_hits.is_empty() {
+            character
+                .external_impulse
+                .apply_impulse(Vec3::new(0.0, 5.0, 0.0));
+        }
     }
 
     // Handle moving.

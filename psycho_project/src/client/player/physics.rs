@@ -1,6 +1,7 @@
 use super::MarkerMainCamera;
 use crate::shared::protocol::player_structs::*;
 use crate::shared::shared_physics::*;
+use avian3d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use lightyear::client::input::leafwing::InputSystemSet;
@@ -105,6 +106,7 @@ fn handle_character_actions(
         (
             &ActionState<PlayerAction>,
             &InputBuffer<PlayerAction>,
+            &RayHits,
             CharacterQuery,
         ),
         With<Predicted>,
@@ -118,21 +120,21 @@ fn handle_character_actions(
         .map(|rb| tick_manager.tick_or_rollback_tick(rb))
         .unwrap_or(tick_manager.tick());
 
-    for (action_state, input_buffer, mut character) in &mut query {
+    for (action_state, input_buffer, ray_hits, mut character) in &mut query {
         // Use the current character action if it is.
         if input_buffer.get(tick).is_some() {
-            apply_character_action(&time, action_state, &mut character);
+            apply_character_action(&time, action_state, ray_hits, &mut character);
             continue;
         }
 
         // If the current character action is not real then use the last real
         // character action.
         if let Some((_, prev_action_state)) = input_buffer.get_last_with_tick() {
-            apply_character_action(&time, prev_action_state, &mut character);
+            apply_character_action(&time, prev_action_state, ray_hits, &mut character);
         } else {
             // No inputs are in the buffer yet. This can happen during initial
             // connection. Apply the default input (i.e. nothing pressed).
-            apply_character_action(&time, action_state, &mut character);
+            apply_character_action(&time, action_state, ray_hits, &mut character);
         }
     }
 }
