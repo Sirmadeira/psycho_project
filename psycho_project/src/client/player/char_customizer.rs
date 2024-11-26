@@ -114,7 +114,11 @@ fn spawn_scene(
 
     let scene = SceneBundle {
         scene: visual_scene,
-        transform: Transform::from_translation(Vec3::new(0.0, -0.75, 0.0)),
+        transform: Transform {
+            translation: Vec3::new(0.0, -0.75, 0.0),
+            ..Default::default()
+        }
+        .looking_at(Vec3::new(0.0, -0.75, 1.0), Vec3::Y),
         ..default()
     };
 
@@ -209,7 +213,6 @@ fn formulates_players(
                     .entity(entity)
                     .insert(InheritedVisibility::default())
                     .insert(GlobalTransform::default())
-                    .insert(Transform::default().looking_at(Vec3::new(0.0, 0.0, -1.0), Vec3::Y))
                     .insert(HasVisuals)
                     .insert(PlayerAction::default_input_map());
             } else {
@@ -218,7 +221,6 @@ fn formulates_players(
                     .entity(entity)
                     .insert(InheritedVisibility::default())
                     .insert(GlobalTransform::default())
-                    .insert(Transform::default().looking_at(Vec3::new(0.0, 0.0, -1.0), Vec3::Y))
                     .insert(HasVisuals);
             }
 

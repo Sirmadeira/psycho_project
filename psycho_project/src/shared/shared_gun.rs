@@ -90,9 +90,9 @@ pub fn shared_spawn_bullet(
         let _prev_last_fire_tick = weapon.last_fire_tick;
         weapon.last_fire_tick = current_tick;
 
-        let bullet_spawn_offset = Vec3::new(0.0, 0.5, 2.0);
+        let bullet_spawn_offset = Vec3::new(0.0, 0.5, -2.0);
         let bullet_origin = player_position.0 + bullet_spawn_offset;
-        let bullet_linvel = player_rotation * (Vec3::Z * weapon.bullet_speed) + player_velocity.0;
+        let bullet_linvel = player_rotation * (-Vec3::Z * weapon.bullet_speed) + player_velocity.0;
 
         // We do this to avoid interlapse among bullets fired in same tick
         let prespawned = PreSpawnedPlayerObject::default_with_salt(player_id.0.to_bits());
