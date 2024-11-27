@@ -162,19 +162,27 @@ pub struct PlayerPosition(pub Vec3);
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Reflect, Serialize, Deserialize)]
 pub enum PlayerAction {
-    Move,
+    Forward,
+    Backward,
+    Left,
+    Right,
     Jump,
     Shoot,
     RotateToCamera,
+    Direction,
 }
 
 impl Actionlike for PlayerAction {
     fn input_control_kind(&self) -> InputControlKind {
         match self {
-            Self::Move => InputControlKind::DualAxis,
+            Self::Forward => InputControlKind::Button,
+            Self::Backward => InputControlKind::Button,
+            Self::Left => InputControlKind::Button,
+            Self::Right => InputControlKind::Button,
             Self::Jump => InputControlKind::Button,
             Self::Shoot => InputControlKind::Button,
             Self::RotateToCamera => InputControlKind::DualAxis,
+            Self::Direction => InputControlKind::DualAxis,
         }
     }
 }
@@ -184,8 +192,10 @@ impl PlayerAction {
         let input_map = InputMap::default()
             .with(Self::Jump, KeyCode::Space)
             .with(Self::Shoot, MouseButton::Left)
-            .with_dual_axis(Self::Move, KeyboardVirtualDPad::WASD)
-            .with_dual_axis(Self::Move, KeyboardVirtualDPad::ARROW_KEYS);
+            .with(Self::Forward, KeyCode::KeyW)
+            .with(Self::Backward, KeyCode::KeyS)
+            .with(Self::Left, KeyCode::KeyA)
+            .with(Self::Right, KeyCode::KeyD);
         return input_map;
     }
 }

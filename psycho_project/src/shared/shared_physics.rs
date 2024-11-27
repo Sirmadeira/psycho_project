@@ -2,7 +2,6 @@
 //! It is important to understand when you move something in client you should also try to move it in server, with the same characteristic as in client. Meaning the same input
 //! As that will avoid rollbacks and mispredictions, so in summary if client input event -> apply same function -> dont do shit differently
 use crate::shared::protocol::player_structs::*;
-use avian3d::math::Vector;
 use avian3d::prelude::*;
 use avian3d::sync::SyncConfig;
 use bevy::ecs::query::QueryData;
@@ -39,7 +38,7 @@ impl Plugin for SharedPhysicsPlugin {
         app.add_plugins(PhysicsDebugPlugin::default());
 
         // Setting up gravity - NEED TO BE ZERO, OR ELSE jiter
-        app.insert_resource(Gravity(Vec3::new(0.0, -2.0, 0.0)));
+        app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
         app.configure_sets(
@@ -119,7 +118,8 @@ impl Default for PlayerPhysics {
                 ),
                 Dir3::NEG_Y,
             )
-            .with_max_time_of_impact(0.2),
+            .with_max_time_of_impact(0.2)
+            .with_solidness(true),
         }
     }
 }
@@ -198,10 +198,11 @@ pub fn apply_character_action(
         }
     }
 
-    // Handle moving.
     let move_dir = action_state
-        .axis_pair(&PlayerAction::Move)
+        .axis_pair(&PlayerAction::Direction)
         .clamp_length_max(1.0);
+
+    // Handle moving.
     let move_dir = Vec3::new(-move_dir.x, 0.0, move_dir.y);
 
     // Linear velocity of the character ignoring vertical speed.
@@ -219,11 +220,12 @@ pub fn apply_character_action(
     let required_acceleration =
         (new_ground_linear_velocity - ground_linear_velocity) / time.delta_seconds();
 
-    if required_acceleration != Vec3::ZERO {
+    if move_dir.length_squared() != 0.0 {
         character
             .external_force
             .apply_force(required_acceleration * character.mass.0);
     }
+
     // Handle looking at
 
     let camera_rotation = action_state.axis_pair(&PlayerAction::RotateToCamera);
