@@ -38,7 +38,7 @@ impl Plugin for SharedPhysicsPlugin {
         app.add_plugins(PhysicsDebugPlugin::default());
 
         // Setting up gravity - NEED TO BE ZERO, OR ELSE jiter
-        app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
+        // app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
         app.configure_sets(
@@ -93,6 +93,7 @@ pub struct PlayerPhysics {
     pub locked_axes: LockedAxes,
     pub collison_layer: CollisionLayers,
     pub friction: Friction,
+    pub linear_damping: LinearDamping,
     pub grounded_caster: RayCaster,
 }
 
@@ -110,6 +111,7 @@ impl Default for PlayerPhysics {
                 [GameLayer::Ground, GameLayer::Bullet],
             ),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
+            linear_damping: LinearDamping(0.8),
             grounded_caster: RayCaster::new(
                 Vec3::new(
                     0.0,
@@ -203,7 +205,7 @@ pub fn apply_character_action(
         .clamp_length_max(1.0);
 
     // Handle moving.
-    let move_dir = Vec3::new(-move_dir.x, 0.0, move_dir.y);
+    let move_dir = Vec3::new(move_dir.x, 0.0, move_dir.y);
 
     // Linear velocity of the character ignoring vertical speed.
     let ground_linear_velocity = Vec3::new(

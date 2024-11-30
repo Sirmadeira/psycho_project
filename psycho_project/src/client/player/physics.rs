@@ -23,7 +23,7 @@ impl Plugin for PlayerPhysicsPlugin {
         // Ensures we update the ActionState before buffering them
         app.add_systems(
             FixedPreUpdate,
-            (camera_rotate_to, player_go_to_camera)
+            player_go_to_camera
                 .before(InputSystemSet::BufferClientInputs)
                 .run_if(not(is_in_rollback)),
         );
@@ -106,13 +106,23 @@ fn camera_rotate_to(
 fn player_go_to_camera(
     q_cam: Query<&Transform, With<MarkerMainCamera>>,
     mut q_actionstate: Query<&mut ActionState<PlayerAction>, (With<Predicted>, With<Controlled>)>,
-    keys: Res<ButtonInput<KeyCode>>,
 ) {
     // I wonder if there is a bertter way to do this
     if let Ok(mut action_state) = q_actionstate.get_single_mut() {
         if let Ok(q_cam) = q_cam.get_single() {
+            // Dont pass a constant direction
+            action_state.set_axis_pair(&PlayerAction::Direction, Vec2::ZERO);
             if action_state.pressed(&PlayerAction::Forward) {
-                action_state.set_axis_pair(&PlayerAction::Direction, q_cam.forward().xy());
+                action_state.set_axis_pair(&PlayerAction::Direction, q_cam.forward().xz());
+            }
+            if action_state.pressed(&PlayerAction::Backward) {
+                action_state.set_axis_pair(&PlayerAction::Direction, q_cam.back().xz());
+            }
+            if action_state.pressed(&PlayerAction::Left) {
+                action_state.set_axis_pair(&PlayerAction::Direction, q_cam.left().xz());
+            }
+            if action_state.pressed(&PlayerAction::Right) {
+                action_state.set_axis_pair(&PlayerAction::Direction, q_cam.right().xz());
             }
         }
     }
