@@ -35,10 +35,10 @@ impl Plugin for SharedPhysicsPlugin {
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
 
         // See your colliders
-        app.add_plugins(PhysicsDebugPlugin::default());
+        // app.add_plugins(PhysicsDebugPlugin::default());
 
         // Setting up gravity - NEED TO BE ZERO, OR ELSE jiter
-        // app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
+        app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
         app.configure_sets(
@@ -93,7 +93,6 @@ pub struct PlayerPhysics {
     pub locked_axes: LockedAxes,
     pub collison_layer: CollisionLayers,
     pub friction: Friction,
-    pub linear_damping: LinearDamping,
     pub grounded_caster: RayCaster,
 }
 
@@ -111,7 +110,6 @@ impl Default for PlayerPhysics {
                 [GameLayer::Ground, GameLayer::Bullet],
             ),
             friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
-            linear_damping: LinearDamping(0.8),
             grounded_caster: RayCaster::new(
                 Vec3::new(
                     0.0,
