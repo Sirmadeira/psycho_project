@@ -23,7 +23,8 @@ impl Plugin for PlayerPhysicsPlugin {
         // Ensures we update the ActionState before buffering them
         app.add_systems(
             FixedPreUpdate,
-            player_go_to_camera
+            (player_go_to_camera, camera_rotate_to)
+                .chain()
                 .before(InputSystemSet::BufferClientInputs)
                 .run_if(not(is_in_rollback)),
         );

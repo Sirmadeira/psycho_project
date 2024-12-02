@@ -19,7 +19,8 @@ impl Plugin for SharedPhysicsPlugin {
         app.add_plugins(
             PhysicsPlugins::new(FixedUpdate)
                 .build()
-                .disable::<SyncPlugin>(),
+                .disable::<SyncPlugin>()
+                .disable::<SleepingPlugin>(),
         );
         // We change SyncPlugin to PostUpdate, because we want the visually
         // interpreted values synced to transform every time, not just when
@@ -35,10 +36,10 @@ impl Plugin for SharedPhysicsPlugin {
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
 
         // See your colliders
-        // app.add_plugins(PhysicsDebugPlugin::default());
+        app.add_plugins(PhysicsDebugPlugin::new(PostUpdate));
 
-        // Setting up gravity - NEED TO BE ZERO, OR ELSE jiter
-        app.insert_resource(Gravity(Vec3::new(0.0, 0.0, 0.0)));
+        //Our shared gravity
+        app.insert_resource(Gravity(Vec3::new(0.0, -10.0, 0.0)));
 
         // Make sure that any physics simulation happens after the input
         app.configure_sets(
@@ -225,6 +226,12 @@ pub fn apply_character_action(
             .external_force
             .apply_force(required_acceleration * character.mass.0);
     }
+
+    // Apply gravity
+
+    // character
+    //     .external_force
+    //     .apply_force(Vec3::new(0.0, -10.0, 0.0));
 
     // Handle looking at
 
