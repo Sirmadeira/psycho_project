@@ -1,5 +1,5 @@
 MySettings(
-  server_replication_send_interval: 0,
+  server_replication_send_interval: 50,
   input_delay_ticks: 10,
   correction_ticks_factor: 2.0,
   show_confirmed: true,

@@ -41,6 +41,12 @@ impl Plugin for SharedPhysicsPlugin {
         //Our shared gravity
         app.insert_resource(Gravity(Vec3::new(0.0, -10.0, 0.0)));
 
+        // Disabling warm collision = TODO MAKE IT ROLLBACKABLE
+        app.insert_resource(NarrowPhaseConfig {
+            match_contacts: false,
+            ..default()
+        });
+
         // Make sure that any physics simulation happens after the input
         app.configure_sets(
             FixedUpdate,
