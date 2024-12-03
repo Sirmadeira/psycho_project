@@ -36,7 +36,7 @@ impl Plugin for SharedPhysicsPlugin {
         app.insert_resource(Time::new_with(Physics::fixed_once_hz(FIXED_TIMESTEP_HZ)));
 
         // See your colliders
-        app.add_plugins(PhysicsDebugPlugin::new(PostUpdate));
+        // app.add_plugins(PhysicsDebugPlugin::new(PostUpdate));
 
         //Our shared gravity
         app.insert_resource(Gravity(Vec3::new(0.0, -10.0, 0.0)));
@@ -116,7 +116,7 @@ impl Default for PlayerPhysics {
                 GameLayer::Player,
                 [GameLayer::Ground, GameLayer::Bullet],
             ),
-            friction: Friction::new(0.0).with_combine_rule(CoefficientCombine::Min),
+            friction: Friction::new(0.3).with_combine_rule(CoefficientCombine::Min),
             grounded_caster: RayCaster::new(
                 Vec3::new(
                     0.0,
@@ -241,9 +241,9 @@ pub fn apply_character_action(
 
     // Handle looking at
 
-    let camera_rotation = action_state.axis_pair(&PlayerAction::RotateToCamera);
+    // let camera_rotation = action_state.axis_pair(&PlayerAction::RotateToCamera);
 
-    let quat_rotation = Quat::from_euler(EulerRot::YXZ, camera_rotation.y, 0.0, 0.0);
+    // let quat_rotation = Quat::from_euler(EulerRot::YXZ, camera_rotation.y, 0.0, 0.0);
 
-    character.rotation.0 = quat_rotation;
+    // character.rotation.0 = quat_rotation;
 }

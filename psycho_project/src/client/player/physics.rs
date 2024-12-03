@@ -23,8 +23,7 @@ impl Plugin for PlayerPhysicsPlugin {
         // Ensures we update the ActionState before buffering them
         app.add_systems(
             FixedPreUpdate,
-            (player_go_to_camera, camera_rotate_to)
-                .chain()
+            player_go_to_camera
                 .before(InputSystemSet::BufferClientInputs)
                 .run_if(not(is_in_rollback)),
         );
@@ -88,20 +87,20 @@ fn add_physics_to_players(
 //     }
 // }
 
-fn camera_rotate_to(
-    q_transform: Query<&Transform, With<MarkerMainCamera>>,
-    mut player_action_state: Query<
-        &mut ActionState<PlayerAction>,
-        (With<Predicted>, With<Controlled>),
-    >,
-) {
-    if let Ok(cam_transform) = q_transform.get_single() {
-        let (yaw, pitch, _) = cam_transform.rotation.to_euler(EulerRot::YXZ);
-        if let Ok(mut action_state) = player_action_state.get_single_mut() {
-            action_state.set_axis_pair(&PlayerAction::RotateToCamera, Vec2::new(pitch, yaw));
-        }
-    }
-}
+// fn camera_rotate_to(
+//     q_transform: Query<&Transform, With<MarkerMainCamera>>,
+//     mut player_action_state: Query<
+//         &mut ActionState<PlayerAction>,
+//         (With<Predicted>, With<Controlled>),
+//     >,
+// ) {
+//     if let Ok(cam_transform) = q_transform.get_single() {
+//         let (yaw, pitch, _) = cam_transform.rotation.to_euler(EulerRot::YXZ);
+//         if let Ok(mut action_state) = player_action_state.get_single_mut() {
+//             action_state.set_axis_pair(&PlayerAction::RotateToCamera, Vec2::new(pitch, yaw));
+//         }
+//     }
+// }
 
 /// You see this guy is necessary because to be completely i dont know how to override forward value utilizing only move
 fn player_go_to_camera(
